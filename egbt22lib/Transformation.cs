@@ -26,53 +26,134 @@ namespace egbt22lib
            3.1384490633,
            7.992235 };
 
-        private static readonly double[,] e2d, d2e;
+        private static readonly double[] RotationMatrix_ETRS892DBRef_Exact, RotationMatrix_DBRef2ETRS89_Exact, RotationMatrix_ETRS892DBRef, RotationMatrix_DBRef2ETRS89;
+        private static readonly double Scale_ETRS892DBRef, Scale_DBRef2ETRS89;
 
         static Transformation()
         {
-            e2d = toRotationMatrix(Param_ETRS892DBRef);
-            d2e = toRotationMatrix(Param_DBRef2ETRS89);
+            Scale_ETRS892DBRef = 1.0 + (Param_ETRS892DBRef[6] * 1.0e-6);
+            Scale_DBRef2ETRS89 = 1.0 + (Param_DBRef2ETRS89[6] * 1.0e-6);
+            RotationMatrix_ETRS892DBRef_Exact = toRotationMatrixExact(Param_ETRS892DBRef);
+            RotationMatrix_DBRef2ETRS89_Exact = toRotationMatrixExact(Param_DBRef2ETRS89);
+            RotationMatrix_ETRS892DBRef = toRotationMatrix(Param_ETRS892DBRef);
+            RotationMatrix_DBRef2ETRS89 = toRotationMatrix(Param_DBRef2ETRS89);
         }
 
-        private static double[,] toRotationMatrix(in double[] m)
+        private static double[] toRotationMatrixExact(in double[] m)
         {
-            double rX = m[3] * Sec2Rad;
-            double rY = m[4] * Sec2Rad;
-            double rZ = m[5] * Sec2Rad;
-            double cx = Math.Cos(rX);
-            double sx = Math.Sin(rX);
-            double cy = Math.Cos(rY);
-            double sy = Math.Sin(rY);
-            double cz = Math.Cos(rZ);
-            double sz = Math.Sin(rZ);
+            var f = m[3] * Sec2Rad;
+            var t = m[4] * Sec2Rad;
+            var p = m[5] * Sec2Rad;
+            var cf = Math.Cos(f);
+            var sf = Math.Sin(f);
+            var ct = Math.Cos(t);
+            var st = Math.Sin(t);
+            var cp = Math.Cos(p);
+            var sp = Math.Sin(p);
 
-            return new double[,]
+            return new double[]
             {
-                {  cy * cz, (cx * sz) + (sx * sy * cz), (sx * sz) - (cx * sy * cz), m[0] },
-                { -cy * sz, (cx * cz) - (sx * sy * sz), (sx * cz) + (cx * sy * sz), m[1] },
-                {       sy,                   -sx * cy,                     cx* cy, m[2] },
-                {      0.0,                        0.0,                        0.0, 1.0 + (m[6] * 1.0e-6) }
+                 ct * cp, (cf * sp) + (sf * st * cp), (sf * sp) - (cf * st * cp),
+                -ct * sp, (cf * cp) - (sf * st * sp), (sf * cp) + (cf * st * sp),
+                      st,                  -sf * ct ,                   cf * ct
+            };
+        }
+        private static double[] toRotationMatrix(in double[] m)
+        {
+            var f = m[3] * Sec2Rad;
+            var t = m[4] * Sec2Rad;
+            var p = m[5] * Sec2Rad;
+
+            return new double[]
+            {
+                  1,  p, -t,
+                 -p,  1,  f,
+                  t, -f,  1
             };
         }
 
-        private static Point rotateByMatrix(in double[,] m, in Point p)
+        private static (double x, double y, double z) rotateForward(double[] m, (double x, double y, double z) p)
         {
-            return new Point(
-                (m[3, 3] * ((m[0, 0] * p.X) + (m[0, 1] * p.Y) + (m[0, 2] * p.Z))) + m[0, 3],
-                (m[3, 3] * ((m[1, 0] * p.X) + (m[1, 1] * p.Y) + (m[1, 2] * p.Z))) + m[1, 3],
-                (m[3, 3] * ((m[2, 0] * p.X) + (m[2, 1] * p.Y) + (m[2, 2] * p.Z))) + m[2, 3]);
+            var (x, y, z) = p;
+            return (
+                (m[0] * x) + (m[1] * y) + (m[2] * z),
+                (m[3] * x) + (m[4] * y) + (m[5] * z),
+                (m[6] * x) + (m[7] * y) + (m[8] * z));
         }
 
-        public static Point DbrefToEtrs89(in Point p)
+        private static (double x, double y, double z) rotateReverse(double[] m, (double x, double y, double z) p)
         {
-            return rotateByMatrix(d2e, p);
+            var (x, y, z) = p;
+            return (
+                (m[0] * x) + (m[3] * y) + (m[6] * z),
+                (m[1] * x) + (m[4] * y) + (m[7] * z),
+                (m[2] * x) + (m[5] * y) + (m[8] * z));
         }
 
-        public static Point Etrs89ToDbref(in Point p)
+        private static (double x, double y, double z) translateForward(double[] t, (double x, double y, double z) p)
         {
-            return rotateByMatrix(e2d, p);
+            var (x, y, z) = p;
+            return (x + t[0], y + t[1], z + t[2]);
         }
 
+        private static (double x, double y, double z) translateReverse(double[] t, (double x, double y, double z) p)
+        {
+            var (x, y, z) = p;
+            return (x - t[0], y - t[1], z - t[2]);
+        }
+        private static (double x, double y, double z) scaleForward(double s, (double x, double y, double z) p)
+        {
+            var (x, y, z) = p;
+            return (x * s, y * s, z * s);
+        }
+
+        private static (double x, double y, double z) scaleReverse(double s, (double x, double y, double z) p)
+        {
+            var (x, y, z) = p;
+            return (x / s, y / s, z / s);
+        }
+
+        public static (double x, double y, double z) DbrefToEtrs89(double x, double y, double z)
+        {
+            return translateForward(Param_DBRef2ETRS89,
+                scaleForward(Scale_DBRef2ETRS89,
+                rotateForward(RotationMatrix_DBRef2ETRS89_Exact, (x, y, z))));
+        }
+
+        public static (double x, double y, double z) Etrs89ToDbref(double x, double y, double z)
+        {
+            return translateForward(Param_ETRS892DBRef,
+                scaleForward(Scale_ETRS892DBRef,
+                rotateForward(RotationMatrix_ETRS892DBRef_Exact, (x, y, z))));
+        }
+
+        public static (double x, double y, double z) Etrs89ToDbref2(double x, double y, double z)
+        {
+            return rotateReverse(RotationMatrix_DBRef2ETRS89_Exact,
+                scaleReverse(Scale_DBRef2ETRS89,
+                translateReverse(Param_DBRef2ETRS89, (x, y, z))));
+        }
+
+        public static (double x, double y, double z) DbrefToEtrs89InExact(double x, double y, double z)
+        {
+            return translateForward(Param_DBRef2ETRS89,
+                scaleForward(Scale_DBRef2ETRS89,
+                rotateForward(RotationMatrix_DBRef2ETRS89, (x, y, z))));
+        }
+
+        public static (double x, double y, double z) Etrs89ToDbrefInExact(double x, double y, double z)
+        {
+            return translateForward(Param_ETRS892DBRef,
+                scaleForward(Scale_ETRS892DBRef,
+                rotateForward(RotationMatrix_ETRS892DBRef, (x, y, z))));
+        }
+
+        public static (double x, double y, double z) Etrs89ToDbrefInExact2(double x, double y, double z)
+        {
+            return rotateReverse(RotationMatrix_DBRef2ETRS89,
+                scaleReverse(Scale_DBRef2ETRS89,
+                translateReverse(Param_DBRef2ETRS89, (x, y, z))));
+        }
 
 
     }
