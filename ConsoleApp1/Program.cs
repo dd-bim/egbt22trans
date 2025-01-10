@@ -150,6 +150,22 @@ internal class Program
             Console.WriteLine($"{localR1[i],12:f4} {localH1[i],12:f4}");
         }
 
+        if (!DBRef_GK5_to_EGBT22_Local2(dbrefR, dbrefH, dbrefh, out double[] localR2, out double[] localH2))
+        {
+            Console.WriteLine("DBRef_GK5_to_EGBT22_Local2 failed");
+            return;
+        }
+        Console.WriteLine("Lokal zweite Berechnung");
+        for (int i = 0; i < localR1.Length; i++)
+        {
+            Console.WriteLine($"{localR2[i],12:f4} {localH2[i],12:f4}");
+        }
+        Console.WriteLine("Lokal Differenz");
+        for (int i = 0; i < localR1.Length; i++)
+        {
+            Console.WriteLine($"{localR1[i] - localR2[i],6:e1} {localH1[i] - localH2[i],6:e1}");
+        }
+
         if (!EGBT22_Local_to_DBRef_GK5(localR1, localH1, dbrefh, out double[] dbrefR1, out double[] dbrefH1))
         {
             Console.WriteLine("EGBT22_Local_to_DBRef_GK5 failed");
@@ -159,6 +175,16 @@ internal class Program
         for (int i = 0; i < dbrefR1.Length; i++)
         {
             Console.WriteLine($"{dbrefR1[i] - dbrefR[i],6:e1} {dbrefH1[i] - dbrefH[i],6:e1}");
+        }
+        if (!EGBT22_Local_to_DBRef_GK52(localR2, localH2, dbrefh, out double[] dbrefR2, out double[] dbrefH2))
+        {
+            Console.WriteLine("EGBT22_Local_to_DBRef_GK52 failed");
+            return;
+        }
+        Console.WriteLine("zweite Berechnung Differenz");
+        for (int i = 0; i < dbrefR1.Length; i++)
+        {
+            Console.WriteLine($"{dbrefR2[i] - dbrefR[i],6:e1} {dbrefH2[i] - dbrefH[i],6:e1}");
         }
 
 
