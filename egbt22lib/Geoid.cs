@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-using Microsoft.Extensions.Logging;
-
 namespace egbt22lib
 {
     public static class Geoid
@@ -51,7 +49,7 @@ namespace egbt22lib
             }
             catch (Exception ex)
             {
-                GeoidLogger.Instance.Logger?.LogError(ex, "Error loading BKG binary geoid file");
+                //GeoidLogger.Instance.Logger?.LogError(ex, "Error loading BKG binary geoid file");
                 throw;
             }
         }
@@ -80,7 +78,7 @@ namespace egbt22lib
                     if (etrs89Lon[i] > _lonMax || etrs89Lon[i] < _lonMin
                         || etrs89Lat[i] > _latMax || etrs89Lat[i] < _latMin)
                     {
-                        GeoidLogger.Instance.Logger?.LogWarning("Coordinate out of bounds: lat={lat}, lon={lon}", etrs89Lat[i], etrs89Lon[i]);
+                        //GeoidLogger.Instance.Logger?.LogWarning("Coordinate out of bounds: lat={lat}, lon={lon}", etrs89Lat[i], etrs89Lon[i]);
                         elevations[i] = Double.NaN;
                     }
                     else
@@ -121,12 +119,12 @@ namespace egbt22lib
                     }
                 }
 
-                GeoidLogger.Instance.Logger?.LogDebug("Successfully read geoid heights for {count} coordinates", elevations.Length);
+                //GeoidLogger.Instance.Logger?.LogDebug("Successfully read geoid heights for {count} coordinates", elevations.Length);
                 return elevations;
             }
             catch (Exception ex)
             {
-                GeoidLogger.Instance.Logger?.LogError(ex, "Error reading BKG binary geoid file");
+                //GeoidLogger.Instance.Logger?.LogError(ex, "Error reading BKG binary geoid file");
                 throw;
             }
         }
@@ -148,19 +146,19 @@ namespace egbt22lib
         }
     }
 
-    public class GeoidLogger
-    {
-        private static GeoidLogger? _instance;
-        public static GeoidLogger Instance => _instance ??= new GeoidLogger();
+    //public class GeoidLogger
+    //{
+    //    private static GeoidLogger? _instance;
+    //    public static GeoidLogger Instance => _instance ??= new GeoidLogger();
 
-        public ILogger? Logger { get; private set; }
+    //    public ILogger? Logger { get; private set; }
 
-        private GeoidLogger() { }
+    //    private GeoidLogger() { }
 
-        public void ConfigureLogger(ILogger logger)
-        {
-            Logger = logger;
-        }
-    }
+    //    public void ConfigureLogger(ILogger logger)
+    //    {
+    //        Logger = logger;
+    //    }
+    //}
 
 }

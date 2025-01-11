@@ -3,19 +3,10 @@
 using GeographicLib;
 using GeographicLib.Projections;
 
-using Microsoft.Extensions.Logging;
-
 namespace egbt22lib
 {
     public static class Convert
     {
-        private static ILogger? _logger;
-
-        public static void InitializeLogger(ILogger logger)
-        {
-            _logger = logger;
-        }
-
         public const double Bessel_a = 6377397.155;
         public const double Bessel_f = 1d / 299.1528128;
 
@@ -126,7 +117,7 @@ namespace egbt22lib
         {
             if (localRechts.Length != localHoch.Length)
             {
-                _logger?.LogWarning("Input arrays have different lengths.");
+                //_logger?.LogWarning("Input arrays have different lengths.");
                 gamma = Array.Empty<double>();
                 k = Array.Empty<double>();
                 return false;
@@ -138,7 +129,7 @@ namespace egbt22lib
         {
             if (localRechts.Length != localHoch.Length)
             {
-                _logger?.LogWarning("Input arrays have different lengths.");
+                //_logger?.LogWarning("Input arrays have different lengths.");
                 easting = Array.Empty<double>();
                 northing = Array.Empty<double>();
                 return false;
@@ -147,14 +138,14 @@ namespace egbt22lib
             var (etrs89Lat, etrs89Lon) = ConvertArrays(EGBT22_Local_Reverse, localRechts, localHoch);
             // Geodetic to UTM33 conversion
             (easting, northing) = ConvertArrays(GRS80UTM33_Forward, etrs89Lat, etrs89Lon);
-            _logger?.LogInformation("Conversion from EGBT22_Local to ETRS89_UTM33 successful.");
+            //_logger?.LogInformation("Conversion from EGBT22_Local to ETRS89_UTM33 successful.");
             return true;
         }
         public static bool EGBT22_Local_to_DBRef_GK5(double[] localRechts, double[] localHoch, double[] h, out double[] gk5Rechts, out double[] gk5Hoch)
         {
             if (localRechts.Length != localHoch.Length || localRechts.Length != h.Length)
             {
-                _logger?.LogWarning("Input arrays have different lengths.");
+                //_logger?.LogWarning("Input arrays have different lengths.");
                 gk5Rechts = Array.Empty<double>();
                 gk5Hoch = Array.Empty<double>();
                 return false;
@@ -175,14 +166,14 @@ namespace egbt22lib
             var (dbrefLat, dbrefLon, _) = ConvertArrays(BesselGeoc_Reverse, dbrefX, dbrefY, dbrefZ);
             // Geodetic to GK5 conversion
             (gk5Rechts, gk5Hoch) = ConvertArrays(BesselGK5_Forward, dbrefLat, dbrefLon);
-            _logger?.LogInformation("Conversion from EGBT22_Local to DBRef_GK5 successful.");
+            //_logger?.LogInformation("Conversion from EGBT22_Local to DBRef_GK5 successful.");
             return true;
         }
         public static bool EGBT22_Local_to_ETRS89_Geoc(double[] localRechts, double[] localHoch, double[] h, out double[] etrs89X, out double[] etrs89Y, out double[] etrs89Z)
         {
             if (localRechts.Length != localHoch.Length || localRechts.Length != h.Length)
             {
-                _logger?.LogWarning("Input arrays have different lengths.");
+                //_logger?.LogWarning("Input arrays have different lengths.");
                 etrs89X = Array.Empty<double>();
                 etrs89Y = Array.Empty<double>();
                 etrs89Z = Array.Empty<double>();
@@ -199,14 +190,14 @@ namespace egbt22lib
             // ETRS89 geodetic to geocentric conversion
             (etrs89X, etrs89Y, etrs89Z) = ConvertArrays(GRS80Geoc_Forward, etrs89Lat, etrs89Lon, hEll);
 
-            _logger?.LogInformation("Conversion from EGBT22_Local to ETRS89_Geoc successful.");
+            //_logger?.LogInformation("Conversion from EGBT22_Local to ETRS89_Geoc successful.");
             return true;
         }
         public static bool EGBT22_Local_to_ETRS89_Geod_3D(double[] localRechts, double[] localHoch, double[] h, out double[] etrs89Lat, out double[] etrs89Lon, out double[] etrs89Hell)
         {
             if (localRechts.Length != localHoch.Length || localRechts.Length != h.Length)
             {
-                _logger?.LogWarning("Input arrays have different lengths.");
+                //_logger?.LogWarning("Input arrays have different lengths.");
                 etrs89Lat = Array.Empty<double>();
                 etrs89Lon = Array.Empty<double>();
                 etrs89Hell = Array.Empty<double>();
@@ -221,7 +212,7 @@ namespace egbt22lib
             for (int i = 0; i < etrs89Hell.Length; i++)
                 etrs89Hell[i] = geoid[i] + h[i];
 
-            _logger?.LogInformation("Conversion from EGBT22_Local to ETRS89_Geod_3D successful.");
+            //_logger?.LogInformation("Conversion from EGBT22_Local to ETRS89_Geod_3D successful.");
             return true;
         }
 
@@ -230,7 +221,7 @@ namespace egbt22lib
         {
             if (easting.Length != northing.Length)
             {
-                _logger?.LogWarning("Input arrays have different lengths.");
+                //_logger?.LogWarning("Input arrays have different lengths.");
                 gamma = Array.Empty<double>();
                 k = Array.Empty<double>();
                 return false;
@@ -242,7 +233,7 @@ namespace egbt22lib
         {
             if (easting.Length != northing.Length)
             {
-                _logger?.LogWarning("Input arrays have different lengths.");
+                //_logger?.LogWarning("Input arrays have different lengths.");
                 localRechts = Array.Empty<double>();
                 localHoch = Array.Empty<double>();
                 return false;
@@ -251,14 +242,14 @@ namespace egbt22lib
             var (etrs89Lat, etrs89Lon) = ConvertArrays(GRS80UTM33_Reverse, easting, northing);
             // Geodetic to Local conversion
             (localRechts, localHoch) = ConvertArrays(EGBT22_Local_Forward, etrs89Lat, etrs89Lon);
-            _logger?.LogInformation("Conversion from ETRS89_UTM33 to EGBT22_Local successful.");
+            //_logger?.LogInformation("Conversion from ETRS89_UTM33 to EGBT22_Local successful.");
             return true;
         }
         public static bool ETRS89_UTM33_to_DBRef_GK5(double[] easting, double[] northing, double[] h, out double[] gk5Rechts, out double[] gk5Hoch)
         {
             if (easting.Length != northing.Length)
             {
-                _logger?.LogWarning("Input arrays have different lengths.");
+                //_logger?.LogWarning("Input arrays have different lengths.");
                 gk5Rechts = Array.Empty<double>();
                 gk5Hoch = Array.Empty<double>();
                 return false;
@@ -279,14 +270,14 @@ namespace egbt22lib
             var (dbrefLat, dbrefLon, _) = ConvertArrays(BesselGeoc_Reverse, dbrefX, dbrefY, dbrefZ);
             // Geodetic to GK5 conversion
             (gk5Rechts, gk5Hoch) = ConvertArrays(BesselGK5_Forward, dbrefLat, dbrefLon);
-            _logger?.LogInformation("Conversion from ETRS89_UTM33 to DBRef_GK5 successful.");
+            //_logger?.LogInformation("Conversion from ETRS89_UTM33 to DBRef_GK5 successful.");
             return true;
         }
         public static bool ETRS89_UTM33_to_ETRS89_Geoc(double[] easting, double[] northing, double[] h, out double[] etrs89X, out double[] etrs89Y, out double[] etrs89Z)
         {
             if (easting.Length != northing.Length)
             {
-                _logger?.LogWarning("Input arrays have different lengths.");
+                //_logger?.LogWarning("Input arrays have different lengths.");
                 etrs89X = Array.Empty<double>();
                 etrs89Y = Array.Empty<double>();
                 etrs89Z = Array.Empty<double>();
@@ -302,14 +293,14 @@ namespace egbt22lib
                 hell[i] = geoid[i] + h[i];
             // ETRS89 geodetic to geocentric conversion
             (etrs89X, etrs89Y, etrs89Z) = ConvertArrays(GRS80Geoc_Forward, etrs89Lat, etrs89Lon, hell);
-            _logger?.LogInformation("Conversion from ETRS89_UTM33 to ETRS89_Geoc successful.");
+            //_logger?.LogInformation("Conversion from ETRS89_UTM33 to ETRS89_Geoc successful.");
             return true;
         }
         public static bool ETRS89_UTM33_to_ETRS89_Geod_3D(double[] easting, double[] northing, double[] h, out double[] etrs89Lat, out double[] etrs89Lon, out double[] etrs89Hell)
         {
             if (easting.Length != northing.Length)
             {
-                _logger?.LogWarning("Input arrays have different lengths.");
+                //_logger?.LogWarning("Input arrays have different lengths.");
                 etrs89Lat = Array.Empty<double>();
                 etrs89Lon = Array.Empty<double>();
                 etrs89Hell = Array.Empty<double>();
@@ -323,7 +314,7 @@ namespace egbt22lib
             etrs89Hell = new double[geoid.Length];
             for (int i = 0; i < etrs89Hell.Length; i++)
                 etrs89Hell[i] = geoid[i] + h[i];
-            _logger?.LogInformation("Conversion from ETRS89_UTM33 to ETRS89_Geod_3D successful.");
+            //_logger?.LogInformation("Conversion from ETRS89_UTM33 to ETRS89_Geod_3D successful.");
             return true;
         }
 
@@ -332,7 +323,7 @@ namespace egbt22lib
         {
             if (gk5Rechts.Length != gk5Hoch.Length)
             {
-                _logger?.LogWarning("Input arrays have different lengths.");
+                //_logger?.LogWarning("Input arrays have different lengths.");
                 gamma = Array.Empty<double>();
                 k = Array.Empty<double>();
                 return false;
@@ -344,7 +335,7 @@ namespace egbt22lib
         {
             if (gk5Rechts.Length != gk5Hoch.Length || gk5Rechts.Length != h.Length)
             {
-                _logger?.LogWarning("Input arrays have different lengths.");
+                //_logger?.LogWarning("Input arrays have different lengths.");
                 localRechts = Array.Empty<double>();
                 localHoch = Array.Empty<double>();
                 return false;
@@ -377,14 +368,14 @@ namespace egbt22lib
             (etrs89Lat, etrs89Lon, _) = ConvertArrays(GRS80Geoc_Reverse, etrs89X, etrs89Y, etrs89Z);
             // Geodetic to EGBT22_Local conversion
             (localRechts, localHoch) = ConvertArrays(EGBT22_Local_Forward, etrs89Lat, etrs89Lon);
-            _logger?.LogInformation("Conversion from DBRef_GK5 to EGBT22_Local successful.");
+            //_logger?.LogInformation("Conversion from DBRef_GK5 to EGBT22_Local successful.");
             return true;
         }
         public static bool DBRef_GK5_to_ETRS89_UTM33(double[] gk5Rechts, double[] gk5Hoch, double[] h, out double[] easting, out double[] northing)
         {
             if (gk5Rechts.Length != gk5Hoch.Length || gk5Rechts.Length != h.Length)
             {
-                _logger?.LogWarning("Input arrays have different lengths.");
+                //_logger?.LogWarning("Input arrays have different lengths.");
                 easting = Array.Empty<double>();
                 northing = Array.Empty<double>();
                 return false;
@@ -417,14 +408,14 @@ namespace egbt22lib
             (etrs89Lat, etrs89Lon, _) = ConvertArrays(GRS80Geoc_Reverse, etrs89X, etrs89Y, etrs89Z);
             // Geodetic to ETRS89_UTM33 conversion
             (easting, northing) = ConvertArrays(GRS80UTM33_Forward, etrs89Lat, etrs89Lon);
-            _logger?.LogInformation("Conversion from DBRef_GK5 to ETRS89_UTM33 successful.");
+            //_logger?.LogInformation("Conversion from DBRef_GK5 to ETRS89_UTM33 successful.");
             return true;
         }
         public static bool DBRef_GK5_to_ETRS89_Geoc(double[] gk5Rechts, double[] gk5Hoch, double[] h, out double[] etrs89X, out double[] etrs89Y, out double[] etrs89Z)
         {
             if (gk5Rechts.Length != gk5Hoch.Length || gk5Rechts.Length != h.Length)
             {
-                _logger?.LogWarning("Input arrays have different lengths.");
+                //_logger?.LogWarning("Input arrays have different lengths.");
                 etrs89X = Array.Empty<double>();
                 etrs89Y = Array.Empty<double>();
                 etrs89Z = Array.Empty<double>();
@@ -454,14 +445,14 @@ namespace egbt22lib
             (dbrefX, dbrefY, dbrefZ) = ConvertArrays(BesselGeoc_Forward, gk5Lat, gk5Lon, hcorr);
             // Geocentric DBREF to geocentric ETRS89 transformation, with corrected heights
             (etrs89X, etrs89Y, etrs89Z) = ConvertArrays(Transformation.DbrefToEtrs89, dbrefX, dbrefY, dbrefZ);
-            _logger?.LogInformation("Conversion from DBRef_GK5 to ETRS89_Geoc successful.");
+            //_logger?.LogInformation("Conversion from DBRef_GK5 to ETRS89_Geoc successful.");
             return true;
         }
         public static bool DBRef_GK5_to_ETRS89_Geod_3D(double[] gk5Rechts, double[] gk5Hoch, double[] h, out double[] etrs89Lat, out double[] etrs89Lon, out double[] etrs89Hell)
         {
             if (gk5Rechts.Length != gk5Hoch.Length || gk5Rechts.Length != h.Length)
             {
-                _logger?.LogWarning("Input arrays have different lengths.");
+                //_logger?.LogWarning("Input arrays have different lengths.");
                 etrs89Lat = Array.Empty<double>();
                 etrs89Lon = Array.Empty<double>();
                 etrs89Hell = Array.Empty<double>();
@@ -495,7 +486,7 @@ namespace egbt22lib
             (etrs89Lat, etrs89Lon, _) = ConvertArrays(GRS80Geoc_Reverse, etrs89X, etrs89Y, etrs89Z);
             var geoid_ = Geoid.GetBKGBinaryGeoidHeights(etrs89Lat, etrs89Lon);
 
-            _logger?.LogInformation("Conversion from DBRef_GK5 to ETRS89_Geod_3D successful.");
+            //_logger?.LogInformation("Conversion from DBRef_GK5 to ETRS89_Geod_3D successful.");
             return true;
         }
 
@@ -504,7 +495,7 @@ namespace egbt22lib
         {
             if (etrs89X.Length != etrs89Y.Length || etrs89X.Length != etrs89Z.Length)
             {
-                _logger?.LogWarning("Input arrays have different lengths.");
+                //_logger?.LogWarning("Input arrays have different lengths.");
                 localRechts = Array.Empty<double>();
                 localHoch = Array.Empty<double>();
                 h = Array.Empty<double>();
@@ -521,14 +512,14 @@ namespace egbt22lib
             // Geodetic to EGBT22_Local conversion
             (localRechts, localHoch) = ConvertArrays(EGBT22_Local_Forward, etrs89Lat, etrs89Lon);
 
-            _logger?.LogInformation("Conversion from ETRS89_Geoc to EGBT22_Local successful.");
+            //_logger?.LogInformation("Conversion from ETRS89_Geoc to EGBT22_Local successful.");
             return true;
         }
         public static bool ETRS89_Geoc_to_ETRS89_UTM33(double[] etrs89X, double[] etrs89Y, double[] etrs89Z, out double[] easting, out double[] northing, out double[] h)
         {
             if (etrs89X.Length != etrs89Y.Length || etrs89X.Length != etrs89Z.Length)
             {
-                _logger?.LogWarning("Input arrays have different lengths.");
+                //_logger?.LogWarning("Input arrays have different lengths.");
                 easting = Array.Empty<double>();
                 northing = Array.Empty<double>();
                 h = Array.Empty<double>();
@@ -545,14 +536,14 @@ namespace egbt22lib
             // Geodetic to EGBT22_Local conversion
             (easting, northing) = ConvertArrays(GRS80UTM33_Forward, etrs89Lat, etrs89Lon);
 
-            _logger?.LogInformation("Conversion from ETRS89_Geoc to ETRS89_UTM33 successful.");
+            //_logger?.LogInformation("Conversion from ETRS89_Geoc to ETRS89_UTM33 successful.");
             return true;
         }
         public static bool ETRS89_Geoc_to_DBRef_GK5(double[] etrs89X, double[] etrs89Y, double[] etrs89Z, out double[] gk5Rechts, out double[] gk5Hoch, out double[] h)
         {
             if (etrs89X.Length != etrs89Y.Length || etrs89X.Length != etrs89Z.Length)
             {
-                _logger?.LogWarning("Input arrays have different lengths.");
+                //_logger?.LogWarning("Input arrays have different lengths.");
                 gk5Rechts = Array.Empty<double>();
                 gk5Hoch = Array.Empty<double>();
                 h = Array.Empty<double>();
@@ -573,14 +564,14 @@ namespace egbt22lib
             // Geodetic to GK5 conversion
             (gk5Rechts, gk5Hoch) = ConvertArrays(BesselGK5_Forward, dbrefLat, dbrefLon);
 
-            _logger?.LogInformation("Conversion from ETRS89_Geoc to DBRef_GK5 successful.");
+            //_logger?.LogInformation("Conversion from ETRS89_Geoc to DBRef_GK5 successful.");
             return true;
         }
         public static bool ETRS89_Geoc_to_ETRS89_Geod_3D(double[] etrs89X, double[] etrs89Y, double[] etrs89Z, out double[] etrs89Lat, out double[] etrs89Lon, out double[] etrs89Hell)
         {
             if (etrs89X.Length != etrs89Y.Length || etrs89X.Length != etrs89Z.Length)
             {
-                _logger?.LogWarning("Input arrays have different lengths.");
+                //_logger?.LogWarning("Input arrays have different lengths.");
                 etrs89Lat = Array.Empty<double>();
                 etrs89Lon = Array.Empty<double>();
                 etrs89Hell = Array.Empty<double>();
@@ -589,7 +580,7 @@ namespace egbt22lib
             // Geocentric to Geodetic conversion
             (etrs89Lat, etrs89Lon, etrs89Hell) = ConvertArrays(GRS80Geoc_Reverse, etrs89X, etrs89Y, etrs89Z);
 
-            _logger?.LogInformation("Conversion from ETRS89_Geoc to ETRS89_Geod_3D successful.");
+            //_logger?.LogInformation("Conversion from ETRS89_Geoc to ETRS89_Geod_3D successful.");
             return true;
         }
 
@@ -598,7 +589,7 @@ namespace egbt22lib
         {
             if (etrs89Lat.Length != etrs89Lon.Length || etrs89Lat.Length != etrs89Hell.Length)
             {
-                _logger?.LogWarning("Input arrays have different lengths.");
+                //_logger?.LogWarning("Input arrays have different lengths.");
                 localRechts = Array.Empty<double>();
                 localHoch = Array.Empty<double>();
                 h = Array.Empty<double>();
@@ -613,14 +604,14 @@ namespace egbt22lib
             // Geodetic to EGBT22_Local conversion
             (localRechts, localHoch) = ConvertArrays(EGBT22_Local_Forward, etrs89Lat, etrs89Lon);
 
-            _logger?.LogInformation("Conversion from ETRS89_Geod_3D to EGBT22_Local successful.");
+            //_logger?.LogInformation("Conversion from ETRS89_Geod_3D to EGBT22_Local successful.");
             return true;
         }
         public static bool ETRS89_Geod_3D_to_ETRS89_UTM33(double[] etrs89Lat, double[] etrs89Lon, double[] etrs89Hell, out double[] easting, out double[] northing, out double[] h)
         {
             if (etrs89Lat.Length != etrs89Lon.Length || etrs89Lat.Length != etrs89Hell.Length)
             {
-                _logger?.LogWarning("Input arrays have different lengths.");
+                //_logger?.LogWarning("Input arrays have different lengths.");
                 easting = Array.Empty<double>();
                 northing = Array.Empty<double>();
                 h = Array.Empty<double>();
@@ -635,14 +626,14 @@ namespace egbt22lib
             // Geodetic to EGBT22_Local conversion
             (easting, northing) = ConvertArrays(GRS80UTM33_Forward, etrs89Lat, etrs89Lon);
 
-            _logger?.LogInformation("Conversion from ETRS89_Geod_3D to ETRS89_UTM33 successful.");
+            //_logger?.LogInformation("Conversion from ETRS89_Geod_3D to ETRS89_UTM33 successful.");
             return true;
         }
         public static bool ETRS89_Geod_3D_to_DBRef_GK5(double[] etrs89Lat, double[] etrs89Lon, double[] etrs89Hell, out double[] gk5Rechts, out double[] gk5Hoch, out double[] h)
         {
             if (etrs89Lat.Length != etrs89Lon.Length || etrs89Lat.Length != etrs89Hell.Length)
             {
-                _logger?.LogWarning("Input arrays have different lengths.");
+                //_logger?.LogWarning("Input arrays have different lengths.");
                 gk5Rechts = Array.Empty<double>();
                 gk5Hoch = Array.Empty<double>();
                 h = Array.Empty<double>();
@@ -662,14 +653,14 @@ namespace egbt22lib
             var (dbrefLat, dbrefLon, _) = ConvertArrays(BesselGeoc_Reverse, dbrefX, dbrefY, dbrefZ);
             // Geodetic to GK5 conversion
             (gk5Rechts, gk5Hoch) = ConvertArrays(BesselGK5_Forward, dbrefLat, dbrefLon);
-            _logger?.LogInformation("Conversion from ETRS89_Geod_3D to DBRef_GK5 successful.");
+            //_logger?.LogInformation("Conversion from ETRS89_Geod_3D to DBRef_GK5 successful.");
             return true;
         }
         public static bool ETRS89_Geod_3D_to_ETRS89_Geoc(double[] etrs89Lat, double[] etrs89Lon, double[] etrs89Hell, out double[] etrs89X, out double[] etrs89Y, out double[] etrs89Z)
         {
             if (etrs89Lat.Length != etrs89Lon.Length || etrs89Lat.Length != etrs89Hell.Length)
             {
-                _logger?.LogWarning("Input arrays have different lengths.");
+                //_logger?.LogWarning("Input arrays have different lengths.");
                 etrs89X = Array.Empty<double>();
                 etrs89Y = Array.Empty<double>();
                 etrs89Z = Array.Empty<double>();
@@ -678,7 +669,7 @@ namespace egbt22lib
             // Geodetic to Geocentric conversion
             (etrs89X, etrs89Y, etrs89Z) = ConvertArrays(GRS80Geoc_Forward, etrs89Lat, etrs89Lon, etrs89Hell);
 
-            _logger?.LogInformation("Conversion from ETRS89_Geod_3D to ETRS89_Geoc successful.");
+            //_logger?.LogInformation("Conversion from ETRS89_Geod_3D to ETRS89_Geoc successful.");
             return true;
         }
 
