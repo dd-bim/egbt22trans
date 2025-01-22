@@ -45,6 +45,14 @@ internal class Program
         }
         IO.WriteCSV(Path.Combine(outputPath, "alignment_dbref_gk5_dhhn2016.csv"), ["Id","E","N","Elevation DHHN2016","Scale","Gamma[°]"], ',', ids, trasseR, trasseH, trasseh, k, gamma);
 
+        if (!egbt22lib.Convert.DBRef_GK5_Gamma_k(trasseR, trasseH, out gamma, out k))
+        {
+            Console.WriteLine("Fehler bei der Berechnung von Gamma und k.");
+            return;
+        }
+        IO.WriteCSV(Path.Combine(outputPath, "alignment_dbref_gk5_dhhn2016.csv"), ["Id","E","N","Elevation DHHN2016","Scale","Gamma[°]"], ',', ids, trasseR, trasseH, trasseh, k, gamma);
+
+
 
         Console.WriteLine("Hello, World!");
     }

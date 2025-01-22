@@ -175,7 +175,7 @@ namespace egbt22lib
             // ETRS89 geodetic to geocentric conversion
             var (etrs89X, etrs89Y, etrs89Z) = ConvertArrays(GRS80Geoc_Forward, etrs89Lat, etrs89Lon, hell);
             // ETRS89 geocentric to DBREF geocentric transformation
-            var (dbrefX, dbrefY, dbrefZ) = ConvertArrays(Transformation.Etrs89ToDbref2, etrs89X, etrs89Y, etrs89Z);
+            var (dbrefX, dbrefY, dbrefZ) = ConvertArrays(Transformation.DbrefToEtrs89Inv, etrs89X, etrs89Y, etrs89Z);
             // Geocentric to geodetic conversion
             var (dbrefLat, dbrefLon, _) = ConvertArrays(BesselGeoc_Reverse, dbrefX, dbrefY, dbrefZ);
             // Geodetic to GK5 conversion
@@ -248,7 +248,7 @@ namespace egbt22lib
             // ETRS89 geodetic to geocentric conversion
             var (etrs89X, etrs89Y, etrs89Z) = GRS80Geoc_Forward(etrs89Lat, etrs89Lon, hell);
             // ETRS89 geocentric to DBREF geocentric transformation
-            var (dbrefX, dbrefY, dbrefZ) = Transformation.Etrs89ToDbref2(etrs89X, etrs89Y, etrs89Z);
+            var (dbrefX, dbrefY, dbrefZ) = Transformation.DbrefToEtrs89Inv(etrs89X, etrs89Y, etrs89Z);
             // Geocentric to geodetic conversion
             var (dbrefLat, dbrefLon, _) = BesselGeoc_Reverse(dbrefX, dbrefY, dbrefZ);
             // Geodetic to GK5 conversion
@@ -329,7 +329,7 @@ namespace egbt22lib
             // ETRS89 geodetic to geocentric conversion
             var (etrs89X, etrs89Y, etrs89Z) = ConvertArrays(GRS80Geoc_Forward, etrs89Lat, etrs89Lon, hell);
             // ETRS89 geocentric to DBREF geocentric transformation
-            var (dbrefX, dbrefY, dbrefZ) = ConvertArrays(Transformation.Etrs89ToDbref2, etrs89X, etrs89Y, etrs89Z);
+            var (dbrefX, dbrefY, dbrefZ) = ConvertArrays(Transformation.DbrefToEtrs89Inv, etrs89X, etrs89Y, etrs89Z);
             // Geocentric to geodetic conversion
             var (dbrefLat, dbrefLon, _) = ConvertArrays(BesselGeoc_Reverse, dbrefX, dbrefY, dbrefZ);
             // Geodetic to GK5 conversion
@@ -400,7 +400,7 @@ namespace egbt22lib
             // ETRS89 geodetic to geocentric conversion
             var (etrs89X, etrs89Y, etrs89Z) = GRS80Geoc_Forward(etrs89Lat, etrs89Lon, hell);
             // ETRS89 geocentric to DBREF geocentric transformation
-            var (dbrefX, dbrefY, dbrefZ) = Transformation.Etrs89ToDbref2(etrs89X, etrs89Y, etrs89Z);
+            var (dbrefX, dbrefY, dbrefZ) = Transformation.DbrefToEtrs89Inv(etrs89X, etrs89Y, etrs89Z);
             // Geocentric to geodetic conversion
             var (dbrefLat, dbrefLon, _) = BesselGeoc_Reverse(dbrefX, dbrefY, dbrefZ);
             // Geodetic to GK5 conversion
@@ -470,7 +470,7 @@ namespace egbt22lib
             // ETRS89 geodetic to geocentric conversion, recalculation with adjusted heights
             (etrs89X, etrs89Y, etrs89Z) = ConvertArrays(GRS80Geoc_Forward, etrs89Lat, etrs89Lon, hell);
             // ETRS89 geocentric to DBREF geocentric transformation, recalculation with adjusted heights
-            (dbrefX, dbrefY, dbrefZ) = ConvertArrays(Transformation.Etrs89ToDbref, etrs89X, etrs89Y, etrs89Z);
+            (dbrefX, dbrefY, dbrefZ) = ConvertArrays(Transformation.DbrefToEtrs89Inv, etrs89X, etrs89Y, etrs89Z);
             // Corrected DBREF ellipsoid heights from geocentric to geodetic conversion
             var (_, _, hcorr) = ConvertArrays(BesselGeoc_Reverse, dbrefX, dbrefY, dbrefZ);
             // Geodetic to geocentric conversion, with corrected heights
@@ -510,7 +510,7 @@ namespace egbt22lib
             // ETRS89 geodetic to geocentric conversion, recalculation with adjusted heights
             (etrs89X, etrs89Y, etrs89Z) = ConvertArrays(GRS80Geoc_Forward, etrs89Lat, etrs89Lon, hell);
             // ETRS89 geocentric to DBREF geocentric transformation, recalculation with adjusted heights
-            (dbrefX, dbrefY, dbrefZ) = ConvertArrays(Transformation.Etrs89ToDbref, etrs89X, etrs89Y, etrs89Z);
+            (dbrefX, dbrefY, dbrefZ) = ConvertArrays(Transformation.DbrefToEtrs89Inv, etrs89X, etrs89Y, etrs89Z);
             // Corrected DBREF ellipsoid heights from geocentric to geodetic conversion
             var (_, _, hcorr) = ConvertArrays(BesselGeoc_Reverse, dbrefX, dbrefY, dbrefZ);
             // Geodetic to geocentric conversion, with corrected heights
@@ -551,7 +551,7 @@ namespace egbt22lib
             // ETRS89 geodetic to geocentric conversion, recalculation with adjusted heights
             (etrs89X, etrs89Y, etrs89Z) = ConvertArrays(GRS80Geoc_Forward, etrs89Lat, etrs89Lon, hEll);
             // ETRS89 geocentric to DBREF geocentric transformation, recalculation with adjusted heights
-            (dbrefX, dbrefY, dbrefZ) = ConvertArrays(Transformation.Etrs89ToDbref, etrs89X, etrs89Y, etrs89Z);
+            (dbrefX, dbrefY, dbrefZ) = ConvertArrays(Transformation.DbrefToEtrs89Inv, etrs89X, etrs89Y, etrs89Z);
             // Corrected DBREF ellipsoid heights from geocentric to geodetic conversion
             var (_, _, hcorr) = ConvertArrays(BesselGeoc_Reverse, dbrefX, dbrefY, dbrefZ);
             // Geodetic to geocentric conversion, with corrected heights
@@ -588,7 +588,7 @@ namespace egbt22lib
             // ETRS89 geodetic to geocentric conversion, recalculation with adjusted heights
             (etrs89X, etrs89Y, etrs89Z) = ConvertArrays(GRS80Geoc_Forward, etrs89Lat, etrs89Lon, etrs89Hell);
             // ETRS89 geocentric to DBREF geocentric transformation, recalculation with adjusted heights
-            (dbrefX, dbrefY, dbrefZ) = ConvertArrays(Transformation.Etrs89ToDbref, etrs89X, etrs89Y, etrs89Z);
+            (dbrefX, dbrefY, dbrefZ) = ConvertArrays(Transformation.DbrefToEtrs89Inv, etrs89X, etrs89Y, etrs89Z);
             // Corrected DBREF ellipsoid heights from geocentric to geodetic conversion
             var (_, _, hcorr) = ConvertArrays(BesselGeoc_Reverse, dbrefX, dbrefY, dbrefZ);
             // Geodetic to geocentric conversion, with corrected heights
@@ -620,7 +620,7 @@ namespace egbt22lib
             // ETRS89 geodetic to geocentric conversion, recalculation with adjusted heights
             (etrs89X, etrs89Y, etrs89Z) = GRS80Geoc_Forward(etrs89Lat, etrs89Lon, hell);
             // ETRS89 geocentric to DBREF geocentric transformation, recalculation with adjusted heights
-            (dbrefX, dbrefY, dbrefZ) = Transformation.Etrs89ToDbref(etrs89X, etrs89Y, etrs89Z);
+            (dbrefX, dbrefY, dbrefZ) = Transformation.DbrefToEtrs89Inv(etrs89X, etrs89Y, etrs89Z);
             // Corrected DBREF ellipsoid heights from geocentric to geodetic conversion
             var (_, _, hcorr) = BesselGeoc_Reverse(dbrefX, dbrefY, dbrefZ);
             // Geodetic to geocentric conversion, with corrected heights
@@ -649,7 +649,7 @@ namespace egbt22lib
             // ETRS89 geodetic to geocentric conversion, recalculation with adjusted heights
             (etrs89X, etrs89Y, etrs89Z) = GRS80Geoc_Forward(etrs89Lat, etrs89Lon, hell);
             // ETRS89 geocentric to DBREF geocentric transformation, recalculation with adjusted heights
-            (dbrefX, dbrefY, dbrefZ) = Transformation.Etrs89ToDbref(etrs89X, etrs89Y, etrs89Z);
+            (dbrefX, dbrefY, dbrefZ) = Transformation.DbrefToEtrs89Inv(etrs89X, etrs89Y, etrs89Z);
             // Corrected DBREF ellipsoid heights from geocentric to geodetic conversion
             var (_, _, hcorr) = BesselGeoc_Reverse(dbrefX, dbrefY, dbrefZ);
             // Geodetic to geocentric conversion, with corrected heights
@@ -678,7 +678,7 @@ namespace egbt22lib
             // ETRS89 geodetic to geocentric conversion, recalculation with adjusted heights
             (etrs89X, etrs89Y, etrs89Z) = GRS80Geoc_Forward(etrs89Lat, etrs89Lon, hEll);
             // ETRS89 geocentric to DBREF geocentric transformation, recalculation with adjusted heights
-            (dbrefX, dbrefY, dbrefZ) = Transformation.Etrs89ToDbref(etrs89X, etrs89Y, etrs89Z);
+            (dbrefX, dbrefY, dbrefZ) = Transformation.DbrefToEtrs89Inv(etrs89X, etrs89Y, etrs89Z);
             // Corrected DBREF ellipsoid heights from geocentric to geodetic conversion
             var (_, _, hcorr) = BesselGeoc_Reverse(dbrefX, dbrefY, dbrefZ);
             // Geodetic to geocentric conversion, with corrected heights
@@ -703,7 +703,7 @@ namespace egbt22lib
             // ETRS89 geodetic to geocentric conversion, recalculation with adjusted heights
             (etrs89X, etrs89Y, etrs89Z) = GRS80Geoc_Forward(etrs89Lat, etrs89Lon, etrs89Hell);
             // ETRS89 geocentric to DBREF geocentric transformation, recalculation with adjusted heights
-            (dbrefX, dbrefY, dbrefZ) = Transformation.Etrs89ToDbref(etrs89X, etrs89Y, etrs89Z);
+            (dbrefX, dbrefY, dbrefZ) = Transformation.DbrefToEtrs89Inv(etrs89X, etrs89Y, etrs89Z);
             // Corrected DBREF ellipsoid heights from geocentric to geodetic conversion
             var (_, _, hcorr) = BesselGeoc_Reverse(dbrefX, dbrefY, dbrefZ);
             // Geodetic to geocentric conversion, with corrected heights
@@ -787,7 +787,7 @@ namespace egbt22lib
             for (var i = 0; i < h.Length; i++)
                 h[i] = etrs89Hell[i] - geoid[i];
             // ETRS89 geocentric to DBREF geocentric transformation
-            var (dbrefX, dbrefY, dbrefZ) = ConvertArrays(Transformation.Etrs89ToDbref2, etrs89X, etrs89Y, etrs89Z);
+            var (dbrefX, dbrefY, dbrefZ) = ConvertArrays(Transformation.DbrefToEtrs89Inv, etrs89X, etrs89Y, etrs89Z);
             // Geocentric to geodetic conversion
             var (dbrefLat, dbrefLon, _) = ConvertArrays(BesselGeoc_Reverse, dbrefX, dbrefY, dbrefZ);
             // Geodetic to GK5 conversion
@@ -848,7 +848,7 @@ namespace egbt22lib
             // ETRS89 ellipsoid heights
             var h = etrs89Hell - geoid;
             // ETRS89 geocentric to DBREF geocentric transformation
-            var (dbrefX, dbrefY, dbrefZ) = Transformation.Etrs89ToDbref2(etrs89X, etrs89Y, etrs89Z);
+            var (dbrefX, dbrefY, dbrefZ) = Transformation.DbrefToEtrs89Inv(etrs89X, etrs89Y, etrs89Z);
             // Geocentric to geodetic conversion
             var (dbrefLat, dbrefLon, _) = BesselGeoc_Reverse(dbrefX, dbrefY, dbrefZ);
             // Geodetic to GK5 conversion
@@ -929,7 +929,7 @@ namespace egbt22lib
             // ETRS89 geodetic to geocentric conversion
             var (etrs89X, etrs89Y, etrs89Z) = ConvertArrays(GRS80Geoc_Forward, etrs89Lat, etrs89Lon, etrs89Hell);
             // ETRS89 geocentric to DBREF geocentric transformation
-            var (dbrefX, dbrefY, dbrefZ) = ConvertArrays(Transformation.Etrs89ToDbref2, etrs89X, etrs89Y, etrs89Z);
+            var (dbrefX, dbrefY, dbrefZ) = ConvertArrays(Transformation.DbrefToEtrs89Inv, etrs89X, etrs89Y, etrs89Z);
             // Geocentric to geodetic conversion
             var (dbrefLat, dbrefLon, _) = ConvertArrays(BesselGeoc_Reverse, dbrefX, dbrefY, dbrefZ);
             // Geodetic to GK5 conversion
@@ -937,33 +937,33 @@ namespace egbt22lib
             //_logger?.LogInformation("Conversion from ETRS89_Geod_3D to DBRef_GK5 successful.");
             return true;
         }
-        public static bool ETRS89_Geod_3D_to_DBRef_GK52(double[] etrs89Lat, double[] etrs89Lon, double[] etrs89Hell, out double[] gk5Rechts, out double[] gk5Hoch, out double[] h)
-        {
-            if (etrs89Lat.Length != etrs89Lon.Length || etrs89Lat.Length != etrs89Hell.Length)
-            {
-                _logger?.LogError("Input arrays have different lengths.");
-                gk5Rechts = Array.Empty<double>();
-                gk5Hoch = Array.Empty<double>();
-                h = Array.Empty<double>();
-                return false;
-            }
-            // GCG2016 geoid Heights
-            var geoid = Geoid.GetBKGBinaryGeoidHeights(etrs89Lat, etrs89Lon);
-            // ETRS89 ellipsoid heights
-            h = new double[geoid.Length];
-            for (var i = 0; i < h.Length; i++)
-                h[i] = etrs89Hell[i] - geoid[i];
-            // ETRS89 geodetic to geocentric conversion
-            var (etrs89X, etrs89Y, etrs89Z) = ConvertArrays(GRS80Geoc_Forward, etrs89Lat, etrs89Lon, etrs89Hell);
-            // ETRS89 geocentric to DBREF geocentric transformation
-            var (dbrefX, dbrefY, dbrefZ) = ConvertArrays(Transformation.Etrs89ToDbref, etrs89X, etrs89Y, etrs89Z);
-            // Geocentric to geodetic conversion
-            var (dbrefLat, dbrefLon, _) = ConvertArrays(BesselGeoc_Reverse, dbrefX, dbrefY, dbrefZ);
-            // Geodetic to GK5 conversion
-            (gk5Rechts, gk5Hoch) = ConvertArrays(BesselGK5_Forward, dbrefLat, dbrefLon);
-            //_logger?.LogInformation("Conversion from ETRS89_Geod_3D to DBRef_GK5 successful.");
-            return true;
-        }
+        //public static bool ETRS89_Geod_3D_to_DBRef_GK52(double[] etrs89Lat, double[] etrs89Lon, double[] etrs89Hell, out double[] gk5Rechts, out double[] gk5Hoch, out double[] h)
+        //{
+        //    if (etrs89Lat.Length != etrs89Lon.Length || etrs89Lat.Length != etrs89Hell.Length)
+        //    {
+        //        _logger?.LogError("Input arrays have different lengths.");
+        //        gk5Rechts = Array.Empty<double>();
+        //        gk5Hoch = Array.Empty<double>();
+        //        h = Array.Empty<double>();
+        //        return false;
+        //    }
+        //    // GCG2016 geoid Heights
+        //    var geoid = Geoid.GetBKGBinaryGeoidHeights(etrs89Lat, etrs89Lon);
+        //    // ETRS89 ellipsoid heights
+        //    h = new double[geoid.Length];
+        //    for (var i = 0; i < h.Length; i++)
+        //        h[i] = etrs89Hell[i] - geoid[i];
+        //    // ETRS89 geodetic to geocentric conversion
+        //    var (etrs89X, etrs89Y, etrs89Z) = ConvertArrays(GRS80Geoc_Forward, etrs89Lat, etrs89Lon, etrs89Hell);
+        //    // ETRS89 geocentric to DBREF geocentric transformation
+        //    var (dbrefX, dbrefY, dbrefZ) = ConvertArrays(Transformation.Etrs89ToDbref, etrs89X, etrs89Y, etrs89Z);
+        //    // Geocentric to geodetic conversion
+        //    var (dbrefLat, dbrefLon, _) = ConvertArrays(BesselGeoc_Reverse, dbrefX, dbrefY, dbrefZ);
+        //    // Geodetic to GK5 conversion
+        //    (gk5Rechts, gk5Hoch) = ConvertArrays(BesselGK5_Forward, dbrefLat, dbrefLon);
+        //    //_logger?.LogInformation("Conversion from ETRS89_Geod_3D to DBRef_GK5 successful.");
+        //    return true;
+        //}
         public static bool ETRS89_Geod_3D_to_ETRS89_Geoc(double[] etrs89Lat, double[] etrs89Lon, double[] etrs89Hell, out double[] etrs89X, out double[] etrs89Y, out double[] etrs89Z)
         {
             if (etrs89Lat.Length != etrs89Lon.Length || etrs89Lat.Length != etrs89Hell.Length)
@@ -1014,7 +1014,7 @@ namespace egbt22lib
             // ETRS89 geodetic to geocentric conversion
             var (etrs89X, etrs89Y, etrs89Z) = GRS80Geoc_Forward(etrs89Lat, etrs89Lon, etrs89Hell);
             // ETRS89 geocentric to DBREF geocentric transformation
-            var (dbrefX, dbrefY, dbrefZ) = Transformation.Etrs89ToDbref2(etrs89X, etrs89Y, etrs89Z);
+            var (dbrefX, dbrefY, dbrefZ) = Transformation.DbrefToEtrs89Inv(etrs89X, etrs89Y, etrs89Z);
             // Geocentric to geodetic conversion
             var (dbrefLat, dbrefLon, _) = BesselGeoc_Reverse(dbrefX, dbrefY, dbrefZ);
             // Geodetic to GK5 conversion
@@ -1022,23 +1022,23 @@ namespace egbt22lib
             //_logger?.LogInformation("Conversion from ETRS89_Geod_3D to DBRef_GK5 successful.");
             return (gk5Rechts, gk5Hoch, h);
         }
-        public static (double gk5Rechts, double gk5Hoch, double h) ETRS89_Geod_3D_to_DBRef_GK52(double etrs89Lat, double etrs89Lon, double etrs89Hell)
-        {
-            // GCG2016 geoid Heights
-            var geoid = Geoid.GetBKGBinaryGeoidHeight(etrs89Lat, etrs89Lon);
-            // ETRS89 ellipsoid heights
-            var h = etrs89Hell - geoid;
-            // ETRS89 geodetic to geocentric conversion
-            var (etrs89X, etrs89Y, etrs89Z) = GRS80Geoc_Forward(etrs89Lat, etrs89Lon, etrs89Hell);
-            // ETRS89 geocentric to DBREF geocentric transformation
-            var (dbrefX, dbrefY, dbrefZ) = Transformation.Etrs89ToDbref(etrs89X, etrs89Y, etrs89Z);
-            // Geocentric to geodetic conversion
-            var (dbrefLat, dbrefLon, _) = BesselGeoc_Reverse(dbrefX, dbrefY, dbrefZ);
-            // Geodetic to GK5 conversion
-            var (gk5Rechts, gk5Hoch) = BesselGK5_Forward(dbrefLat, dbrefLon);
-            //_logger?.LogInformation("Conversion from ETRS89_Geod_3D to DBRef_GK5 successful.");
-            return (gk5Rechts, gk5Hoch, h);
-        }
+        //public static (double gk5Rechts, double gk5Hoch, double h) ETRS89_Geod_3D_to_DBRef_GK52(double etrs89Lat, double etrs89Lon, double etrs89Hell)
+        //{
+        //    // GCG2016 geoid Heights
+        //    var geoid = Geoid.GetBKGBinaryGeoidHeight(etrs89Lat, etrs89Lon);
+        //    // ETRS89 ellipsoid heights
+        //    var h = etrs89Hell - geoid;
+        //    // ETRS89 geodetic to geocentric conversion
+        //    var (etrs89X, etrs89Y, etrs89Z) = GRS80Geoc_Forward(etrs89Lat, etrs89Lon, etrs89Hell);
+        //    // ETRS89 geocentric to DBREF geocentric transformation
+        //    var (dbrefX, dbrefY, dbrefZ) = Transformation.DbrefToEtrs89Inv(etrs89X, etrs89Y, etrs89Z);
+        //    // Geocentric to geodetic conversion
+        //    var (dbrefLat, dbrefLon, _) = BesselGeoc_Reverse(dbrefX, dbrefY, dbrefZ);
+        //    // Geodetic to GK5 conversion
+        //    var (gk5Rechts, gk5Hoch) = BesselGK5_Forward(dbrefLat, dbrefLon);
+        //    //_logger?.LogInformation("Conversion from ETRS89_Geod_3D to DBRef_GK5 successful.");
+        //    return (gk5Rechts, gk5Hoch, h);
+        //}
         public static (double etrs89X, double etrs89Y, double etrs89Z) ETRS89_Geod_3D_to_ETRS89_Geoc(double etrs89Lat, double etrs89Lon, double etrs89Hell)
         {
             // Geodetic to Geocentric conversion

@@ -8,14 +8,14 @@ namespace egbt22lib
     {
         public const double Sec2Rad = 4.8481368110953599358991410235795e-6;
 
-        public static readonly double[] Param_ETRS892DBRef =
-        { -584.9567,
-           - 107.7277,
-           - 413.8036,
-           1.1155257601,
-           0.2824170155,
-           - 3.1384505907,
-           - 7.992171 };
+        //public static readonly double[] Param_ETRS892DBRef =
+        //{ -584.9567,
+        //   - 107.7277,
+        //   - 413.8036,
+        //   1.1155257601,
+        //   0.2824170155,
+        //   - 3.1384505907,
+        //   - 7.992171 };
 
         public static readonly double[] Param_DBRef2ETRS89 =
         { 584.9636,
@@ -26,14 +26,16 @@ namespace egbt22lib
            3.1384490633,
            7.992235 };
 
-        private static readonly double[] RotationMatrix_ETRS892DBRef, RotationMatrix_DBRef2ETRS89;
-        private static readonly double Scale_ETRS892DBRef, Scale_DBRef2ETRS89;
+        private static readonly double[] //RotationMatrix_ETRS892DBRef, 
+            RotationMatrix_DBRef2ETRS89;
+        private static readonly double //Scale_ETRS892DBRef,
+                                       Scale_DBRef2ETRS89;
 
         static Transformation()
         {
-            Scale_ETRS892DBRef = 1.0 + (Param_ETRS892DBRef[6] * 1.0e-6);
+            //Scale_ETRS892DBRef = 1.0 + (Param_ETRS892DBRef[6] * 1.0e-6);
             Scale_DBRef2ETRS89 = 1.0 + (Param_DBRef2ETRS89[6] * 1.0e-6);
-            RotationMatrix_ETRS892DBRef = toRotationMatrix(Param_ETRS892DBRef);
+            //RotationMatrix_ETRS892DBRef = toRotationMatrix(Param_ETRS892DBRef);
             RotationMatrix_DBRef2ETRS89 = toRotationMatrix(Param_DBRef2ETRS89);
         }
 
@@ -105,14 +107,14 @@ namespace egbt22lib
                 rotateForward(RotationMatrix_DBRef2ETRS89, (x, y, z))));
         }
 
-        public static (double x, double y, double z) Etrs89ToDbref(double x, double y, double z)
-        {
-            return translateForward(Param_ETRS892DBRef,
-                scaleForward(Scale_ETRS892DBRef,
-                rotateForward(RotationMatrix_ETRS892DBRef, (x, y, z))));
-        }
+        //public static (double x, double y, double z) Etrs89ToDbref(double x, double y, double z)
+        //{
+        //    return translateForward(Param_ETRS892DBRef,
+        //        scaleForward(Scale_ETRS892DBRef,
+        //        rotateForward(RotationMatrix_ETRS892DBRef, (x, y, z))));
+        //}
 
-        public static (double x, double y, double z) Etrs89ToDbref2(double x, double y, double z)
+        public static (double x, double y, double z) DbrefToEtrs89Inv(double x, double y, double z)
         {
             return rotateReverse(RotationMatrix_DBRef2ETRS89,
                 scaleReverse(Scale_DBRef2ETRS89,
