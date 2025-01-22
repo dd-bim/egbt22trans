@@ -36,13 +36,13 @@ internal class Program
             5671336.6479,
             5666612.4742];
 
-        _ = ETRS89_Geod_3D_to_DBRef_GK5(etrs89lat, etrs89lon, etrs89hell, out double[] gk5rechts1, out double[] gk5hoch1, out double[] h1);
-        _ = ETRS89_Geod_3D_to_DBRef_GK52(etrs89lat, etrs89lon, etrs89hell, out double[] gk5rechts2, out double[] gk5hoch2, out double[] h2);
+        _ = ETRS89_Geod_3D_to_DBRef_GK5(etrs89lat, etrs89lon, etrs89hell, out var gk5rechts1, out var gk5hoch1, out var h1);
+        _ = ETRS89_Geod_3D_to_DBRef_GK52(etrs89lat, etrs89lon, etrs89hell, out var gk5rechts2, out var gk5hoch2, out var h2);
  
         //_ = ConvertProj.ETRS89_Geod_3D_to_DBRef_GK5(etrs89lat, etrs89lon, etrs89hell, out double[] gk5rechts2, out double[] gk5hoch2, out double[] h2);
  
-        _ = DBRef_GK5_to_ETRS89_Geod_3D(gk5rechts1, gk5hoch1, h1, out double[] etrs89lat1, out double[] etrs89lon1, out double[] etrs89hell1);
-        _ = DBRef_GK5_to_ETRS89_Geod_3D(gk5rechts2, gk5hoch2, h2, out double[] etrs89lat2, out double[] etrs89lon2, out double[] etrs89hell2);
+        _ = DBRef_GK5_to_ETRS89_Geod_3D(gk5rechts1, gk5hoch1, h1, out var etrs89lat1, out var etrs89lon1, out var etrs89hell1);
+        _ = DBRef_GK5_to_ETRS89_Geod_3D(gk5rechts2, gk5hoch2, h2, out var etrs89lat2, out var etrs89lon2, out var etrs89hell2);
 
         //_ = ConvertProj.DBRef_GK5_to_ETRS89_Geod_3D(gk5rechts2, gk5hoch2, h2, out double[] etrs89lat2, out double[] etrs89lon2, out double[] etrs89hell2);
 
@@ -68,7 +68,7 @@ internal class Program
         // 43.1593,
         // 43.162,];
 
-        for (int i = 0; i < etrs89lat.Length; i++)
+        for (var i = 0; i < etrs89lat.Length; i++)
         {
             Console.WriteLine($"dR1: {gk5rechts1[i]-gk5rechts[i],6:e1}");
             Console.WriteLine($"dH1: {gk5hoch1[i]-gk5hoch[i],6:e1}");

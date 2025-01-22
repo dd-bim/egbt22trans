@@ -15,7 +15,7 @@ public class ConvertTests
         double[] h = { 10, 20, 30 };
 
         // Act
-        bool result = Convert.DBRef_GK5_to_EGBT22_Local(gk5Rechts, gk5Hoch, h, out double[] localRechts, out double[] localHoch);
+        var result = Convert.DBRef_GK5_to_EGBT22_Local(gk5Rechts, gk5Hoch, h, out var localRechts, out var localHoch);
 
         // Assert
         Assert.True(result);
@@ -32,7 +32,7 @@ public class ConvertTests
         double[] h = { 10, 20, 30 };
 
         // Act
-        bool result = Convert.DBRef_GK5_to_EGBT22_Local(gk5Rechts, gk5Hoch, h, out double[] localRechts, out double[] localHoch);
+        var result = Convert.DBRef_GK5_to_EGBT22_Local(gk5Rechts, gk5Hoch, h, out var localRechts, out var localHoch);
 
         // Assert
         Assert.False(result);

@@ -17,6 +17,7 @@ namespace egbt22lib
             // Konfigurieren Sie die Logger für die verschiedenen Klassen
             Convert.InitializeLogger(_loggerFactory.CreateLogger("Convert"));
             Geoid.InitializeLogger(_loggerFactory.CreateLogger("Geoid"));
+            IO.InitializeLogger(_loggerFactory.CreateLogger("IO"));
 
             var logger = _loggerFactory.CreateLogger("LoggingInitializer");
             logger.LogInformation("Logging initialized for egbt22lib.");

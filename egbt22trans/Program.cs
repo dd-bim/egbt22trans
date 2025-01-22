@@ -82,7 +82,7 @@ internal class Program
 
         if ((opts.Source == 1 && opts.Target == 2) || (opts.Source == 2 && opts.Target == 1))
         {
-            var (xin, yin) = IO.ReadFile(opts.InputFile, opts.XAxis - 1, opts.YAxis - 1, opts.Delimiter[0], out string[][] coordinateLines);
+            var (xin, yin) = IO.ReadFile(opts.InputFile, opts.XAxis - 1, opts.YAxis - 1, opts.Delimiter[0], out var coordinateLines);
             // Normal transformation/conversion
             if (!(opts.Source == 1
                 ? EGBT22_Local_to_ETRS89_UTM33(xin, yin, out var xout, out var yout)
@@ -95,7 +95,7 @@ internal class Program
         }
         else
         {
-            var (xin, yin, zin) = IO.ReadFile(opts.InputFile, opts.XAxis - 1, opts.YAxis - 1, opts.ZAxis - 1, opts.Delimiter[0], out string[][] coordinateLines);
+            var (xin, yin, zin) = IO.ReadFile(opts.InputFile, opts.XAxis - 1, opts.YAxis - 1, opts.ZAxis - 1, opts.Delimiter[0], out var coordinateLines);
 
             var (xout, yout, zout) = opts.Egbt22 > 0
             ?   // EGBT22 transformation
@@ -110,9 +110,9 @@ internal class Program
     static (double[] x, double[] y, double[] z) transformEGBT22(int operation, double[] x, double[] y, double[] z)
     {
         // EGBT22
-        double dx = -0.0028;
-        double dy = -0.0023;
-        double dz = 0.0029;
+        var dx = -0.0028;
+        var dy = -0.0023;
+        var dz = 0.0029;
         switch (operation)
         {
             case 1:
@@ -155,7 +155,7 @@ internal class Program
             yout = new double[x.Length];
             zout = new double[x.Length];
         }
-        for (int i = 0; i < x.Length; i++)
+        for (var i = 0; i < x.Length; i++)
         {
             xout[i] = x[i] + dx;
             yout[i] = y[i] + dy;

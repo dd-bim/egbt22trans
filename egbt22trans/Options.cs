@@ -64,9 +64,9 @@ internal class Options
     public string OutputFile { get; set; } = null!;
 
     [Usage(ApplicationAlias = "egbt22trans.exe")]
-    public static IEnumerable<Example> Examples => new List<Example>() {
+    public static IEnumerable<Example> Examples => [
         new("Normal case", new Options { Delimiter = ",", Source = 1, Target = 2, InputFile = "input.txt", OutputFile = "output.txt" }),
         new("Special case", new Options { Delimiter = ",", Egbt22 = 1, ZAxis = 4, InputFile = "input.txt", OutputFile = "output.txt" })
-    };
+    ];
 
 }

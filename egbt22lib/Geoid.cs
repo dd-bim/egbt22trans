@@ -11,10 +11,7 @@ namespace egbt22lib
     {
         private static ILogger? _logger;
 
-        public static void InitializeLogger(ILogger logger)
-        {
-            _logger = logger;
-        }
+        public static void InitializeLogger(ILogger logger) => _logger = logger;
 
 
         public const string BinaryGeoidFile = "GCG2016v2023";
@@ -29,31 +26,31 @@ namespace egbt22lib
             {
                 _geoidData = File.ReadAllBytes(BinaryGeoidFile);
                 using var reader = new BinaryReader(new MemoryStream(_geoidData));
-                int latMinGrad = reader.ReadInt32();
-                int latMinMin = reader.ReadInt32();
-                int latMinSec = reader.ReadInt32();
-                int latMaxGrad = reader.ReadInt32();
-                int latMaxMin = reader.ReadInt32();
-                int latMaxSec = reader.ReadInt32();
-                int lonMinGrad = reader.ReadInt32();
-                int lonMinMin = reader.ReadInt32();
-                int lonMinSec = reader.ReadInt32();
-                int lonMaxGrad = reader.ReadInt32();
-                int lonMaxMin = reader.ReadInt32();
-                int lonMaxSec = reader.ReadInt32();
-                int latWidthGrad = reader.ReadInt32();
-                int latWidthMin = reader.ReadInt32();
-                int latWidthSec = reader.ReadInt32();
-                int lonWidthGrad = reader.ReadInt32();
-                int lonWidthMin = reader.ReadInt32();
-                int lonWidthSec = reader.ReadInt32();
+                var latMinGrad = reader.ReadInt32();
+                var latMinMin = reader.ReadInt32();
+                var latMinSec = reader.ReadInt32();
+                var latMaxGrad = reader.ReadInt32();
+                var latMaxMin = reader.ReadInt32();
+                var latMaxSec = reader.ReadInt32();
+                var lonMinGrad = reader.ReadInt32();
+                var lonMinMin = reader.ReadInt32();
+                var lonMinSec = reader.ReadInt32();
+                var lonMaxGrad = reader.ReadInt32();
+                var lonMaxMin = reader.ReadInt32();
+                var lonMaxSec = reader.ReadInt32();
+                var latWidthGrad = reader.ReadInt32();
+                var latWidthMin = reader.ReadInt32();
+                var latWidthSec = reader.ReadInt32();
+                var lonWidthGrad = reader.ReadInt32();
+                var lonWidthMin = reader.ReadInt32();
+                var lonWidthSec = reader.ReadInt32();
 
-                _latMin = latMinGrad + latMinMin / 60d + latMinSec / 3600000000d;
-                _latMax = latMaxGrad + latMaxMin / 60d + latMaxSec / 3600000000d;
-                _lonMin = lonMinGrad + lonMinMin / 60d + lonMinSec / 3600000000d;
-                _lonMax = lonMaxGrad + lonMaxMin / 60d + lonMaxSec / 3600000000d;
-                _latWidth = latWidthGrad + latWidthMin / 60d + latWidthSec / 3600000000d;
-                _lonWidth = lonWidthGrad + lonWidthMin / 60d + lonWidthSec / 3600000000d;
+                _latMin = latMinGrad + (latMinMin / 60d) + (latMinSec / 3600000000d);
+                _latMax = latMaxGrad + (latMaxMin / 60d) + (latMaxSec / 3600000000d);
+                _lonMin = lonMinGrad + (lonMinMin / 60d) + (lonMinSec / 3600000000d);
+                _lonMax = lonMaxGrad + (lonMaxMin / 60d) + (lonMaxSec / 3600000000d);
+                _latWidth = latWidthGrad + (latWidthMin / 60d) + (latWidthSec / 3600000000d);
+                _lonWidth = lonWidthGrad + (lonWidthMin / 60d) + (lonWidthSec / 3600000000d);
                 //_rows = (int)Math.Round((_latMax - _latMin) / _latWidth) + 1;
                 _cols = (int)Math.Round((_lonMax - _lonMin) / _lonWidth) + 1;
             }
@@ -79,10 +76,10 @@ namespace egbt22lib
                     throw new ArgumentException("Latitude and Longitude arrays must have the same length");
                 }
 
-                double[] elevations = new double[etrs89Lat.Length];
-                double[] grid = new double[16];
+                var elevations = new double[etrs89Lat.Length];
+                var grid = new double[16];
 
-                for (int i = 0; i < elevations.Length; i++)
+                for (var i = 0; i < elevations.Length; i++)
                 {
                     if (etrs89Lon[i] > _lonMax || etrs89Lon[i] < _lonMin
                         || etrs89Lat[i] > _latMax || etrs89Lat[i] < _latMin)
@@ -92,12 +89,12 @@ namespace egbt22lib
                     }
                     else
                     {
-                        double x = (etrs89Lon[i] - _lonMin) / _lonWidth;
-                        double y = (_latMax - etrs89Lat[i]) / _latWidth;
-                        int ix = (int)x;
-                        int iy = (int)y;
+                        var x = (etrs89Lon[i] - _lonMin) / _lonWidth;
+                        var y = (_latMax - etrs89Lat[i]) / _latWidth;
+                        var ix = (int)x;
+                        var iy = (int)y;
 
-                        int basePosition = (18 + ((iy - 1) * _cols) + (ix - 1)) << 2;
+                        var basePosition = (18 + ((iy - 1) * _cols) + (ix - 1)) << 2;
                         grid[0] = BitConverter.ToInt32(_geoidData, basePosition) / 10000.0;
                         grid[1] = BitConverter.ToInt32(_geoidData, basePosition + 4) / 10000.0;
                         grid[2] = BitConverter.ToInt32(_geoidData, basePosition + 8) / 10000.0;
@@ -121,9 +118,9 @@ namespace egbt22lib
                         grid[14] = BitConverter.ToInt32(_geoidData, basePosition + 8) / 10000.0;
                         grid[15] = BitConverter.ToInt32(_geoidData, basePosition + 12) / 10000.0;
 
-                        double fx = x - ix;
-                        double fy = y - iy;
-                        double value = BicubicInterpolate(grid, fx, fy);
+                        var fx = x - ix;
+                        var fy = y - iy;
+                        var value = BicubicInterpolate(grid, fx, fy);
                         elevations[i] = Math.Round(value, 4);
                     }
                 }
@@ -156,13 +153,13 @@ namespace egbt22lib
                 }
                 else
                 {
-                    double x = (etrs89Lon - _lonMin) / _lonWidth;
-                    double y = (_latMax - etrs89Lat) / _latWidth;
-                    int ix = (int)x;
-                    int iy = (int)y;
+                    var x = (etrs89Lon - _lonMin) / _lonWidth;
+                    var y = (_latMax - etrs89Lat) / _latWidth;
+                    var ix = (int)x;
+                    var iy = (int)y;
 
-                    int basePosition = (18 + ((iy - 1) * _cols) + (ix - 1)) << 2;
-                    double[] grid = new double[16];
+                    var basePosition = (18 + ((iy - 1) * _cols) + (ix - 1)) << 2;
+                    var grid = new double[16];
                     grid[0] = BitConverter.ToInt32(_geoidData, basePosition) / 10000.0;
                     grid[1] = BitConverter.ToInt32(_geoidData, basePosition + 4) / 10000.0;
                     grid[2] = BitConverter.ToInt32(_geoidData, basePosition + 8) / 10000.0;
@@ -186,9 +183,9 @@ namespace egbt22lib
                     grid[14] = BitConverter.ToInt32(_geoidData, basePosition + 8) / 10000.0;
                     grid[15] = BitConverter.ToInt32(_geoidData, basePosition + 12) / 10000.0;
 
-                    double fx = x - ix;
-                    double fy = y - iy;
-                    double value = BicubicInterpolate(grid, fx, fy);
+                    var fx = x - ix;
+                    var fy = y - iy;
+                    var value = BicubicInterpolate(grid, fx, fy);
                     return Math.Round(value, 4);
                 }
             }
@@ -199,15 +196,13 @@ namespace egbt22lib
             }
         }
 
-        public static double CubicInterpolate(double p0, double p1, double p2, double p3, double t)
-        {
-            return p1 + 0.5 * t * (p2 - p0 + t * (2.0 * p0 - 5.0 * p1 + 4.0 * p2 - p3 + t * (3.0 * (p1 - p2) + p3 - p0)));
-        }
+        public static double CubicInterpolate(double p0, double p1, double p2, double p3, double t) => 
+            p1 + (0.5 * t * (p2 - p0 + (t * ((2.0 * p0) - (5.0 * p1) + (4.0 * p2) - p3 + (t * ((3.0 * (p1 - p2)) + p3 - p0))))));
 
         public static double BicubicInterpolate(double[] buffer, double fx, double fy)
         {
-            double[] arr = new double[4];
-            for (int i = 0; i < 4; i++)
+            var arr = new double[4];
+            for (var i = 0; i < 4; i++)
             {
                 arr[i] = CubicInterpolate(buffer[i], buffer[i + 4], buffer[i + 8], buffer[i + 12], fy);
             }

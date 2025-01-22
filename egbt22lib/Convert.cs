@@ -52,9 +52,9 @@ namespace egbt22lib
         
         public static (double[] x, double[] y) ConvertArrays(Func<double, double, (double, double)> convert, double[] xin, double[] yin)
         {
-            double[] x = new double[xin.Length];
-            double[] y = new double[yin.Length];
-            for (int i = 0; i < xin.Length; i++)
+            var x = new double[xin.Length];
+            var y = new double[yin.Length];
+            for (var i = 0; i < xin.Length; i++)
             {
                 (x[i], y[i]) = convert(xin[i], yin[i]);
             }
@@ -62,10 +62,10 @@ namespace egbt22lib
         }
         public static (double[] x, double[] y, double[] z) ConvertArrays(Func<double, double, double, (double, double, double)> convert, double[] xin, double[] yin, double[] zin)
         {
-            double[] x = new double[xin.Length];
-            double[] y = new double[yin.Length];
-            double[] z = new double[zin.Length];
-            for (int i = 0; i < xin.Length; i++)
+            var x = new double[xin.Length];
+            var y = new double[yin.Length];
+            var z = new double[zin.Length];
+            for (var i = 0; i < xin.Length; i++)
             {
                 (x[i], y[i], z[i]) = convert(xin[i], yin[i], zin[i]);
             }
@@ -89,7 +89,7 @@ namespace egbt22lib
         }
         public static (double gamma, double k) BesselGK5_Gamma_k(double r, double h)
         {
-            _ = BesselGK.Reverse(GK5_Lon0, r - GK5_FE, h, out double gamma, out double k);
+            _ = BesselGK.Reverse(GK5_Lon0, r - GK5_FE, h, out var gamma, out var k);
             return (gamma, k);
         }
 
@@ -104,7 +104,7 @@ namespace egbt22lib
         }
         public static (double gamma, double k) EGBT22_Local_Gamma_k(double r, double h)
         {
-            _ = GRS80Local.Reverse(EGBT22Local_Lon0, r - EGBT22Local_FE, h + EGBT22Local_Mk0 - EGBT22Local_FN, out double gamma, out double k);
+            _ = GRS80Local.Reverse(EGBT22Local_Lon0, r - EGBT22Local_FE, h + EGBT22Local_Mk0 - EGBT22Local_FN, out var gamma, out var k);
             return (gamma, k);
         }
 
@@ -119,7 +119,7 @@ namespace egbt22lib
         }
         public static (double gamma, double k) GRS80UTM33_Gamma_k(double r, double h)
         {
-            _ = GRS80UTM.Reverse(UTM33_Lon0, r - UTM_FE, h, out double gamma, out double k);
+            _ = GRS80UTM.Reverse(UTM33_Lon0, r - UTM_FE, h, out var gamma, out var k);
             return (gamma, k);
         }
 
@@ -170,7 +170,7 @@ namespace egbt22lib
             var geoid = Geoid.GetBKGBinaryGeoidHeights(etrs89Lat, etrs89Lon);
             // ETRS89 ellipsoid heights
             var hell = new double[geoid.Length];
-            for (int i = 0; i < hell.Length; i++)
+            for (var i = 0; i < hell.Length; i++)
                 hell[i] = geoid[i] + h[i];
             // ETRS89 geodetic to geocentric conversion
             var (etrs89X, etrs89Y, etrs89Z) = ConvertArrays(GRS80Geoc_Forward, etrs89Lat, etrs89Lon, hell);
@@ -199,7 +199,7 @@ namespace egbt22lib
             var geoid = Geoid.GetBKGBinaryGeoidHeights(etrs89Lat, etrs89Lon);
             // ETRS89 ellipsoid heights
             var hEll = new double[geoid.Length];
-            for (int i = 0; i < hEll.Length; i++)
+            for (var i = 0; i < hEll.Length; i++)
                 hEll[i] = geoid[i] + h[i];
             // ETRS89 geodetic to geocentric conversion
             (etrs89X, etrs89Y, etrs89Z) = ConvertArrays(GRS80Geoc_Forward, etrs89Lat, etrs89Lon, hEll);
@@ -223,7 +223,7 @@ namespace egbt22lib
             var geoid = Geoid.GetBKGBinaryGeoidHeights(etrs89Lat, etrs89Lon);
             // ETRS89 ellipsoid heights
             etrs89Hell = new double[geoid.Length];
-            for (int i = 0; i < etrs89Hell.Length; i++)
+            for (var i = 0; i < etrs89Hell.Length; i++)
                 etrs89Hell[i] = geoid[i] + h[i];
 
             //_logger?.LogInformation("Conversion from EGBT22_Local to ETRS89_Geod_3D successful.");
@@ -324,7 +324,7 @@ namespace egbt22lib
             var geoid = Geoid.GetBKGBinaryGeoidHeights(etrs89Lat, etrs89Lon);
             // ETRS89 ellipsoid heights
             var hell = new double[geoid.Length];
-            for (int i = 0; i < hell.Length; i++)
+            for (var i = 0; i < hell.Length; i++)
                 hell[i] = geoid[i] + h[i];
             // ETRS89 geodetic to geocentric conversion
             var (etrs89X, etrs89Y, etrs89Z) = ConvertArrays(GRS80Geoc_Forward, etrs89Lat, etrs89Lon, hell);
@@ -353,7 +353,7 @@ namespace egbt22lib
             var geoid = Geoid.GetBKGBinaryGeoidHeights(etrs89Lat, etrs89Lon);
             // ETRS89 ellipsoid heights
             var hell = new double[geoid.Length];
-            for (int i = 0; i < hell.Length; i++)
+            for (var i = 0; i < hell.Length; i++)
                 hell[i] = geoid[i] + h[i];
             // ETRS89 geodetic to geocentric conversion
             (etrs89X, etrs89Y, etrs89Z) = ConvertArrays(GRS80Geoc_Forward, etrs89Lat, etrs89Lon, hell);
@@ -376,7 +376,7 @@ namespace egbt22lib
             var geoid = Geoid.GetBKGBinaryGeoidHeights(etrs89Lat, etrs89Lon);
             // ETRS89 ellipsoid heights
             etrs89Hell = new double[geoid.Length];
-            for (int i = 0; i < etrs89Hell.Length; i++)
+            for (var i = 0; i < etrs89Hell.Length; i++)
                 etrs89Hell[i] = geoid[i] + h[i];
             //_logger?.LogInformation("Conversion from ETRS89_UTM33 to ETRS89_Geod_3D successful.");
             return true;
@@ -465,7 +465,7 @@ namespace egbt22lib
             var geoid = Geoid.GetBKGBinaryGeoidHeights(etrs89Lat, etrs89Lon);
             // ETRS89 ellipsoid heights
             var hell = new double[geoid.Length];
-            for (int i = 0; i < hell.Length; i++)
+            for (var i = 0; i < hell.Length; i++)
                 hell[i] = geoid[i] + h[i];
             // ETRS89 geodetic to geocentric conversion, recalculation with adjusted heights
             (etrs89X, etrs89Y, etrs89Z) = ConvertArrays(GRS80Geoc_Forward, etrs89Lat, etrs89Lon, hell);
@@ -505,7 +505,7 @@ namespace egbt22lib
             var geoid = Geoid.GetBKGBinaryGeoidHeights(etrs89Lat, etrs89Lon);
             // ETRS89 ellipsoid heights
             var hell = new double[geoid.Length];
-            for (int i = 0; i < hell.Length; i++)
+            for (var i = 0; i < hell.Length; i++)
                 hell[i] = geoid[i] + h[i];
             // ETRS89 geodetic to geocentric conversion, recalculation with adjusted heights
             (etrs89X, etrs89Y, etrs89Z) = ConvertArrays(GRS80Geoc_Forward, etrs89Lat, etrs89Lon, hell);
@@ -546,7 +546,7 @@ namespace egbt22lib
             var geoid = Geoid.GetBKGBinaryGeoidHeights(etrs89Lat, etrs89Lon);
             // ETRS89 ellipsoid heights
             var hEll = new double[geoid.Length];
-            for (int i = 0; i < hEll.Length; i++)
+            for (var i = 0; i < hEll.Length; i++)
                 hEll[i] = geoid[i] + h[i];
             // ETRS89 geodetic to geocentric conversion, recalculation with adjusted heights
             (etrs89X, etrs89Y, etrs89Z) = ConvertArrays(GRS80Geoc_Forward, etrs89Lat, etrs89Lon, hEll);
@@ -583,7 +583,7 @@ namespace egbt22lib
             var geoid = Geoid.GetBKGBinaryGeoidHeights(etrs89Lat, etrs89Lon);
             // ETRS89 ellipsoid heights
             etrs89Hell = new double[geoid.Length];
-            for (int i = 0; i < etrs89Hell.Length; i++)
+            for (var i = 0; i < etrs89Hell.Length; i++)
                 etrs89Hell[i] = geoid[i] + h[i];
             // ETRS89 geodetic to geocentric conversion, recalculation with adjusted heights
             (etrs89X, etrs89Y, etrs89Z) = ConvertArrays(GRS80Geoc_Forward, etrs89Lat, etrs89Lon, etrs89Hell);
@@ -736,7 +736,7 @@ namespace egbt22lib
             var geoid = Geoid.GetBKGBinaryGeoidHeights(etrs89Lat, etrs89Lon);
             // ETRS89 ellipsoid heights
             h = new double[geoid.Length];
-            for (int i = 0; i < h.Length; i++)
+            for (var i = 0; i < h.Length; i++)
                 h[i] = etrs89Hell[i] - geoid[i];
             // Geodetic to EGBT22_Local conversion
             (localRechts, localHoch) = ConvertArrays(EGBT22_Local_Forward, etrs89Lat, etrs89Lon);
@@ -760,7 +760,7 @@ namespace egbt22lib
             var geoid = Geoid.GetBKGBinaryGeoidHeights(etrs89Lat, etrs89Lon);
             // ETRS89 ellipsoid heights
             h = new double[geoid.Length];
-            for (int i = 0; i < h.Length; i++)
+            for (var i = 0; i < h.Length; i++)
                 h[i] = etrs89Hell[i] - geoid[i];
             // Geodetic to EGBT22_Local conversion
             (easting, northing) = ConvertArrays(GRS80UTM33_Forward, etrs89Lat, etrs89Lon);
@@ -784,7 +784,7 @@ namespace egbt22lib
             var geoid = Geoid.GetBKGBinaryGeoidHeights(etrs89Lat, etrs89Lon);
             // ETRS89 ellipsoid heights
             h = new double[geoid.Length];
-            for (int i = 0; i < h.Length; i++)
+            for (var i = 0; i < h.Length; i++)
                 h[i] = etrs89Hell[i] - geoid[i];
             // ETRS89 geocentric to DBREF geocentric transformation
             var (dbrefX, dbrefY, dbrefZ) = ConvertArrays(Transformation.Etrs89ToDbref2, etrs89X, etrs89Y, etrs89Z);
@@ -880,7 +880,7 @@ namespace egbt22lib
             var geoid = Geoid.GetBKGBinaryGeoidHeights(etrs89Lat, etrs89Lon);
             // ETRS89 ellipsoid heights
             h = new double[geoid.Length];
-            for (int i = 0; i < h.Length; i++)
+            for (var i = 0; i < h.Length; i++)
                 h[i] = etrs89Hell[i] - geoid[i];
             // Geodetic to EGBT22_Local conversion
             (localRechts, localHoch) = ConvertArrays(EGBT22_Local_Forward, etrs89Lat, etrs89Lon);
@@ -902,7 +902,7 @@ namespace egbt22lib
             var geoid = Geoid.GetBKGBinaryGeoidHeights(etrs89Lat, etrs89Lon);
             // ETRS89 ellipsoid heights
             h = new double[geoid.Length];
-            for (int i = 0; i < h.Length; i++)
+            for (var i = 0; i < h.Length; i++)
                 h[i] = etrs89Hell[i] - geoid[i];
             // Geodetic to EGBT22_Local conversion
             (easting, northing) = ConvertArrays(GRS80UTM33_Forward, etrs89Lat, etrs89Lon);
@@ -924,7 +924,7 @@ namespace egbt22lib
             var geoid = Geoid.GetBKGBinaryGeoidHeights(etrs89Lat, etrs89Lon);
             // ETRS89 ellipsoid heights
             h = new double[geoid.Length];
-            for (int i = 0; i < h.Length; i++)
+            for (var i = 0; i < h.Length; i++)
                 h[i] = etrs89Hell[i] - geoid[i];
             // ETRS89 geodetic to geocentric conversion
             var (etrs89X, etrs89Y, etrs89Z) = ConvertArrays(GRS80Geoc_Forward, etrs89Lat, etrs89Lon, etrs89Hell);
@@ -951,7 +951,7 @@ namespace egbt22lib
             var geoid = Geoid.GetBKGBinaryGeoidHeights(etrs89Lat, etrs89Lon);
             // ETRS89 ellipsoid heights
             h = new double[geoid.Length];
-            for (int i = 0; i < h.Length; i++)
+            for (var i = 0; i < h.Length; i++)
                 h[i] = etrs89Hell[i] - geoid[i];
             // ETRS89 geodetic to geocentric conversion
             var (etrs89X, etrs89Y, etrs89Z) = ConvertArrays(GRS80Geoc_Forward, etrs89Lat, etrs89Lon, etrs89Hell);
