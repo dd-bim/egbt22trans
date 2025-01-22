@@ -1,30 +1,34 @@
-﻿//using System;
-//using System.Collections.Generic;
-//using System.Text;
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
 
-//namespace egbt22lib
-//{
-//    public static class LoggingInitializer
-//    {
-//        private static ILoggerFactory? _loggerFactory;
+using Microsoft.Extensions.Logging;
 
-//        public static void InitializeLogging(ILoggerFactory loggerFactory)
-//        {
-//            _loggerFactory = loggerFactory;
+namespace egbt22lib
+{
+    public static class LoggingInitializer
+    {
+        private static ILoggerFactory? _loggerFactory;
 
-//            // Konfigurieren Sie die Logger für die verschiedenen Klassen
-//            Convert.InitializeLogger(_loggerFactory.CreateLogger("Convert"));
+        public static void InitializeLogging(ILoggerFactory loggerFactory)
+        {
+            _loggerFactory = loggerFactory;
 
-//            var logger = _loggerFactory.CreateLogger("LoggingInitializer");
-//            logger.LogInformation("Logging initialized for egbt22lib.");
-//        }
+            // Konfigurieren Sie die Logger für die verschiedenen Klassen
+            Convert.InitializeLogger(_loggerFactory.CreateLogger("Convert"));
+            Geoid.InitializeLogger(_loggerFactory.CreateLogger("Geoid"));
 
-//        public static void ShutdownLogging()
-//        {
-//            if (_loggerFactory != null)
-//            {
-//                _loggerFactory.Dispose();
-//                _loggerFactory = null;
-//            }
-//        }
-//    }}
+            var logger = _loggerFactory.CreateLogger("LoggingInitializer");
+            logger.LogInformation("Logging initialized for egbt22lib.");
+        }
+
+        public static void ShutdownLogging()
+        {
+            if (_loggerFactory != null)
+            {
+                _loggerFactory.Dispose();
+                _loggerFactory = null;
+            }
+        }
+    }
+}

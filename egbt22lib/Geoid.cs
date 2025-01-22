@@ -3,10 +3,20 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
+using Microsoft.Extensions.Logging;
+
 namespace egbt22lib
 {
     public static class Geoid
     {
+        private static ILogger? _logger;
+
+        public static void InitializeLogger(ILogger logger)
+        {
+            _logger = logger;
+        }
+
+
         public const string BinaryGeoidFile = "GCG2016v2023";
 
         private static readonly byte[]? _geoidData;
@@ -49,7 +59,7 @@ namespace egbt22lib
             }
             catch (Exception ex)
             {
-                //GeoidLogger.Instance.Logger?.LogError(ex, "Error loading BKG binary geoid file");
+                _logger?.LogError(ex, "Error loading BKG binary geoid file");
                 throw;
             }
         }
@@ -57,7 +67,6 @@ namespace egbt22lib
         /// <summary>
         /// Reads the binary BKG geoid file and returns the geoid heights for the given ETRS89 coordinates
         /// </summary>
-        /// <param name="binaryGeoidFile">Path to the unzipped binary BKG geoid file (Download at https://gdz.bkg.bund.de/index.php/default/digitale-geodaten/geodaetische-basisdaten/quasigeoid-der-bundesrepublik-deutschland-quasigeoid.html)</param>
         /// <param name="etrs89Lat">Latitude in degrees</param>
         /// <param name="etrs89Lon">Longitude in degrees</param>
         /// <returns></returns>
@@ -78,7 +87,7 @@ namespace egbt22lib
                     if (etrs89Lon[i] > _lonMax || etrs89Lon[i] < _lonMin
                         || etrs89Lat[i] > _latMax || etrs89Lat[i] < _latMin)
                     {
-                        //GeoidLogger.Instance.Logger?.LogWarning("Coordinate out of bounds: lat={lat}, lon={lon}", etrs89Lat[i], etrs89Lon[i]);
+                        _logger?.LogWarning("Coordinate out of bounds: lat={lat}, lon={lon}", etrs89Lat[i], etrs89Lon[i]);
                         elevations[i] = Double.NaN;
                     }
                     else
@@ -115,16 +124,77 @@ namespace egbt22lib
                         double fx = x - ix;
                         double fy = y - iy;
                         double value = BicubicInterpolate(grid, fx, fy);
-                        elevations[i] = Math.Round(value, 3);
+                        elevations[i] = Math.Round(value, 4);
                     }
                 }
 
-                //GeoidLogger.Instance.Logger?.LogDebug("Successfully read geoid heights for {count} coordinates", elevations.Length);
+                _logger?.LogDebug("Successfully read geoid heights for {count} coordinates", elevations.Length);
                 return elevations;
             }
             catch (Exception ex)
             {
-                //GeoidLogger.Instance.Logger?.LogError(ex, "Error reading BKG binary geoid file");
+                _logger?.LogError(ex, "Error reading BKG binary geoid file");
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Reads the binary BKG geoid file and returns the geoid heights for the given ETRS89 coordinates
+        /// </summary>
+        /// <param name="etrs89Lat">Latitude in degrees</param>
+        /// <param name="etrs89Lon">Longitude in degrees</param>
+        /// <returns></returns>
+        public static double GetBKGBinaryGeoidHeight(in double etrs89Lat, in double etrs89Lon)
+        {
+            try
+            {
+                if (etrs89Lon > _lonMax || etrs89Lon < _lonMin
+                    || etrs89Lat > _latMax || etrs89Lat < _latMin)
+                {
+                    _logger?.LogWarning("Coordinate out of bounds: lat={lat}, lon={lon}", etrs89Lat, etrs89Lon);
+                    return Double.NaN;
+                }
+                else
+                {
+                    double x = (etrs89Lon - _lonMin) / _lonWidth;
+                    double y = (_latMax - etrs89Lat) / _latWidth;
+                    int ix = (int)x;
+                    int iy = (int)y;
+
+                    int basePosition = (18 + ((iy - 1) * _cols) + (ix - 1)) << 2;
+                    double[] grid = new double[16];
+                    grid[0] = BitConverter.ToInt32(_geoidData, basePosition) / 10000.0;
+                    grid[1] = BitConverter.ToInt32(_geoidData, basePosition + 4) / 10000.0;
+                    grid[2] = BitConverter.ToInt32(_geoidData, basePosition + 8) / 10000.0;
+                    grid[3] = BitConverter.ToInt32(_geoidData, basePosition + 12) / 10000.0;
+
+                    basePosition = (18 + ((iy + 0) * _cols) + (ix - 1)) << 2;
+                    grid[4] = BitConverter.ToInt32(_geoidData, basePosition) / 10000.0;
+                    grid[5] = BitConverter.ToInt32(_geoidData, basePosition + 4) / 10000.0;
+                    grid[6] = BitConverter.ToInt32(_geoidData, basePosition + 8) / 10000.0;
+                    grid[7] = BitConverter.ToInt32(_geoidData, basePosition + 12) / 10000.0;
+
+                    basePosition = (18 + ((iy + 1) * _cols) + (ix - 1)) << 2;
+                    grid[8] = BitConverter.ToInt32(_geoidData, basePosition) / 10000.0;
+                    grid[9] = BitConverter.ToInt32(_geoidData, basePosition + 4) / 10000.0;
+                    grid[10] = BitConverter.ToInt32(_geoidData, basePosition + 8) / 10000.0;
+                    grid[11] = BitConverter.ToInt32(_geoidData, basePosition + 12) / 10000.0;
+
+                    basePosition = (18 + ((iy + 2) * _cols) + (ix - 1)) << 2;
+                    grid[12] = BitConverter.ToInt32(_geoidData, basePosition) / 10000.0;
+                    grid[13] = BitConverter.ToInt32(_geoidData, basePosition + 4) / 10000.0;
+                    grid[14] = BitConverter.ToInt32(_geoidData, basePosition + 8) / 10000.0;
+                    grid[15] = BitConverter.ToInt32(_geoidData, basePosition + 12) / 10000.0;
+
+                    double fx = x - ix;
+                    double fy = y - iy;
+                    double value = BicubicInterpolate(grid, fx, fy);
+                    return Math.Round(value, 4);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error reading BKG binary geoid file");
                 throw;
             }
         }
@@ -145,20 +215,5 @@ namespace egbt22lib
             return CubicInterpolate(arr[0], arr[1], arr[2], arr[3], fx);
         }
     }
-
-    //public class GeoidLogger
-    //{
-    //    private static GeoidLogger? _instance;
-    //    public static GeoidLogger Instance => _instance ??= new GeoidLogger();
-
-    //    public ILogger? Logger { get; private set; }
-
-    //    private GeoidLogger() { }
-
-    //    public void ConfigureLogger(ILogger logger)
-    //    {
-    //        Logger = logger;
-    //    }
-    //}
 
 }

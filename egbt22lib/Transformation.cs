@@ -26,20 +26,18 @@ namespace egbt22lib
            3.1384490633,
            7.992235 };
 
-        private static readonly double[] RotationMatrix_ETRS892DBRef_Exact, RotationMatrix_DBRef2ETRS89_Exact, RotationMatrix_ETRS892DBRef, RotationMatrix_DBRef2ETRS89;
+        private static readonly double[] RotationMatrix_ETRS892DBRef, RotationMatrix_DBRef2ETRS89;
         private static readonly double Scale_ETRS892DBRef, Scale_DBRef2ETRS89;
 
         static Transformation()
         {
             Scale_ETRS892DBRef = 1.0 + (Param_ETRS892DBRef[6] * 1.0e-6);
             Scale_DBRef2ETRS89 = 1.0 + (Param_DBRef2ETRS89[6] * 1.0e-6);
-            RotationMatrix_ETRS892DBRef_Exact = toRotationMatrixExact(Param_ETRS892DBRef);
-            RotationMatrix_DBRef2ETRS89_Exact = toRotationMatrixExact(Param_DBRef2ETRS89);
             RotationMatrix_ETRS892DBRef = toRotationMatrix(Param_ETRS892DBRef);
             RotationMatrix_DBRef2ETRS89 = toRotationMatrix(Param_DBRef2ETRS89);
         }
 
-        private static double[] toRotationMatrixExact(in double[] m)
+        private static double[] toRotationMatrix(in double[] m)
         {
             var f = m[3] * Sec2Rad;
             var t = m[4] * Sec2Rad;
@@ -56,19 +54,6 @@ namespace egbt22lib
                  ct * cp, (cf * sp) + (sf * st * cp), (sf * sp) - (cf * st * cp),
                 -ct * sp, (cf * cp) - (sf * st * sp), (sf * cp) + (cf * st * sp),
                       st,                  -sf * ct ,                   cf * ct
-            };
-        }
-        private static double[] toRotationMatrix(in double[] m)
-        {
-            var f = m[3] * Sec2Rad;
-            var t = m[4] * Sec2Rad;
-            var p = m[5] * Sec2Rad;
-
-            return new double[]
-            {
-                  1,  p, -t,
-                 -p,  1,  f,
-                  t, -f,  1
             };
         }
 
@@ -117,44 +102,22 @@ namespace egbt22lib
         {
             return translateForward(Param_DBRef2ETRS89,
                 scaleForward(Scale_DBRef2ETRS89,
-                rotateForward(RotationMatrix_DBRef2ETRS89_Exact, (x, y, z))));
+                rotateForward(RotationMatrix_DBRef2ETRS89, (x, y, z))));
         }
 
         public static (double x, double y, double z) Etrs89ToDbref(double x, double y, double z)
         {
             return translateForward(Param_ETRS892DBRef,
                 scaleForward(Scale_ETRS892DBRef,
-                rotateForward(RotationMatrix_ETRS892DBRef_Exact, (x, y, z))));
-        }
-
-        public static (double x, double y, double z) Etrs89ToDbref2(double x, double y, double z)
-        {
-            return rotateReverse(RotationMatrix_DBRef2ETRS89_Exact,
-                scaleReverse(Scale_DBRef2ETRS89,
-                translateReverse(Param_DBRef2ETRS89, (x, y, z))));
-        }
-
-        public static (double x, double y, double z) DbrefToEtrs89InExact(double x, double y, double z)
-        {
-            return translateForward(Param_DBRef2ETRS89,
-                scaleForward(Scale_DBRef2ETRS89,
-                rotateForward(RotationMatrix_DBRef2ETRS89, (x, y, z))));
-        }
-
-        public static (double x, double y, double z) Etrs89ToDbrefInExact(double x, double y, double z)
-        {
-            return translateForward(Param_ETRS892DBRef,
-                scaleForward(Scale_ETRS892DBRef,
                 rotateForward(RotationMatrix_ETRS892DBRef, (x, y, z))));
         }
 
-        public static (double x, double y, double z) Etrs89ToDbrefInExact2(double x, double y, double z)
+        public static (double x, double y, double z) Etrs89ToDbref2(double x, double y, double z)
         {
             return rotateReverse(RotationMatrix_DBRef2ETRS89,
                 scaleReverse(Scale_DBRef2ETRS89,
                 translateReverse(Param_DBRef2ETRS89, (x, y, z))));
         }
-
 
     }
 }
