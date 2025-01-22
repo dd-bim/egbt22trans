@@ -16,4 +16,10 @@
     <ProjectReference Include="..\egbt22lib\egbt22lib.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="README.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
