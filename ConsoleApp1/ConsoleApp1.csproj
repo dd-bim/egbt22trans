@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\egbt22lib\egbt22lib.csproj" />
+    <ProjectReference Include="..\egbt22trans\egbt22trans.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,6 +1,8 @@
 ﻿using egbt22lib;
 
 using static egbt22lib.Convert;
+using static egbt22lib.IO;
+using static System.Collections.Specialized.BitVector32;
 
 namespace ConsoleApp1;
 
@@ -8,8 +10,56 @@ internal class Program
 {
     static void Main(string[] args)
     {
-
 #if true
+        var (Station, Rechtswert, Hochwert, Hoehe) = ReadFile(@"E:\source\nbs_dresden_prag\Daten\Trassen\Koordinaten_L_Inkrement_und_Zwangspunkte.CSV", 0, 1, 2, 3, ';');
+        double[] zeroEllH = new double[Station.Length];
+        bool ok = DBRef_GK5_to_EGBT22_Local_Ell(Rechtswert, Hochwert, zeroEllH, out double[] localR, out double[] localH, out double[] localEllH);
+
+        if (!ok)
+        {
+            Console.WriteLine("DBRef_GK5_to_EGBT22_Local_Ell failed");
+            return;
+        }
+        //// Schreibe neue Koordinaten in Konsole
+        //Console.WriteLine("Lokal");
+        //for (int i = 0; i < localR.Length; i++)
+        //{
+        //    Console.WriteLine(FormattableString.Invariant($"{Station[i],12} {localR[i],12:f4} {localH[i],12:f4} {localEllH[i],12:f4}"));
+        //}
+
+        ok = DBRef_GK5_to_ETRS89_UTM33_Ell(Rechtswert, Hochwert, zeroEllH, out double[] easting, out double[] northing, out double[] etrs89EllH);
+
+        if (!ok)
+        {
+            Console.WriteLine("DBRef_GK5_to_ETRS89_UTM33_Ell failed");
+            return;
+        }
+        //// Schreibe neue Koordinaten in Konsole
+        //Console.WriteLine("Diff EllH Local-ETRS89 (soll 0)");
+        //for (int i = 0; i < localR.Length; i++)
+        //{
+        //    Console.WriteLine(FormattableString.Invariant($"{Station[i],12} {localEllH[i] - etrs89EllH[i],12:f4}"));
+        //}
+
+        ok = EGBT22_Local_to_DBRef_GK5_Ell(localR, localH, localEllH, out double[] gk5R, out double[] gk5H, out double[] gk5EllH);
+
+        if (!ok)
+        {
+            Console.WriteLine("EGBT22_Local_to_DBRef_GK5_Ell failed");
+            return;
+        }
+        // Schreibe neue Koordinaten in Konsole
+        Console.WriteLine("Lokal -> DB_Ref");
+        for (int i = 0; i < localR.Length; i++)
+        {
+            Console.WriteLine(FormattableString.Invariant($"{Station[i],12} {Rechtswert[i] - gk5R[i],12:f4} {Hochwert[i] - gk5H[i],12:f4} {gk5EllH[i],12:f4}"));
+        }
+
+
+#endif
+
+
+#if false
         double[] etrs89lat = [
             51.12979158,
             51.15691781,
@@ -36,7 +86,7 @@ internal class Program
             5671336.6479,
             5666612.4742];
 
-        _ = ETRS89_Geod_3D_to_DBRef_GK5(etrs89lat, etrs89lon, etrs89hell, out var gk5rechts1, out var gk5hoch1, out var h1);
+        _ =  ETRS89_Geod_3D_to_DBRef_GK5(etrs89lat, etrs89lon, etrs89hell, out var gk5rechts1, out var gk5hoch1, out var h1);
         //_ = ETRS89_Geod_3D_to_DBRef_GK52(etrs89lat, etrs89lon, etrs89hell, out var gk5rechts2, out var gk5hoch2, out var h2);
  
         //_ = ConvertProj.ETRS89_Geod_3D_to_DBRef_GK5(etrs89lat, etrs89lon, etrs89hell, out double[] gk5rechts2, out double[] gk5hoch2, out double[] h2);
