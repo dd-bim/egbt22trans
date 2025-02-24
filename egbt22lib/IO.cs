@@ -302,7 +302,7 @@ namespace egbt22lib
                     var valStr = FormattableString.Invariant($"{data[j][i]:G}");
                     line[j + 1] = valStr;
                 }
-                lines[1 + i] = String.Join(separator, line);
+                lines[1 + i] = string.Join(separator, line);
             }
             File.WriteAllLines(fileName, lines);
         }

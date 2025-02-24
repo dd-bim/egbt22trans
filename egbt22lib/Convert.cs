@@ -183,6 +183,30 @@ namespace egbt22lib
             //_logger?.LogInformation("Conversion from EGBT22_Local to DBRef_GK5 successful.");
             return true;
         }
+        public static bool EGBT22_Local_to_DBRef_GK5_Ell(double[] localRechts, double[] localHoch, double[] localEllH, out double[] gk5Rechts, out double[] gk5Hoch, out double[] gk5EllH)
+        {
+            if (localRechts.Length != localHoch.Length || localRechts.Length != localEllH.Length)
+            {
+                _logger?.LogError("Input arrays have different lengths.");
+                gk5Rechts = Array.Empty<double>();
+                gk5Hoch = Array.Empty<double>();
+                gk5EllH = Array.Empty<double>();
+                return false;
+            }
+            // Local to Geodetic conversion
+            var (etrs89Lat, etrs89Lon) = ConvertArrays(EGBT22_Local_Reverse, localRechts, localHoch);
+            // ETRS89 geodetic to geocentric conversion
+            var (etrs89X, etrs89Y, etrs89Z) = ConvertArrays(GRS80Geoc_Forward, etrs89Lat, etrs89Lon, localEllH);
+            // ETRS89 geocentric to DBREF geocentric transformation
+            var (dbrefX, dbrefY, dbrefZ) = ConvertArrays(Transformation.DbrefToEtrs89Inv, etrs89X, etrs89Y, etrs89Z);
+            // Geocentric to geodetic conversion
+            var (dbrefLat, dbrefLon, ellH) = ConvertArrays(BesselGeoc_Reverse, dbrefX, dbrefY, dbrefZ);
+            // Geodetic to GK5 conversion
+            (gk5Rechts, gk5Hoch) = ConvertArrays(BesselGK5_Forward, dbrefLat, dbrefLon);
+            gk5EllH = ellH;
+            //_logger?.LogInformation("Conversion from EGBT22_Local to DBRef_GK5 successful.");
+            return true;
+        }
         public static bool EGBT22_Local_to_ETRS89_Geoc(double[] localRechts, double[] localHoch, double[] h, out double[] etrs89X, out double[] etrs89Y, out double[] etrs89Z)
         {
             if (localRechts.Length != localHoch.Length || localRechts.Length != h.Length)
@@ -253,6 +277,20 @@ namespace egbt22lib
             var (dbrefLat, dbrefLon, _) = BesselGeoc_Reverse(dbrefX, dbrefY, dbrefZ);
             // Geodetic to GK5 conversion
             return BesselGK5_Forward(dbrefLat, dbrefLon);
+        }
+        public static (double gk5Rechts, double gk5Hoch, double gk5EllH) EGBT22_Local_to_DBRef_GK5_Ell(double localRechts, double localHoch, double localEllH)
+        {
+            // Local to Geodetic conversion
+            var (etrs89Lat, etrs89Lon) = EGBT22_Local_Reverse(localRechts, localHoch);
+            // ETRS89 geodetic to geocentric conversion
+            var (etrs89X, etrs89Y, etrs89Z) = GRS80Geoc_Forward(etrs89Lat, etrs89Lon, localEllH);
+            // ETRS89 geocentric to DBREF geocentric transformation
+            var (dbrefX, dbrefY, dbrefZ) = Transformation.DbrefToEtrs89Inv(etrs89X, etrs89Y, etrs89Z);
+            // Geocentric to geodetic conversion
+            var (dbrefLat, dbrefLon, ellH) = BesselGeoc_Reverse(dbrefX, dbrefY, dbrefZ);
+            // Geodetic to GK5 conversion
+            var (gk5Rechts, gk5Hoch) = BesselGK5_Forward(dbrefLat, dbrefLon);
+            return (gk5Rechts, gk5Hoch, ellH);
         }
         public static (double etrs89X, double etrs89Y, double etrs89Z) EGBT22_Local_to_ETRS89_Geoc(double localRechts, double localHoch, double h)
         {
@@ -334,6 +372,30 @@ namespace egbt22lib
             var (dbrefLat, dbrefLon, _) = ConvertArrays(BesselGeoc_Reverse, dbrefX, dbrefY, dbrefZ);
             // Geodetic to GK5 conversion
             (gk5Rechts, gk5Hoch) = ConvertArrays(BesselGK5_Forward, dbrefLat, dbrefLon);
+            //_logger?.LogInformation("Conversion from ETRS89_UTM33 to DBRef_GK5 successful.");
+            return true;
+        }
+        public static bool ETRS89_UTM33_to_DBRef_GK5_Ell(double[] easting, double[] northing, double[] etrs89EllH, out double[] gk5Rechts, out double[] gk5Hoch, out double[] gk5EllH)
+        {
+            if (easting.Length != northing.Length)
+            {
+                _logger?.LogError("Input arrays have different lengths.");
+                gk5Rechts = Array.Empty<double>();
+                gk5Hoch = Array.Empty<double>();
+                gk5EllH = Array.Empty<double>();
+                return false;
+            }
+            // UTM33 to Geodetic conversion
+            var (etrs89Lat, etrs89Lon) = ConvertArrays(GRS80UTM33_Reverse, easting, northing);
+            // ETRS89 geodetic to geocentric conversion
+            var (etrs89X, etrs89Y, etrs89Z) = ConvertArrays(GRS80Geoc_Forward, etrs89Lat, etrs89Lon, etrs89EllH);
+            // ETRS89 geocentric to DBREF geocentric transformation
+            var (dbrefX, dbrefY, dbrefZ) = ConvertArrays(Transformation.DbrefToEtrs89Inv, etrs89X, etrs89Y, etrs89Z);
+            // Geocentric to geodetic conversion
+            var (dbrefLat, dbrefLon, ellH) = ConvertArrays(BesselGeoc_Reverse, dbrefX, dbrefY, dbrefZ);
+            // Geodetic to GK5 conversion
+            (gk5Rechts, gk5Hoch) = ConvertArrays(BesselGK5_Forward, dbrefLat, dbrefLon);
+            gk5EllH = ellH;
             //_logger?.LogInformation("Conversion from ETRS89_UTM33 to DBRef_GK5 successful.");
             return true;
         }
@@ -484,6 +546,30 @@ namespace egbt22lib
             //_logger?.LogInformation("Conversion from DBRef_GK5 to EGBT22_Local successful.");
             return true;
         }
+        public static bool DBRef_GK5_to_EGBT22_Local_Ell(double[] gk5Rechts, double[] gk5Hoch, double[] gk5EllH, out double[] localRechts, out double[] localHoch, out double[] localEllH)
+        {
+            if (gk5Rechts.Length != gk5Hoch.Length || gk5Rechts.Length != gk5EllH.Length)
+            {
+                _logger?.LogError("Input arrays have different lengths.");
+                localRechts = Array.Empty<double>();
+                localHoch = Array.Empty<double>();
+                localEllH = Array.Empty<double>();
+                return false;
+            }
+            // GK5 to Geodetic conversion
+            var (gk5Lat, gk5Lon) = ConvertArrays(BesselGK5_Reverse, gk5Rechts, gk5Hoch);
+            // Geodetic to geocentric conversion
+            var (dbrefX, dbrefY, dbrefZ) = ConvertArrays(BesselGeoc_Forward, gk5Lat, gk5Lon, gk5EllH);
+            // Geocentric DBREF to geocentric ETRS89 transformation
+            var (etrs89X, etrs89Y, etrs89Z) = ConvertArrays(Transformation.DbrefToEtrs89, dbrefX, dbrefY, dbrefZ);
+            // Geocentric ETRS89 to geodetic conversion
+            var (etrs89Lat, etrs89Lon, ellH) = ConvertArrays(GRS80Geoc_Reverse, etrs89X, etrs89Y, etrs89Z);
+            // Geodetic to EGBT22_Local conversion
+            (localRechts, localHoch) = ConvertArrays(EGBT22_Local_Forward, etrs89Lat, etrs89Lon);
+            localEllH = ellH;
+            //_logger?.LogInformation("Conversion from DBRef_GK5 to EGBT22_Local successful.");
+            return true;
+        }
         public static bool DBRef_GK5_to_ETRS89_UTM33(double[] gk5Rechts, double[] gk5Hoch, double[] h, out double[] easting, out double[] northing)
         {
             if (gk5Rechts.Length != gk5Hoch.Length || gk5Rechts.Length != h.Length)
@@ -521,6 +607,30 @@ namespace egbt22lib
             (etrs89Lat, etrs89Lon, _) = ConvertArrays(GRS80Geoc_Reverse, etrs89X, etrs89Y, etrs89Z);
             // Geodetic to ETRS89_UTM33 conversion
             (easting, northing) = ConvertArrays(GRS80UTM33_Forward, etrs89Lat, etrs89Lon);
+            //_logger?.LogInformation("Conversion from DBRef_GK5 to ETRS89_UTM33 successful.");
+            return true;
+        }
+        public static bool DBRef_GK5_to_ETRS89_UTM33_Ell(double[] gk5Rechts, double[] gk5Hoch, double[] gk5EllH, out double[] easting, out double[] northing, out double[] etrs89EllH)
+        {
+            if (gk5Rechts.Length != gk5Hoch.Length || gk5Rechts.Length != gk5EllH.Length)
+            {
+                _logger?.LogError("Input arrays have different lengths.");
+                easting = Array.Empty<double>();
+                northing = Array.Empty<double>();
+                etrs89EllH = Array.Empty<double>();
+                return false;
+            }
+            // GK5 to Geodetic conversion
+            var (gk5Lat, gk5Lon) = ConvertArrays(BesselGK5_Reverse, gk5Rechts, gk5Hoch);
+            // Geodetic to geocentric conversion
+            var (dbrefX, dbrefY, dbrefZ) = ConvertArrays(BesselGeoc_Forward, gk5Lat, gk5Lon, gk5EllH);
+            // Geocentric DBREF to geocentric ETRS89 transformation
+            var (etrs89X, etrs89Y, etrs89Z) = ConvertArrays(Transformation.DbrefToEtrs89, dbrefX, dbrefY, dbrefZ);
+            // Geocentric ETRS89 to geodetic conversion
+            var (etrs89Lat, etrs89Lon, ellH) = ConvertArrays(GRS80Geoc_Reverse, etrs89X, etrs89Y, etrs89Z);
+            // Geodetic to ETRS89_UTM33 conversion
+            (easting, northing) = ConvertArrays(GRS80UTM33_Forward, etrs89Lat, etrs89Lon);
+            etrs89EllH = ellH;
             //_logger?.LogInformation("Conversion from DBRef_GK5 to ETRS89_UTM33 successful.");
             return true;
         }
@@ -632,6 +742,20 @@ namespace egbt22lib
             // Geodetic to EGBT22_Local conversion
             return EGBT22_Local_Forward(etrs89Lat, etrs89Lon);
         }
+        public static (double localRechts, double localHoch, double localEllH) DBRef_GK5_to_EGBT22_Local_Ell(double gk5Rechts, double gk5Hoch, double gk5EllH)
+        {
+            // GK5 to Geodetic conversion
+            var (gk5Lat, gk5Lon) = BesselGK5_Reverse(gk5Rechts, gk5Hoch);
+            // Geodetic to geocentric conversion
+            var (dbrefX, dbrefY, dbrefZ) = BesselGeoc_Forward(gk5Lat, gk5Lon, gk5EllH);
+            // Geocentric DBREF to geocentric ETRS89 transformation
+            var (etrs89X, etrs89Y, etrs89Z) = Transformation.DbrefToEtrs89(dbrefX, dbrefY, dbrefZ);
+            // Geocentric ETRS89 to geodetic conversion
+            var (etrs89Lat, etrs89Lon, localEllH) = GRS80Geoc_Reverse(etrs89X, etrs89Y, etrs89Z);
+            // Geodetic to EGBT22_Local conversion
+            var (localRechts, localHoch) = EGBT22_Local_Forward(etrs89Lat, etrs89Lon);
+            return (localRechts, localHoch, localEllH);
+        }
         public static (double easting, double northing) DBRef_GK5_to_ETRS89_UTM33(double gk5Rechts, double gk5Hoch, double h)
         {
             // GK5 to Geodetic conversion
@@ -660,6 +784,20 @@ namespace egbt22lib
             (etrs89Lat, etrs89Lon, _) = GRS80Geoc_Reverse(etrs89X, etrs89Y, etrs89Z);
             // Geodetic to ETRS89_UTM33 conversion
             return GRS80UTM33_Forward(etrs89Lat, etrs89Lon);
+        }
+        public static (double easting, double northing, double etrs89EllH) DBRef_GK5_to_ETRS89_UTM33_Ell(double gk5Rechts, double gk5Hoch, double gk5EllH)
+        {
+            // GK5 to Geodetic conversion
+            var (gk5Lat, gk5Lon) = BesselGK5_Reverse(gk5Rechts, gk5Hoch);
+            // Geodetic to geocentric conversion
+            var (dbrefX, dbrefY, dbrefZ) = BesselGeoc_Forward(gk5Lat, gk5Lon, gk5EllH);
+            // Geocentric DBREF to geocentric ETRS89 transformation
+            var (etrs89X, etrs89Y, etrs89Z) = Transformation.DbrefToEtrs89(dbrefX, dbrefY, dbrefZ);
+            // Geocentric ETRS89 to geodetic conversion
+            var (etrs89Lat, etrs89Lon, etrs89EllH) = GRS80Geoc_Reverse(etrs89X, etrs89Y, etrs89Z);
+            // Geodetic to ETRS89_UTM33 conversion
+            var (easting, northing) = GRS80UTM33_Forward(etrs89Lat, etrs89Lon);
+            return (easting, northing, etrs89EllH);
         }
         public static (double etrs89X, double etrs89Y, double etrs89Z) DBRef_GK5_to_ETRS89_Geoc(double gk5Rechts, double gk5Hoch, double h)
         {
