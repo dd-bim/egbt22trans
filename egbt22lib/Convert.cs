@@ -150,7 +150,20 @@ namespace egbt22lib
             return (dlat, dlon);
         }
 
-        public static bool GetConversion(CRS source, CRS target, ref List<Func<double, double, (double x, double y)>> steps, ref string info, bool isDBREFZero = false)
+        public static bool GetConversion(CRS source, CRS target, out Func<double, double, (double x, double y)> conversion, out string info, bool isDBREFZero = false)
+        {
+            var steps = new List<Func<double, double, (double x, double y)>>();
+            info = "";
+            if(getConversion(source, target, ref steps, ref info, isDBREFZero))
+            {
+                conversion = calcSteps(steps);
+                return true;
+            }
+            conversion = (x, y) => (double.NaN,double.NaN);
+            return false;
+        }
+
+        private static bool getConversion(CRS source, CRS target, ref List<Func<double, double, (double x, double y)>> steps, ref string info, bool isDBREFZero = false)
         {
             if (source == target)
             {
@@ -162,11 +175,11 @@ namespace egbt22lib
                 case CRS.ETRS89_EGBT22_LDP:
                     info += $"Conversion from {source} to {CRS.ETRS89_Geod}.\n";
                     steps.Add(TM_GRS80_EGBT22.Reverse);
-                    return GetConversion(CRS.ETRS89_Geod, target, ref steps, ref info, isDBREFZero);
+                    return getConversion(CRS.ETRS89_Geod, target, ref steps, ref info, isDBREFZero);
                 case CRS.ETRS89_UTM33:
                     info += $"Conversion from {source} to {CRS.ETRS89_Geod}.\n";
                     steps.Add(TM_GRS80_UTM33.Reverse);
-                    return GetConversion(CRS.ETRS89_Geod, target, ref steps, ref info, isDBREFZero);
+                    return getConversion(CRS.ETRS89_Geod, target, ref steps, ref info, isDBREFZero);
                 case CRS.ETRS89_Geod:
                     switch (target)
                     {
@@ -188,14 +201,14 @@ namespace egbt22lib
                             case CRS.DB_Ref_Geod:
                                 return true;
                             case CRS.DB_Ref_GK5:
-                                return GetConversion(CRS.DB_Ref_Geod, target, ref steps, ref info);
+                                return getConversion(CRS.DB_Ref_Geod, target, ref steps, ref info);
                         }
                     }
                     break;
                 case CRS.DB_Ref_GK5:
                     info += $"Conversion from {source} to {CRS.DB_Ref_Geod}.\n";
                     steps.Add(TM_Bessel_GK5.Reverse);
-                    return GetConversion(CRS.ETRS89_Geod, target, ref steps, ref info, isDBREFZero);
+                    return getConversion(CRS.ETRS89_Geod, target, ref steps, ref info, isDBREFZero);
                 case CRS.DB_Ref_Geod:
                     if (target == CRS.DB_Ref_GK5)
                     {
@@ -211,7 +224,7 @@ namespace egbt22lib
                         {
                             case CRS.ETRS89_EGBT22_LDP:
                             case CRS.ETRS89_UTM33:
-                                return GetConversion(CRS.ETRS89_Geod, target, ref steps, ref info);
+                                return getConversion(CRS.ETRS89_Geod, target, ref steps, ref info);
                             case CRS.ETRS89_Geod: return true;
                         }
                     }
@@ -222,7 +235,20 @@ namespace egbt22lib
             return false;
         }
 
-        public static bool GetConversion(CRS source, VRS sourceVRS, CRS target, ref List<Func<double, double, double, (double x, double y, double z)>> steps, ref string info)
+        public static bool GetConversion(CRS source, VRS sourceVRS, CRS target, out Func<double, double, double, (double x, double y, double z)> conversion, out string info)
+        {
+            var steps = new List<Func<double, double, double, (double x, double y, double z)>>();
+            info = "";
+            if (getConversion(source, sourceVRS, target, ref steps, ref info))
+            {
+                conversion = calcSteps(steps);
+                return true;
+            }
+            conversion = (x, y, z) => (double.NaN, double.NaN, double.NaN);
+            return false;
+        }
+
+        public static bool getConversion(CRS source, VRS sourceVRS, CRS target, ref List<Func<double, double, double, (double x, double y, double z)>> steps, ref string info)
         {
             if (source == target)
             {
@@ -233,11 +259,11 @@ namespace egbt22lib
                 case CRS.ETRS89_EGBT22_LDP:
                     info += $"Conversion from {source} to {CRS.ETRS89_Geod}.\n";
                     steps.Add(TM_GRS80_EGBT22.Reverse);
-                    return GetConversion(CRS.ETRS89_Geod, sourceVRS, target, ref steps, ref info);
+                    return getConversion(CRS.ETRS89_Geod, sourceVRS, target, ref steps, ref info);
                 case CRS.ETRS89_UTM33:
                     info += $"Conversion from {source} to {CRS.ETRS89_Geod}.\n";
                     steps.Add(TM_GRS80_UTM33.Reverse);
-                    return GetConversion(CRS.ETRS89_Geod, sourceVRS, target, ref steps, ref info);
+                    return getConversion(CRS.ETRS89_Geod, sourceVRS, target, ref steps, ref info);
                 case CRS.ETRS89_Geod:
                     switch (target)
                     {
@@ -260,7 +286,7 @@ namespace egbt22lib
                             }
                             info += $"Conversion from {source} to {CRS.ETRS89_Geoc}.\n";
                             steps.Add(GC_GRS80.Forward);
-                            return GetConversion(CRS.ETRS89_Geoc, VRS.None, target, ref steps, ref info);
+                            return getConversion(CRS.ETRS89_Geoc, VRS.None, target, ref steps, ref info);
                     }
                     break;
                 case CRS.ETRS89_Geoc:
@@ -271,19 +297,19 @@ namespace egbt22lib
                         case CRS.ETRS89_Geod:
                             info += $"Conversion from {source} to {CRS.ETRS89_Geod}.\n";
                             steps.Add(GC_GRS80.Reverse);
-                            return GetConversion(CRS.ETRS89_Geod, VRS.Ellipsoidal, target, ref steps, ref info);
+                            return getConversion(CRS.ETRS89_Geod, VRS.Ellipsoidal, target, ref steps, ref info);
                         case CRS.DB_Ref_GK5:
                         case CRS.DB_Ref_Geod:
                         case CRS.DB_Ref_Geoc:
                             info += $"Transformation from {source} to {CRS.DB_Ref_Geoc}.\n";
                             steps.Add(Trans_Datum_ETRS89_to_DBRef.Forward);
-                            return GetConversion(CRS.DB_Ref_Geoc, VRS.None, target, ref steps, ref info);
+                            return getConversion(CRS.DB_Ref_Geoc, VRS.None, target, ref steps, ref info);
                     }
                     break;
                 case CRS.DB_Ref_GK5:
                     info += $"Conversion from {source} to {CRS.DB_Ref_Geod}.\n";
                     steps.Add(TM_Bessel_GK5.Reverse);
-                    return GetConversion(CRS.DB_Ref_Geod, sourceVRS, target, ref steps, ref info);
+                    return getConversion(CRS.DB_Ref_Geod, sourceVRS, target, ref steps, ref info);
                 case CRS.DB_Ref_Geod:
                     switch (target)
                     {
@@ -299,7 +325,7 @@ namespace egbt22lib
                             }
                             info += $"Conversion from {source} to {CRS.DB_Ref_Geoc}.\n";
                             steps.Add(GC_Bessel.Forward);
-                            return GetConversion(CRS.DB_Ref_Geoc, VRS.None, target, ref steps, ref info);
+                            return getConversion(CRS.DB_Ref_Geoc, VRS.None, target, ref steps, ref info);
                         case CRS.DB_Ref_GK5:
                             info += $"Conversion from {source} to {CRS.DB_Ref_GK5}.\n";
                             steps.Add(TM_Bessel_GK5.Forward);
@@ -315,12 +341,12 @@ namespace egbt22lib
                         case CRS.ETRS89_Geoc:
                             info += $"Transformation from {source} to {CRS.ETRS89_Geoc}.\n";
                             steps.Add(Trans_Datum_DBRef_to_ETRS89.Forward);
-                            return GetConversion(CRS.ETRS89_Geoc, VRS.None, target, ref steps, ref info);
+                            return getConversion(CRS.ETRS89_Geoc, VRS.None, target, ref steps, ref info);
                         case CRS.DB_Ref_GK5:
                         case CRS.DB_Ref_Geod:
                             info += $"Conversion from {source} to {CRS.DB_Ref_Geod}.\n";
                             steps.Add(GC_Bessel.Reverse);
-                            return GetConversion(CRS.DB_Ref_Geod, sourceVRS, target, ref steps, ref info);
+                            return getConversion(CRS.DB_Ref_Geod, sourceVRS, target, ref steps, ref info);
                     }
                     break;
             }
@@ -331,7 +357,7 @@ namespace egbt22lib
             return false;
         }
 
-        public static Func<double, double, (double x, double y)> CalcSteps(List<Func<double, double, (double x, double y)>> steps)
+        public static Func<double, double, (double x, double y)> calcSteps(List<Func<double, double, (double x, double y)>> steps)
         {
             return (x, y) =>
             {
@@ -343,7 +369,7 @@ namespace egbt22lib
             };
         }
 
-        public static Func<double, double, double, (double x, double y, double z)> CalcSteps(List<Func<double, double, double, (double x, double y, double z)>> steps)
+        private static Func<double, double, double, (double x, double y, double z)> calcSteps(List<Func<double, double, double, (double x, double y, double z)>> steps)
         {
             return (x, y, z) =>
             {
