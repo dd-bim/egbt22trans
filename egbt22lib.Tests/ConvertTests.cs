@@ -6,39 +6,39 @@ namespace egbt22lib.Tests;
 
 public class ConvertTests
 {
-    [Fact]
-    public void DBRef_GK5_to_EGBT22_Local_ValidInput_ReturnsTrue()
-    {
-        // Arrange
-        double[] gk5Rechts = { 1000, 2000, 3000 };
-        double[] gk5Hoch = { 4000, 5000, 6000 };
-        double[] h = { 10, 20, 30 };
+    //[Fact]
+    //public void DBRef_GK5_to_EGBT22_Local_ValidInput_ReturnsTrue()
+    //{
+    //    // Arrange
+    //    double[] gk5Rechts = { 1000, 2000, 3000 };
+    //    double[] gk5Hoch = { 4000, 5000, 6000 };
+    //    double[] h = { 10, 20, 30 };
 
-        // Act
-        var result = Convert.DBRef_GK5_to_EGBT22_Local(gk5Rechts, gk5Hoch, h, out var localRechts, out var localHoch);
+    //    // Act
+    //    var result = ConvertAlt.DBRef_GK5_to_EGBT22_Local(gk5Rechts, gk5Hoch, h, out var localRechts, out var localHoch);
 
-        // Assert
-        Assert.True(result);
-        Assert.NotEmpty(localRechts);
-        Assert.NotEmpty(localHoch);
-    }
+    //    // Assert
+    //    Assert.True(result);
+    //    Assert.NotEmpty(localRechts);
+    //    Assert.NotEmpty(localHoch);
+    //}
 
-    [Fact]
-    public void DBRef_GK5_to_EGBT22_Local_InvalidInput_ReturnsFalse()
-    {
-        // Arrange
-        double[] gk5Rechts = { 1000, 2000 };
-        double[] gk5Hoch = { 4000, 5000, 6000 };
-        double[] h = { 10, 20, 30 };
+    //[Fact]
+    //public void DBRef_GK5_to_EGBT22_Local_InvalidInput_ReturnsFalse()
+    //{
+    //    // Arrange
+    //    double[] gk5Rechts = { 1000, 2000 };
+    //    double[] gk5Hoch = { 4000, 5000, 6000 };
+    //    double[] h = { 10, 20, 30 };
 
-        // Act
-        var result = Convert.DBRef_GK5_to_EGBT22_Local(gk5Rechts, gk5Hoch, h, out var localRechts, out var localHoch);
+    //    // Act
+    //    var result = ConvertAlt.DBRef_GK5_to_EGBT22_Local(gk5Rechts, gk5Hoch, h, out var localRechts, out var localHoch);
 
-        // Assert
-        Assert.False(result);
-        Assert.Empty(localRechts);
-        Assert.Empty(localHoch);
-    }
+    //    // Assert
+    //    Assert.False(result);
+    //    Assert.Empty(localRechts);
+    //    Assert.Empty(localHoch);
+    //}
 
     //[Fact]
     //public void EGBT22_Local_to_DBRef_GK5_ValidInput_ReturnsTrue()

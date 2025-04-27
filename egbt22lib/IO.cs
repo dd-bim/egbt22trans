@@ -4,8 +4,6 @@ using System.Globalization;
 using System.IO;
 using System.Text;
 
-using Microsoft.Extensions.Logging;
-
 namespace egbt22lib
 {
     /// <summary>
@@ -13,10 +11,6 @@ namespace egbt22lib
     /// </summary>
     public static class IO
     {
-        private static ILogger? _logger;
-
-        public static void InitializeLogger(ILogger logger) => _logger = logger;
-
         /// <summary>
         /// Read coordinates from a file
         /// </summary>
@@ -31,16 +25,16 @@ namespace egbt22lib
         /// <exception cref="ArgumentException"></exception>
         public static (string[] id, double[] x, double[] y, double[] z) ReadFile(string file, int idIdx, int xAxis, int yAxis, int zAxis, char delimiter)
         {
-            _logger?.LogDebug("Reading coordinate file: {file}", file);
+            //_logger?.LogDebug("Reading coordinate file: {file}", file);
             if (!File.Exists(file))
             {
-                _logger?.LogError("File not found: {file}", file);
+                //_logger?.LogError("File not found: {file}", file);
                 throw new FileNotFoundException($"File {file} not found.");
             }
             if (idIdx == xAxis || xAxis == yAxis || xAxis == zAxis || yAxis == zAxis
                 || idIdx < 0 || xAxis < 0 || yAxis < 0 || zAxis < 0)
             {
-                _logger?.LogError("Invalid column indices: idIdx={idIdx}, xAxis={xAxis}, yAxis={yAxis}, zAxis={zAxis}", idIdx, xAxis, yAxis, zAxis);
+                //_logger?.LogError("Invalid column indices: idIdx={idIdx}, xAxis={xAxis}, yAxis={yAxis}, zAxis={zAxis}", idIdx, xAxis, yAxis, zAxis);
                 throw new ArgumentException("The indices of the columns must be different and greater as 0.");
             }
             var max = Math.Max(idIdx, Math.Max(xAxis, Math.Max(yAxis, zAxis)));
@@ -59,7 +53,7 @@ namespace egbt22lib
                     || !Double.TryParse(parts[yAxis], NumberStyles.Float, CultureInfo.InvariantCulture, out var y)
                     || !Double.TryParse(parts[zAxis], NumberStyles.Float, CultureInfo.InvariantCulture, out var z))
                 {
-                    _logger?.LogWarning("Skipping invalid line: {line}", line);
+                    //_logger?.LogWarning("Skipping invalid line: {line}", line);
                     continue;
                 }
                 xs.Add(x);
@@ -68,7 +62,7 @@ namespace egbt22lib
                 ids.Add(parts[idIdx]);
             }
 
-            _logger?.LogDebug("Successfully read coordinates from file: {file}", file);
+            //_logger?.LogDebug("Successfully read coordinates from file: {file}", file);
             return (ids.ToArray(), xs.ToArray(), ys.ToArray(), zs.ToArray());
         }
 
@@ -87,16 +81,16 @@ namespace egbt22lib
         /// <exception cref="ArgumentException"></exception>
         public static (double[] x, double[] y, double[] z) ReadFile(string file, int xAxis, int yAxis, int zAxis, char delimiter, out string[][] coordinateLines)
         {
-            _logger?.LogDebug("Reading coordinate file: {file}", file);
+            //_logger?.LogDebug("Reading coordinate file: {file}", file);
             if (!File.Exists(file))
             {
-                _logger?.LogError("File not found: {file}", file);
+                //_logger?.LogError("File not found: {file}", file);
                 throw new FileNotFoundException($"File {file} not found.");
             }
             if (xAxis == yAxis || xAxis == zAxis || yAxis == zAxis
                 || xAxis < 0 || yAxis < 0 || zAxis < 0)
             {
-                _logger?.LogError("Invalid column indices: xAxis={xAxis}, yAxis={yAxis}, zAxis={zAxis}", xAxis, yAxis, zAxis);
+                //_logger?.LogError("Invalid column indices: xAxis={xAxis}, yAxis={yAxis}, zAxis={zAxis}", xAxis, yAxis, zAxis);
                 throw new ArgumentException("The indices of the columns must be different and greater as 0.");
             }
             var max = Math.Max(xAxis, Math.Max(yAxis, zAxis));
@@ -115,7 +109,7 @@ namespace egbt22lib
                     || !Double.TryParse(parts[yAxis], NumberStyles.Float, CultureInfo.InvariantCulture, out var y)
                     || !Double.TryParse(parts[zAxis], NumberStyles.Float, CultureInfo.InvariantCulture, out var z))
                 {
-                    _logger?.LogWarning("Skipping invalid line: {line}", line);
+                    //_logger?.LogWarning("Skipping invalid line: {line}", line);
                     continue;
                 }
                 xs.Add(x);
@@ -125,7 +119,7 @@ namespace egbt22lib
             }
 
             coordinateLines = clines.ToArray();
-            _logger?.LogDebug("Successfully read coordinates from file: {file}", file);
+            //_logger?.LogDebug("Successfully read coordinates from file: {file}", file);
             return (xs.ToArray(), ys.ToArray(), zs.ToArray());
         }
 
@@ -142,15 +136,15 @@ namespace egbt22lib
         /// <exception cref="ArgumentException"></exception>
         public static (double[] x, double[] y) ReadFile(string file, int xAxis, int yAxis, char delimiter, out string[][] coordinateLines)
         {
-            _logger?.LogDebug("Reading coordinate file: {file}", file);
+            //_logger?.LogDebug("Reading coordinate file: {file}", file);
             if (!File.Exists(file))
             {
-                _logger?.LogError("File not found: {file}", file);
+                //_logger?.LogError("File not found: {file}", file);
                 throw new FileNotFoundException($"File {file} not found.");
             }
             if (xAxis == yAxis || xAxis < 0 || yAxis < 0)
             {
-                _logger?.LogError("Invalid column indices: xAxis={xAxis}, yAxis={yAxis}", xAxis, yAxis);
+                //_logger?.LogError("Invalid column indices: xAxis={xAxis}, yAxis={yAxis}", xAxis, yAxis);
                 throw new ArgumentException("The indices of the columns must be different and greater as 0.");
             }
             var max = Math.Max(xAxis, yAxis);
@@ -167,7 +161,7 @@ namespace egbt22lib
                     || !Double.TryParse(parts[xAxis], NumberStyles.Float, CultureInfo.InvariantCulture, out var x)
                     || !Double.TryParse(parts[yAxis], NumberStyles.Float, CultureInfo.InvariantCulture, out var y))
                 {
-                    _logger?.LogWarning("Skipping invalid line: {line}", line);
+                    //_logger?.LogWarning("Skipping invalid line: {line}", line);
                     continue;
                 }
                 xs.Add(x);
@@ -176,7 +170,7 @@ namespace egbt22lib
             }
 
             coordinateLines = clines.ToArray();
-            _logger?.LogDebug("Successfully read coordinates from file: {file}", file);
+            //_logger?.LogDebug("Successfully read coordinates from file: {file}", file);
             return (xs.ToArray(), ys.ToArray());
         }
 
@@ -195,7 +189,7 @@ namespace egbt22lib
         /// <param name="delimiter">Delimiter (column separator)</param>
         public static void WriteFile(string file, double[] x, double[] y, double[] z, string[][] coordinateLines, int xAxis, int yAxis, int zAxis, int precision, char delimiter)
         {
-            _logger?.LogDebug("Writing coordinates to file: {file}", file);
+            //_logger?.LogDebug("Writing coordinates to file: {file}", file);
             var format = $"F{precision}";
             try
             {
@@ -228,12 +222,11 @@ namespace egbt22lib
                     }
                     writer.WriteLine();
                 }
-                _logger?.LogDebug("Successfully wrote coordinates to file: {file}", file);
+                //_logger?.LogDebug("Successfully wrote coordinates to file: {file}", file);
             }
             catch (Exception ex)
             {
-                _logger?.LogError(ex, "Error writing coordinates to file: {file}", file);
-                throw;
+                throw new Exception($"Error writing coordinates to file: {file}", ex);
             }
         }
 
@@ -250,7 +243,7 @@ namespace egbt22lib
         /// <param name="delimiter">Delimiter (column separator)</param>
         public static void WriteFile(string file, double[] x, double[] y, string[][] coordinateLines, int xAxis, int yAxis, int precision, char delimiter)
         {
-            _logger?.LogDebug("Writing coordinates to file: {file}", file);
+            //_logger?.LogDebug("Writing coordinates to file: {file}", file);
             var format = $"F{precision}";
             try
             {
@@ -279,12 +272,11 @@ namespace egbt22lib
                     }
                     writer.WriteLine();
                 }
-                _logger?.LogDebug("Successfully wrote coordinates to file: {file}", file);
+                //_logger?.LogDebug("Successfully wrote coordinates to file: {file}", file);
             }
             catch (Exception ex)
             {
-                _logger?.LogError(ex, "Error writing coordinates to file: {file}", file);
-                throw;
+                throw new Exception($"Error writing coordinates to file: {file}", ex);
             }
         }
 

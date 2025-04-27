@@ -38,14 +38,14 @@ internal class Program
         Array.Copy(idsL.Select(s => $"L_{s}").ToArray(), indexL0, ids, 0, lenL);
         Array.Copy(idsR.Select(s => $"R_{s}").ToArray(), indexR0, ids, lenL, lenR);
 
-        if (!egbt22lib.Convert.DBRef_GK5_Gamma_k(trasseR, trasseH, out var gamma, out var k))
+        if (!egbt22lib.ConvertAlt.DBRef_GK5_Gamma_k(trasseR, trasseH, out var gamma, out var k))
         {
             Console.WriteLine("Fehler bei der Berechnung von Gamma und k.");
             return;
         }
         IO.WriteCSV(Path.Combine(outputPath, "alignment_dbref_gk5_dhhn2016.csv"), ["Id","E","N","Elevation DHHN2016","Scale","Gamma[°]"], ',', ids, trasseR, trasseH, trasseh, k, gamma);
 
-        if (!egbt22lib.Convert.DBRef_GK5_Gamma_k(trasseR, trasseH, out gamma, out k))
+        if (!egbt22lib.ConvertAlt.DBRef_GK5_Gamma_k(trasseR, trasseH, out gamma, out k))
         {
             Console.WriteLine("Fehler bei der Berechnung von Gamma und k.");
             return;

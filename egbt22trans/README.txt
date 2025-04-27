@@ -6,45 +6,63 @@ Only conversions between the coordinate systems defined below are possible. All 
 as they were read in, only the coordinate axes x and y [or z] are converted.
 
 The following coordinate systems (CRS) are supported:
-1: ETRS89 EGBT_LDP Dresden-Prag (normal heights)
-2: ETRS89 UTM33 (EPSG:25833) (normal heights)
-3: DB_REF GK5 (EPSG:5685) (normal heights)
-4: ETRS89 cartesian 3D geocentric (EPSG:4936)
-5: ETRS89 geographic 3D B/L/ellipsoidal height (EPSG:4937)
+1 : ETRS89 EGBT_LDP Dresden-Prag   
+2 : ETRS89 UTM33                   (EPSG:25833)
+3 : ETRS89 geographic 3D B/L       (EPSG:4258)
+4 : ETRS89 cartesian 3D geocentric (EPSG:4936)
+5 : DB_REF GK5                     (EPSG:5685)
+6 : DB_REF geographic 3D B/L       (EPSG:5681)
+7 : DB_REF cartesian 3D geocentric (EPSG:4936)
 
+
+The following conversions/transformations are supported:
+  | 1 | 2 | 3 | 4 | 5 | 6 | 7
+ 1|   | x | x | h | h | h | h 
+ 2| x |   | x | h | h | h | h
+ 3| x | x |   | h | h | h | h
+ 4| x | x | x |   | x | x | x
+ 5| h | h | h | h |   | x | h
+ 6| h | h | h | h | x |   | h
+ 7| x | x | x | x | x | x |  
+ 
+An 'x' means that a simple conversion without heights is possible.
+An 'h' means that the conversion/transformation needs an ellipsoidal (ETRS89 or DB_Ref) or normal (DHHN2016, GCG2016) height. (option '-h e' or '-h n' is mandatory)
+The heights are used for the transformation from ETRS89 to DB_REF and vice versa. 
+Normal heights remain unchanged, except the target coordinates geocentric (the internal transformation uses ellipsoidal heights).
+For the transformation from ETRS89 to DB_REF and vice versa, the differences between DHHN2016 and GCG2016 could be ignored.
+The transformation from ellipsoidal to normal height and vice versa uses the GCG2016 Geoid. 
+At transformations from DB_Ref to ETRS89 with normal heights the ellipsoidal heights for DB_REf are iterative approximated.
+The transformation from ETRS89 to DB_REF and vice versa uses the official transformation parameters (different for both directions).
+At the datum transformation ellipsoidal heights are transformed to the other datum.
+The conversion calculations (geodetic, geocentric, transverse mercator) are done with the library GeographicLib.Net (https://github.com/noelex/GeographicLib.NET).
+ 
 Command line options:
-- --help: Shows help
+	- --help: Shows help
 
 Coordinate conversion (normal case):
-- -s, --source: Source system (by CRS-Index)
-- -t, --target: Target system (by CRS-Index)
+	- -s, --source: Source system (by CRS-Index)
+	- -t, --target: Target system (by CRS-Index)
+	- -h, --height: Height system (e: ETRS89 ellipsoidal, n: normal height)
 
--s 1 -t 2 and -s 2 -t 1 Conversion from EGBT_LDP to UTM33 (or reverse), only 2D (heights not necessary)
--s 1 -t 3 and -s 3 -t 1 Conversion from EGBT_LDP to GK5 (or reverse), 3D with normal heights (no height change but necessary!)  
--s 1 -t 4 and -s 4 -t 1 Conversion from EGBT_LDP to ETRS89 geocentric (or reverse), 3D, EGBT_LDP with normal heights
--s 1 -t 5 and -s 5 -t 1 Conversion from EGBT_LDP to ETRS89 geographic (or reverse), 3D, EGBT_LDP with normal heights, ETRS89 geographic with ellipsoidal heights
--s 2 -t 3 and -s 3 -t 2 Conversion from UTM33 to GK5 (or reverse), 3D with normal heights (no height change but necessary!) 
--s 2 -t 4 and -s 4 -t 2 Conversion from UTM33 to ETRS89 geocentric (or reverse), 3D, UTM33 with normal heights
--s 2 -t 5 and -s 5 -t 2 Conversion from UTM33 to ETRS89 geographic (or reverse), 3D, UTM33 with normal heights, ETRS89 geographic with ellipsoidal heights
--s 3 -t 4 and -s 4 -t 3 Conversion from GK5 to ETRS89 geocentric (or reverse), 3D, GK5 with normal heights
--s 3 -t 5 and -s 5 -t 3 Conversion from GK5 to ETRS89 geographic (or reverse), 3D, GK5 with normal heights, ETRS89 geographic with ellipsoidal heights
--s 4 -t 5 and -s 5 -t 4 Conversion from ETRS89 geocentric to ETRS89 geographic (or reverse), 3D, ETRS89 geographic with ellipsoidal heights
-
-For 3D calculations ist the Z-axis required (all except -s 1 -t 2 and -s 2 -t 1)!
+Exampels:
+	Simple conversion from ETRS89 EGBT_LDP Dresden-Prag to UTM33:
+	-s 1 -t 2 
+	Conversion and transformation from EGBT_LDP Dresden-Prag to DB_REF GK5:
+	-s 1 -t 5 -h n
 
 Optional:
-- -d, --delimiter: Delimiter of the coordinate columns (s=space, t=tabulator, ,=comma, ...), default: space
-- -x, --xaxis: Column-index of the x-axis (1. defined coordinate axis), default: 2
-- -y, --yaxis: Column-index of the y-axis (2. defined coordinate axis), default: 3
-- -z, --zaxis: Column-index of the z-axis (cartesian 3D Z, ellipsoidal or normal height), default: 4 (ignored if not necessary)
-- -p, --precision: Number of digits after the decimal point, default: 4
-- -l, --latlon: Number of digits after the decimal point at latitude or longitude values in degrees, default: 10
+	- -d, --delimiter: Delimiter of the coordinate columns (s=space, t=tabulator, ,=comma, ...), default: space
+	- -x, --xaxis: Column-index of the x-axis (1. defined coordinate axis), default: 2
+	- -y, --yaxis: Column-index of the y-axis (2. defined coordinate axis), default: 3
+	- -z, --zaxis: Column-index of the z-axis (cartesian 3D Z, ellipsoidal or normal height), default: 4 (ignored if not necessary)
+	- -p, --precision: Number of digits after the decimal point in the output, default: 4
+	- -l, --latlon: Number of digits after the decimal point at latitude or longitude values in degrees, default: 10
 
 EGBT22 datum transformation (special case):
-Coordinates in systems 4 and 5 (ETRS89 Cartesian 3D geocentric / Geographic 3D ) can be transformed from or to the EGBT22 datum.
+Coordinates in systems 3 and 4 (Geographic 3D with ellipsoidal heights / ETRS89 Cartesian 3D geocentric ) can be transformed from or to the EGBT22 datum.
 This is usually only necessary for precise GNSS observations.
 Columns 2, 3 and 4 are used as standard for the x-, y- and z-axis eg. B-, L- and ell.h-axis.
-The source and target system must be 4 or 9 and must not be specified with the -s and -t options. 
+The source and target system must not be specified with the -s and -t options. 
 
 The -e option is available for this:
 - -e, --egbt22: 
@@ -59,6 +77,7 @@ The -e option is available for this:
 
 The input and output files are specified after the options, 
 first the path to the input file then the path to the output file.
+If the output file ommited, the output is written to the console.
 
 Examples:
 egbt22trans.exe -s 1 -t 3 input.txt output.txt

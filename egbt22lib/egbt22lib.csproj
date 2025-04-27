@@ -8,7 +8,6 @@
 
   <ItemGroup>
     <PackageReference Include="GeographicLib.NET" Version="2.3.2" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.2" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,4 +1,8 @@
 ﻿using egbt22lib;
+using egbt22lib.Conversions;
+
+using static egbt22lib.Conversions.Defined;
+using static egbt22lib.Transformations.Defined;
 
 using static egbt22lib.Convert;
 using static egbt22lib.IO;
@@ -11,6 +15,138 @@ internal class Program
     static void Main(string[] args)
     {
 #if true
+        double[][] dbrefgk5normal =
+        [
+            [5421897.2654 , 5644771.2149 , 203.3812],
+            [5416390.6455 , 5633711.0274 , 507.7331],
+            [5415656.3876 , 5632486.3572 , 565.4736],
+            [5439228.99090, 5643205.09820, 135.2334],
+            [5420933.62460, 5649263.87400, 120.4556],
+            [5426249.0224 , 5649795.6315 , 163.7305],
+            [5424092.13100, 5647393.08580, 128.0842],
+            [5431140.4471 , 5645156.4992 , 250.8269],
+            [5443362.91830, 5640942.57420, 278.3743],
+            [5444757.69170, 5638504.90390, 290.9577],
+            [5416508.0905 , 5628483.2167 , 473.2350],
+            [5415796.4543 , 5625442.0687 , 694.5982],
+            [5421413.86900, 5650328.63870, 114.4409],
+            [5422566.26850, 5647830.44290, 119.0223],
+            [5445383.98330, 5636295.54910, 130.7665] ,
+        ];
+
+        double[][] etrs89utm33normal = [
+            [421792.3661, 5642958.9791, 203.385],
+            [416287.8657, 5631903.2542, 507.727],
+            [415553.8868, 5630679.0821, 565.464],
+            [439117.1712, 5641393.3449, 135.239],
+            [420829.1498, 5647449.8491, 120.452],
+            [426142.4342, 5647981.3544, 163.736],
+            [423986.3778, 5645579.7869, 128.091],
+            [431031.8688, 5643344.0359, 250.831],
+            [443249.4294, 5639131.6914, 278.386],
+            [444643.6305, 5636694.9815, 290.957],
+            [416405.2187, 5626677.5322, 473.258],
+            [415693.8473, 5623637.6053, 694.620],
+            [421309.2120, 5648514.1839, 114.438],
+            [422461.1306, 5646016.9766, 119.024],
+            [445269.6560, 5634486.5035, 130.772],
+            ];
+
+        double[][] etrs89utm33ellip = [
+            [421792.3661, 5642958.9791, 246.6889],
+            [416287.8657, 5631903.2542, 551.3906],
+            [415553.8868, 5630679.0821, 609.1752],
+            [439117.1712, 5641393.3449, 178.4506],
+            [420829.1498, 5647449.8491, 163.6957],
+            [426142.4342, 5647981.3544, 206.9308],
+            [423986.3778, 5645579.7869, 171.3165],
+            [431031.8688, 5643344.0359, 294.0435],
+            [443249.4294, 5639131.6914, 321.6158],
+            [444643.6305, 5636694.9815, 334.2047],
+            [416405.2187, 5626677.5322, 517.0616],
+            [415693.8473, 5623637.6053, 738.5180],
+            [421309.2120, 5648514.1839, 157.6664],
+            [422461.1306, 5646016.9766, 162.2630],
+            [445269.6560, 5634486.5035, 174.0392]
+        ];
+
+        double[][] etrs89geoc = [
+            [3910245.2605,  966749.0848, 4929038.8646],
+            [3920103.7151,  963686.2550, 4922244.1661],
+            [3921240.4392,  963229.9399, 4921507.9977],
+            [3907007.5453,  983823.9027, 4928145.2490],
+            [3907066.2933,  964900.8670, 4931794.9268],
+            [3905356.8389,  969944.5708, 4932212.7157],
+            [3907680.6004,  968334.8878, 4930652.6051],
+            [3907658.0119,  975623.6656, 4929401.0284],
+            [3907744.7147,  988299.6065, 4926859.4030],
+            [3909226.0239,  990140.3313, 4925341.0235],
+            [3923967.2717,  964843.4880, 4918915.7108],
+            [3926557.4720,  964797.8119, 4917157.0016],
+            [3906142.8821,  965150.6492, 4932465.1331],
+            [3907730.6533,  966768.9154, 4930906.7756],
+            [3910624.7346,  991164.8896, 4923826.7347]
+            ];
+
+        var steps = new List<Func<double, double, double, (double x, double y, double z)>>();
+        var info = "";
+
+        Console.WriteLine("DBRef_GK5 Normal -> ETRS89_UTM33 Normal");
+        if (GetConversion(CRS.DB_Ref_GK5, VRS.Normal, CRS.ETRS89_UTM33, ref steps, ref info))
+        {
+            Console.WriteLine(info);
+            Console.WriteLine();
+            var calc = CalcSteps(steps);
+            for (int i = 0; i < dbrefgk5normal.Length; i++)
+            {
+                var (e, n, h) = calc(dbrefgk5normal[i][0], dbrefgk5normal[i][1], dbrefgk5normal[i][2]);
+                Console.WriteLine(FormattableString.Invariant($"{i,2} {(etrs89utm33normal[i][0] - e) * 1000,8:F2} {(etrs89utm33normal[i][1] - n) * 1000,8:F2} {(etrs89utm33normal[i][2] - h) * 1000,8:F2}"));
+            }
+
+        }
+        else
+        {
+            Console.WriteLine(info);
+        }
+        Console.WriteLine();
+
+        steps.Clear();
+        info = "";
+        Console.WriteLine("DBRef_GK5 Normal -> ETRS89_Geoc");
+        if (GetConversion(CRS.DB_Ref_GK5, VRS.Normal, CRS.ETRS89_Geoc, ref steps, ref info))
+        {
+            Console.WriteLine(info);
+            Console.WriteLine();
+            var calc = CalcSteps(steps);
+            for (int i = 0; i < dbrefgk5normal.Length; i++)
+            {
+                var (x, y, z) = calc(dbrefgk5normal[i][0], dbrefgk5normal[i][1], dbrefgk5normal[i][2]);
+                Console.WriteLine(FormattableString.Invariant($"{i,2} {(etrs89geoc[i][0] - x) * 1000,8:F2} {(etrs89geoc[i][1] - y) * 1000,8:F2} {(etrs89geoc[i][2] - z) * 1000,8:F2}"));
+            }
+        }
+        else
+        {
+            Console.WriteLine(info);
+        }
+        Console.WriteLine();
+
+
+
+
+
+
+
+
+
+
+
+#endif
+
+
+
+
+
+#if false
         var (Station, Rechtswert, Hochwert, Hoehe) = ReadFile(@"E:\source\nbs_dresden_prag\Daten\Trassen\Koordinaten_L_Inkrement_und_Zwangspunkte.CSV", 0, 1, 2, 3, ';');
         double[] zeroEllH = new double[Station.Length];
         bool ok = DBRef_GK5_to_EGBT22_Local_Ell(Rechtswert, Hochwert, zeroEllH, out double[] localR, out double[] localH, out double[] localEllH);

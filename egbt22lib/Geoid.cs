@@ -3,17 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-using Microsoft.Extensions.Logging;
-
 namespace egbt22lib
 {
     public static class Geoid
     {
-        private static ILogger? _logger;
-
-        public static void InitializeLogger(ILogger logger) => _logger = logger;
-
-
         public const string BinaryGeoidFile = "GCG2016v2023";
 
         private static readonly byte[]? _geoidData;
@@ -26,24 +19,24 @@ namespace egbt22lib
             {
                 _geoidData = File.ReadAllBytes(BinaryGeoidFile);
                 using var reader = new BinaryReader(new MemoryStream(_geoidData));
-                var latMinGrad = reader.ReadInt32();
-                var latMinMin = reader.ReadInt32();
-                var latMinSec = reader.ReadInt32();
-                var latMaxGrad = reader.ReadInt32();
-                var latMaxMin = reader.ReadInt32();
-                var latMaxSec = reader.ReadInt32();
-                var lonMinGrad = reader.ReadInt32();
-                var lonMinMin = reader.ReadInt32();
-                var lonMinSec = reader.ReadInt32();
-                var lonMaxGrad = reader.ReadInt32();
-                var lonMaxMin = reader.ReadInt32();
-                var lonMaxSec = reader.ReadInt32();
-                var latWidthGrad = reader.ReadInt32();
-                var latWidthMin = reader.ReadInt32();
-                var latWidthSec = reader.ReadInt32();
-                var lonWidthGrad = reader.ReadInt32();
-                var lonWidthMin = reader.ReadInt32();
-                var lonWidthSec = reader.ReadInt32();
+                int latMinGrad = reader.ReadInt32();
+                int latMinMin = reader.ReadInt32();
+                int latMinSec = reader.ReadInt32();
+                int latMaxGrad = reader.ReadInt32();
+                int latMaxMin = reader.ReadInt32();
+                int latMaxSec = reader.ReadInt32();
+                int lonMinGrad = reader.ReadInt32();
+                int lonMinMin = reader.ReadInt32();
+                int lonMinSec = reader.ReadInt32();
+                int lonMaxGrad = reader.ReadInt32();
+                int lonMaxMin = reader.ReadInt32();
+                int lonMaxSec = reader.ReadInt32();
+                int latWidthGrad = reader.ReadInt32();
+                int latWidthMin = reader.ReadInt32();
+                int latWidthSec = reader.ReadInt32();
+                int lonWidthGrad = reader.ReadInt32();
+                int lonWidthMin = reader.ReadInt32();
+                int lonWidthSec = reader.ReadInt32();
 
                 _latMin = latMinGrad + (latMinMin / 60d) + (latMinSec / 3600000000d);
                 _latMax = latMaxGrad + (latMaxMin / 60d) + (latMaxSec / 3600000000d);
@@ -56,8 +49,7 @@ namespace egbt22lib
             }
             catch (Exception ex)
             {
-                _logger?.LogError(ex, "Error loading BKG binary geoid file");
-                throw;
+                throw new Exception("Error loading BKG binary geoid file", ex);
             }
         }
 
@@ -76,25 +68,25 @@ namespace egbt22lib
                     throw new ArgumentException("Latitude and Longitude arrays must have the same length");
                 }
 
-                var elevations = new double[etrs89Lat.Length];
-                var grid = new double[16];
+                double[] elevations = new double[etrs89Lat.Length];
+                double[] grid = new double[16];
 
-                for (var i = 0; i < elevations.Length; i++)
+                for (int i = 0; i < elevations.Length; i++)
                 {
                     if (etrs89Lon[i] > _lonMax || etrs89Lon[i] < _lonMin
                         || etrs89Lat[i] > _latMax || etrs89Lat[i] < _latMin)
                     {
-                        _logger?.LogWarning("Coordinate out of bounds: lat={lat}, lon={lon}", etrs89Lat[i], etrs89Lon[i]);
-                        elevations[i] = Double.NaN;
+                        //_logger?.LogWarning("Coordinate out of bounds: lat={lat}, lon={lon}", etrs89Lat[i], etrs89Lon[i]);
+                        elevations[i] = double.NaN;
                     }
                     else
                     {
-                        var x = (etrs89Lon[i] - _lonMin) / _lonWidth;
-                        var y = (_latMax - etrs89Lat[i]) / _latWidth;
-                        var ix = (int)x;
-                        var iy = (int)y;
+                        double x = (etrs89Lon[i] - _lonMin) / _lonWidth;
+                        double y = (_latMax - etrs89Lat[i]) / _latWidth;
+                        int ix = (int)x;
+                        int iy = (int)y;
 
-                        var basePosition = (18 + ((iy - 1) * _cols) + (ix - 1)) << 2;
+                        int basePosition = (18 + ((iy - 1) * _cols) + (ix - 1)) << 2;
                         grid[0] = BitConverter.ToInt32(_geoidData, basePosition) / 10000.0;
                         grid[1] = BitConverter.ToInt32(_geoidData, basePosition + 4) / 10000.0;
                         grid[2] = BitConverter.ToInt32(_geoidData, basePosition + 8) / 10000.0;
@@ -118,48 +110,46 @@ namespace egbt22lib
                         grid[14] = BitConverter.ToInt32(_geoidData, basePosition + 8) / 10000.0;
                         grid[15] = BitConverter.ToInt32(_geoidData, basePosition + 12) / 10000.0;
 
-                        var fx = x - ix;
-                        var fy = y - iy;
-                        var value = BicubicInterpolate(grid, fx, fy);
+                        double fx = x - ix;
+                        double fy = y - iy;
+                        double value = BicubicInterpolate(grid, fx, fy);
                         elevations[i] = Math.Round(value, 4);
                     }
                 }
 
-                _logger?.LogDebug("Successfully read geoid heights for {count} coordinates", elevations.Length);
+                //_logger?.LogDebug("Successfully read geoid heights for {count} coordinates", elevations.Length);
                 return elevations;
             }
             catch (Exception ex)
             {
-                _logger?.LogError(ex, "Error reading BKG binary geoid file");
-                throw;
+                throw new Exception("Error reading BKG binary geoid file", ex);
             }
         }
 
         /// <summary>
         /// Reads the binary BKG geoid file and returns the geoid heights for the given ETRS89 coordinates
         /// </summary>
-        /// <param name="etrs89Lat">Latitude in degrees</param>
-        /// <param name="etrs89Lon">Longitude in degrees</param>
+        /// <param name="etrs89geod">ETRS89 geodetic (Latitude in degrees, Longitude in degrees)</param>
         /// <returns></returns>
-        public static double GetBKGBinaryGeoidHeight(in double etrs89Lat, in double etrs89Lon)
+        public static double GetBKGBinaryGeoidHeight(in double lat, in double lon)
         {
             try
             {
-                if (etrs89Lon > _lonMax || etrs89Lon < _lonMin
-                    || etrs89Lat > _latMax || etrs89Lat < _latMin)
+                if (lon > _lonMax || lon < _lonMin
+                    || lat > _latMax || lat < _latMin)
                 {
-                    _logger?.LogWarning("Coordinate out of bounds: lat={lat}, lon={lon}", etrs89Lat, etrs89Lon);
-                    return Double.NaN;
+                    //_logger?.LogWarning("Coordinate out of bounds: lat={lat}, lon={lon}", lat, lon);
+                    return double.NaN;
                 }
                 else
                 {
-                    var x = (etrs89Lon - _lonMin) / _lonWidth;
-                    var y = (_latMax - etrs89Lat) / _latWidth;
-                    var ix = (int)x;
-                    var iy = (int)y;
+                    double x = (lon - _lonMin) / _lonWidth;
+                    double y = (_latMax - lat) / _latWidth;
+                    int ix = (int)x;
+                    int iy = (int)y;
 
-                    var basePosition = (18 + ((iy - 1) * _cols) + (ix - 1)) << 2;
-                    var grid = new double[16];
+                    int basePosition = (18 + ((iy - 1) * _cols) + (ix - 1)) << 2;
+                    double[] grid = new double[16];
                     grid[0] = BitConverter.ToInt32(_geoidData, basePosition) / 10000.0;
                     grid[1] = BitConverter.ToInt32(_geoidData, basePosition + 4) / 10000.0;
                     grid[2] = BitConverter.ToInt32(_geoidData, basePosition + 8) / 10000.0;
@@ -183,16 +173,15 @@ namespace egbt22lib
                     grid[14] = BitConverter.ToInt32(_geoidData, basePosition + 8) / 10000.0;
                     grid[15] = BitConverter.ToInt32(_geoidData, basePosition + 12) / 10000.0;
 
-                    var fx = x - ix;
-                    var fy = y - iy;
-                    var value = BicubicInterpolate(grid, fx, fy);
+                    double fx = x - ix;
+                    double fy = y - iy;
+                    double value = BicubicInterpolate(grid, fx, fy);
                     return Math.Round(value, 4);
                 }
             }
             catch (Exception ex)
             {
-                _logger?.LogError(ex, "Error reading BKG binary geoid file");
-                throw;
+                throw new Exception("Error reading BKG binary geoid file", ex);
             }
         }
 
@@ -201,8 +190,8 @@ namespace egbt22lib
 
         public static double BicubicInterpolate(double[] buffer, double fx, double fy)
         {
-            var arr = new double[4];
-            for (var i = 0; i < 4; i++)
+            double[] arr = new double[4];
+            for (int i = 0; i < 4; i++)
             {
                 arr[i] = CubicInterpolate(buffer[i], buffer[i + 4], buffer[i + 8], buffer[i + 12], fy);
             }
