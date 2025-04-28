@@ -383,30 +383,34 @@ namespace egbt22lib
 
         public static bool GetGammaKCalculation(CRS crs, out Func<double, double, (double gamma, double k)> calculation)
         {
-            switch (crs)
+            if ((crs & CRS.GK5) == CRS.GK5)
             {
-                case CRS.EGBT22_LDP:
-                    calculation = (double e, double n) =>
-                    {
-                        _ = TM_GRS80_EGBT22.Reverse(e, n, out double gamma, out double k);
-                        return (gamma, k);
-                    };
-                    return true;
-                case CRS.UTM33:
-                    calculation = (double e, double n) =>
-                    {
-                        _ = TM_GRS80_UTM33.Reverse(e, n, out double gamma, out double k);
-                        return (gamma, k);
-                    };
-                    return true;
-                case CRS.GK5:
-                    calculation = (double e, double n) =>
-                    {
-                        _ = TM_Bessel_GK5.Reverse(e, n, out double gamma, out double k);
-                        return (gamma, k);
-                    };
-                    return true;
+                calculation = (double e, double n) =>
+                {
+                    _ = TM_Bessel_GK5.Reverse(e, n, out double gamma, out double k);
+                    return (gamma, k);
+                };
+                return true;
             }
+            else if ((crs & CRS.EGBT22_LDP) == CRS.EGBT22_LDP)
+            {
+                calculation = (double e, double n) =>
+                {
+                    _ = TM_GRS80_EGBT22.Reverse(e, n, out double gamma, out double k);
+                    return (gamma, k);
+                };
+                return true;
+            }
+            else if ((crs & CRS.UTM33) == CRS.UTM33)
+            {
+                calculation = (double e, double n) =>
+                {
+                    _ = TM_GRS80_UTM33.Reverse(e, n, out double gamma, out double k);
+                    return (gamma, k);
+                };
+                return true;
+            }
+
             calculation = (double e, double n) => (double.NaN, double.NaN);
             return false;
         }
