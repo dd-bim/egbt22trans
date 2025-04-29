@@ -88,19 +88,36 @@ internal class Program
             [3910624.7346,  991164.8896, 4923826.7347]
             ];
 
-        var steps = new List<Func<double, double, double, (double x, double y, double z)>>();
-        var info = "";
+        double[][] egbt22 = new double[dbrefgk5normal.Length][];
 
-        Console.WriteLine("DBRef_GK5 Normal -> ETRS89_UTM33 Normal");
-        if (GetConversion(CRS.DB_Ref_GK5, VRS.Normal, CRS.ETRS89_UTM33, ref steps, ref info))
+        Console.WriteLine("DBRef_GK5 0 -> ETRS89_EGBT22_LDP");
+
+        if (GetConversion(CRS.DB_Ref_GK5, CRS.ETRS89_EGBT22_LDP, out var conversion, out var info, true))
         {
             Console.WriteLine(info);
             Console.WriteLine();
-            var calc = CalcSteps(steps);
             for (int i = 0; i < dbrefgk5normal.Length; i++)
             {
-                var (e, n, h) = calc(dbrefgk5normal[i][0], dbrefgk5normal[i][1], dbrefgk5normal[i][2]);
-                Console.WriteLine(FormattableString.Invariant($"{i,2} {(etrs89utm33normal[i][0] - e) * 1000,8:F2} {(etrs89utm33normal[i][1] - n) * 1000,8:F2} {(etrs89utm33normal[i][2] - h) * 1000,8:F2}"));
+                var (e, n) = conversion(dbrefgk5normal[i][0], dbrefgk5normal[i][1]);
+                egbt22[i] = new double[] { e, n, dbrefgk5normal[i][2] };
+                Console.WriteLine(FormattableString.Invariant($"{i,2} {e,12:F4} {n,12:F4}"));
+            }
+        }
+        else
+        {
+            Console.WriteLine(info);
+        }
+        Console.WriteLine();
+
+        Console.WriteLine("ETRS89_EGBT22_LDP -> DBRef_GK5 0");
+        if (GetConversion(CRS.ETRS89_EGBT22_LDP, CRS.DB_Ref_GK5, out conversion, out info, true))
+        {
+            Console.WriteLine(info);
+            Console.WriteLine();
+            for (int i = 0; i < egbt22.Length; i++)
+            {
+                var (e, n) = conversion(egbt22[i][0], egbt22[i][1]);
+                Console.WriteLine(FormattableString.Invariant($"{i,2} {(dbrefgk5normal[i][0] - e) * 1000,8:F2} {(dbrefgk5normal[i][1] - n) * 1000,8:F2}"));
             }
 
         }
@@ -110,23 +127,18 @@ internal class Program
         }
         Console.WriteLine();
 
-        steps.Clear();
-        info = "";
-        Console.WriteLine("DBRef_GK5 Normal -> ETRS89_Geoc");
-        if (GetConversion(CRS.DB_Ref_GK5, VRS.Normal, CRS.ETRS89_Geoc, ref steps, ref info))
+        Console.WriteLine("ETRS89_EGBT22_LDP gamma k");
+        if (GetGammaKCalculation(CRS.ETRS89_EGBT22_LDP, out var gammak))
         {
-            Console.WriteLine(info);
-            Console.WriteLine();
-            var calc = CalcSteps(steps);
-            for (int i = 0; i < dbrefgk5normal.Length; i++)
+            for (int i = 0; i < egbt22.Length; i++)
             {
-                var (x, y, z) = calc(dbrefgk5normal[i][0], dbrefgk5normal[i][1], dbrefgk5normal[i][2]);
-                Console.WriteLine(FormattableString.Invariant($"{i,2} {(etrs89geoc[i][0] - x) * 1000,8:F2} {(etrs89geoc[i][1] - y) * 1000,8:F2} {(etrs89geoc[i][2] - z) * 1000,8:F2}"));
+                var (gamma, k) = gammak(egbt22[i][0], egbt22[i][1]);
+                Console.WriteLine(FormattableString.Invariant($"{i,2} {gamma,12:F6} {k,12:F9}"));
             }
         }
         else
         {
-            Console.WriteLine(info);
+            Console.WriteLine("GammaK failed");
         }
         Console.WriteLine();
 

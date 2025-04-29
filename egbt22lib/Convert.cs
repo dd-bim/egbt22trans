@@ -22,6 +22,7 @@ namespace egbt22lib
             EGBT22_LDP = 2,
             UTM33 = 4,
             GK5 = 8,
+            Conversion = Geod | Geoc | EGBT22_LDP | UTM33 | GK5,
             ETRS89 = 16,
             DB_Ref = 32,
             Datum = ETRS89 | DB_Ref,
@@ -208,7 +209,7 @@ namespace egbt22lib
                 case CRS.DB_Ref_GK5:
                     info += $"Conversion from {source} to {CRS.DB_Ref_Geod}.\n";
                     steps.Add(TM_Bessel_GK5.Reverse);
-                    return getConversion(CRS.ETRS89_Geod, target, ref steps, ref info, isDBREFZero);
+                    return getConversion(CRS.DB_Ref_Geod, target, ref steps, ref info, isDBREFZero);
                 case CRS.DB_Ref_Geod:
                     if (target == CRS.DB_Ref_GK5)
                     {
@@ -383,7 +384,7 @@ namespace egbt22lib
 
         public static bool GetGammaKCalculation(CRS crs, out Func<double, double, (double gamma, double k)> calculation)
         {
-            switch (crs)
+            switch (crs & CRS.Conversion)
             {
                 case CRS.EGBT22_LDP:
                     calculation = (double e, double n) =>
