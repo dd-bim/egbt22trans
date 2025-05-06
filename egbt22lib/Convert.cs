@@ -43,6 +43,24 @@ namespace egbt22lib
             Ellipsoidal
         }
 
+        public static readonly string[] Defined_CRS = new string[]
+        {
+            "ETRS89_EGBT22_LDP",
+            "ETRS89_UTM33",
+            "ETRS89_Geod",
+            "ETRS89_Geoc",
+            "DB_Ref_GK5",
+            "DB_Ref_Geod",
+            "DB_Ref_Geoc"
+        };
+
+        public static readonly string[] Defined_VRS = new string[]
+        {
+            "None",
+            "Normal",
+            "Ellipsoidal"
+        };
+
 
         #region arrays
         public static (double[] x, double[] y, double[] z) CalcArrays3(double[] xin, double[] yin, double[] zin, Func<double, double, double, (double x, double y, double z)> calc)
@@ -151,11 +169,24 @@ namespace egbt22lib
             return (dlat, dlon);
         }
 
-        public static bool GetConversion(CRS source, CRS target, out Func<double, double, (double x, double y)> conversion, out string info, bool isDBREFZero = false)
+        public static bool GetConversion(string source, string target, out Func<double, double, (double x, double y)> conversion, out string info, bool isDBREFZero = false)
         {
+            if(!Enum.TryParse(source, out CRS sourceCRS))
+            {
+                info = $"Source CRS {source} is not supported.";
+                conversion = (x, y) => (double.NaN, double.NaN);
+                return false;
+            }
+            if (!Enum.TryParse(target, out CRS targetCRS))
+            {
+                info = $"Target CRS {target} is not supported.";
+                conversion = (x, y) => (double.NaN, double.NaN);
+                return false;
+            }
+
             var steps = new List<Func<double, double, (double x, double y)>>();
             info = "";
-            if(getConversion(source, target, ref steps, ref info, isDBREFZero))
+            if(getConversion(sourceCRS, targetCRS, ref steps, ref info, isDBREFZero))
             {
                 conversion = calcSteps(steps);
                 return true;
@@ -236,11 +267,31 @@ namespace egbt22lib
             return false;
         }
 
-        public static bool GetConversion(CRS source, VRS sourceVRS, CRS target, out Func<double, double, double, (double x, double y, double z)> conversion, out string info)
+        public static bool GetConversion(string source, string sourceVRS, string target, out Func<double, double, double, (double x, double y, double z)> conversion, out string info)
         {
+            if(!Enum.TryParse(source, out CRS sourceCRS))
+            {
+                info = $"Source CRS {source} is not supported.";
+                conversion = (x, y, z) => (double.NaN, double.NaN, double.NaN);
+                return false;
+            }
+            if (!Enum.TryParse(sourceVRS, out VRS sourceVRS_))
+            {
+                info = $"Source VRS {sourceVRS} is not supported.";
+                conversion = (x, y, z) => (double.NaN, double.NaN, double.NaN);
+                return false;
+            }
+            if (!Enum.TryParse(target, out CRS targetCRS))
+            {
+                info = $"Target CRS {target} is not supported.";
+                conversion = (x, y, z) => (double.NaN, double.NaN, double.NaN);
+                return false;
+            }
+
+
             var steps = new List<Func<double, double, double, (double x, double y, double z)>>();
             info = "";
-            if (getConversion(source, sourceVRS, target, ref steps, ref info))
+            if (getConversion(sourceCRS, sourceVRS_, targetCRS, ref steps, ref info))
             {
                 conversion = calcSteps(steps);
                 return true;

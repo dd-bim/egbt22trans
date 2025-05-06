@@ -30,24 +30,24 @@ internal class Program
         if ((opts.Source == 0 && opts.Target == 0 && opts.Egbt22 == 0)
             || ((opts.Source != 0 || opts.Target != 0) && opts.Egbt22 != 0))
         {
-            Console.WriteLine("Either set source and target system, or egbt22 value.");
+            Console.WriteLine("Either set source '-s' and target '-t' system , or egbt22 '-e' value.");
             return;
         }
         if (opts.Source != 0 && opts.Target != 0 && opts.Source == opts.Target)
         {
-            Console.WriteLine("Source and target system identical, no conversion.");
+            Console.WriteLine("Source '-s' and target '-t' system identical, no conversion.");
             return;
         }
         if (opts.Source != 0 && opts.Target != 0)
         {
-            if (opts.Source is < 1 or > 5)
+            if (opts.Source is < 1 or > 7)
             {
-                Console.WriteLine("The source system must have a value in the range 1 to 5.");
+                Console.WriteLine("The source system must have a value in the range 1 to 7.");
                 return;
             }
-            if (opts.Target is < 1 or > 5)
+            if (opts.Target is < 1 or > 7)
             {
-                Console.WriteLine("The target system must have a value in the range 1 to 5.");
+                Console.WriteLine("The target system must have a value in the range 1 to 7.");
                 return;
             }
         }
@@ -80,31 +80,82 @@ internal class Program
             opts.Delimiter = "\t";
         }
 
-        if ((opts.Source == 1 && opts.Target == 2) || (opts.Source == 2 && opts.Target == 1))
+        try
         {
-            var (xin, yin) = IO.ReadFile(opts.InputFile, opts.XAxis - 1, opts.YAxis - 1, opts.Delimiter[0], out var coordinateLines);
-            // Normal transformation/conversion
-            if (!(opts.Source == 1
-                ? EGBT22_Local_to_ETRS89_UTM33(xin, yin, out var xout, out var yout)
-                : ETRS89_UTM33_to_EGBT22_Local(xin, yin, out xout, out yout)))
+            if (opts.Egbt22 < 1)
             {
-                Console.WriteLine("Conversion failed.");
-                return;
+
+                // Read input file
+                var (xin, yin, zin) = IO.ReadFile(opts.InputFile, opts.XAxis - 1, opts.YAxis - 1, opts.ZAxis - 1, opts.Delimiter[0], out var coordinateLines);
+
+                // Determine conversion function
+                if (!GetConversion((CRS)opts.Source, (CRS)opts.Target, out var conversion, out var info))
+                {
+                    Console.WriteLine($"Conversion from source {opts.Source} to target {opts.Target} is not supported.");
+                    return;
+                }
+
+                Console.WriteLine($"Conversion info: {info}");
+
+                // Apply conversion
+                var xout = new double[xin.Length];
+                var yout = new double[xin.Length];
+                for (int i = 0; i < xin.Length; i++)
+                {
+                    (xout[i], yout[i]) = conversion(xin[i], yin[i]);
+                }
+
+                // Write output file
+                IO.WriteFile(opts.OutputFile, xout, yout, coordinateLines, opts.XAxis - 1, opts.YAxis - 1, opts.Precision, opts.Delimiter[0]);
+                Console.WriteLine("Conversion completed successfully.");
             }
-            IO.WriteFile(opts.OutputFile, xout, yout, coordinateLines, opts.XAxis - 1, opts.YAxis - 1, opts.Precision, opts.Delimiter[0]);
+            else
+            {
+                var (xin, yin, zin) = IO.ReadFile(opts.InputFile, opts.XAxis - 1, opts.YAxis - 1, opts.ZAxis - 1, opts.Delimiter[0], out var coordinateLines);
+
+                var (xout, yout, zout) = opts.Egbt22 > 0
+                ?   // EGBT22 transformation
+                    transformEGBT22(opts.Egbt22, xin, yin, zin)
+                :   // Normal transformation/conversion
+                    convert(opts.Source, opts.Target, xin, yin, zin);
+
+                IO.WriteFile(opts.OutputFile, xout, yout, zout, coordinateLines, opts.XAxis - 1, opts.YAxis - 1, opts.ZAxis - 1, opts.Precision, opts.Delimiter[0]);
+            }
+
+
         }
-        else
+        catch (Exception ex)
         {
-            var (xin, yin, zin) = IO.ReadFile(opts.InputFile, opts.XAxis - 1, opts.YAxis - 1, opts.ZAxis - 1, opts.Delimiter[0], out var coordinateLines);
-
-            var (xout, yout, zout) = opts.Egbt22 > 0
-            ?   // EGBT22 transformation
-                transformEGBT22(opts.Egbt22, xin, yin, zin)
-            :   // Normal transformation/conversion
-                convert(opts.Source, opts.Target, xin, yin, zin);
-
-            IO.WriteFile(opts.OutputFile, xout, yout, zout, coordinateLines, opts.XAxis - 1, opts.YAxis - 1, opts.ZAxis - 1, opts.Precision, opts.Delimiter[0]);
+            Console.WriteLine($"An error occurred during the conversion: {ex.Message}");
         }
+
+
+
+        //if ((opts.Source == 1 && opts.Target == 2) || (opts.Source == 2 && opts.Target == 1))
+        //{
+        //    var (xin, yin) = IO.ReadFile(opts.InputFile, opts.XAxis - 1, opts.YAxis - 1, opts.Delimiter[0], out var coordinateLines);
+        //    // Normal transformation/conversion
+        //    if (!(opts.Source == 1
+        //        ? EGBT22_Local_to_ETRS89_UTM33(xin, yin, out var xout, out var yout)
+        //        : ETRS89_UTM33_to_EGBT22_Local(xin, yin, out xout, out yout)))
+        //    {
+        //        Console.WriteLine("Conversion failed.");
+        //        return;
+        //    }
+        //    IO.WriteFile(opts.OutputFile, xout, yout, coordinateLines, opts.XAxis - 1, opts.YAxis - 1, opts.Precision, opts.Delimiter[0]);
+        //}
+        //else
+        //{
+        //    var (xin, yin, zin) = IO.ReadFile(opts.InputFile, opts.XAxis - 1, opts.YAxis - 1, opts.ZAxis - 1, opts.Delimiter[0], out var coordinateLines);
+
+        //    var (xout, yout, zout) = opts.Egbt22 > 0
+        //    ?   // EGBT22 transformation
+        //        transformEGBT22(opts.Egbt22, xin, yin, zin)
+        //    :   // Normal transformation/conversion
+        //        convert(opts.Source, opts.Target, xin, yin, zin);
+
+        //    IO.WriteFile(opts.OutputFile, xout, yout, zout, coordinateLines, opts.XAxis - 1, opts.YAxis - 1, opts.ZAxis - 1, opts.Precision, opts.Delimiter[0]);
+        //}
     }
 
     static (double[] x, double[] y, double[] z) transformEGBT22(int operation, double[] x, double[] y, double[] z)
