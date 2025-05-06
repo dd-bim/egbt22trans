@@ -10,9 +10,9 @@ The following coordinate systems (CRS) are supported:
 2 : ETRS89 UTM33                   (EPSG:25833)
 3 : ETRS89 geographic 3D B/L       (EPSG:4258)
 4 : ETRS89 cartesian 3D geocentric (EPSG:4936)
-5 : DB_REF GK5                     (EPSG:5685)
-6 : DB_REF geographic 3D B/L       (EPSG:5681)
-7 : DB_REF cartesian 3D geocentric (EPSG:4936)
+5 : DB_Ref GK5                     (EPSG:5685)
+6 : DB_Ref geographic 3D B/L       (EPSG:5681)
+7 : DB_Ref cartesian 3D geocentric (EPSG:4936)
 
 
 The following conversions/transformations are supported:
@@ -26,7 +26,12 @@ The following conversions/transformations are supported:
  7| x | x | x | x | x | x |  
  
 An 'x' means that a simple conversion without heights is possible.
-An 'h' means that the conversion/transformation needs an ellipsoidal (ETRS89 or DB_Ref) or normal (DHHN2016, GCG2016) height. (option '-h e' or '-h n' is mandatory)
+An 'h' means that the conversion/transformation needs an ellipsoidal (ETRS89 or DB_Ref) or normal (DHHN2016, GCG2016) height. (option '-h 1' or '-h 2' is mandatory)
+
+The supported height systems are:
+1 : Normal heights (calculations based on the GCG2016 geoid)
+2 : Ellipsoidal heights (ETRS89 or DB_Ref)
+
 The heights are used for the transformation from ETRS89 to DB_REF and vice versa. 
 Normal heights remain unchanged, except the target coordinates geocentric (the internal transformation uses ellipsoidal heights).
 For the transformation from ETRS89 to DB_REF and vice versa, the differences between DHHN2016 and GCG2016 could be ignored.
@@ -42,19 +47,19 @@ Command line options:
 Coordinate conversion (normal case):
 	- -s, --source: Source system (by CRS-Index)
 	- -t, --target: Target system (by CRS-Index)
-	- -h, --height: Height system (e: ETRS89 ellipsoidal, n: normal height)
+	- -h, --height: Height system (1: normal heights, 2: ETRS89 ellipsoidal heights)
 
 Exampels:
 	Simple conversion from ETRS89 EGBT_LDP Dresden-Prag to UTM33:
 	-s 1 -t 2 
 	Conversion and transformation from EGBT_LDP Dresden-Prag to DB_REF GK5:
-	-s 1 -t 5 -h n
+	-s 1 -t 5 -h 2
 
 Optional:
 	- -d, --delimiter: Delimiter of the coordinate columns (s=space, t=tabulator, ,=comma, ...), default: space
 	- -x, --xaxis: Column-index of the x-axis (1. defined coordinate axis), default: 2
 	- -y, --yaxis: Column-index of the y-axis (2. defined coordinate axis), default: 3
-	- -z, --zaxis: Column-index of the z-axis (cartesian 3D Z, ellipsoidal or normal height), default: 4 (ignored if not necessary)
+	- -z, --zaxis: Column-index of the z-axis (cartesian 3D Z axis, normal height or ellipsoidal height), default: 4 (ignored if not necessary)
 	- -p, --precision: Number of digits after the decimal point in the output, default: 4
 	- -l, --latlon: Number of digits after the decimal point at latitude or longitude values in degrees, default: 10
 

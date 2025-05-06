@@ -10,21 +10,30 @@ using CommandLine.Text;
 namespace egbt22trans;
 internal class Options
 {
-    [Option('s', "source", Default = (int)0, HelpText = "Number of source system\n" +
+    [Option('s', "source", Default = (int)0, HelpText = "Id of source system\n" +
         "1 ETRS89 EGBT_LDP Dresden-Prag\n" +
         "2 ETRS89 UTM33 (EPSG:25833)\n" +
-        "3 DB_REF GK5 (EPSG:5685)\n" +
-        "4 ETRS89 Kartesisch 3D Geozentrisch (EPSG:4936)\n" +
-        "5 ETRS89 Geographisch 3D B/L/ellip. h (EPSG:4937)" )]
+        "3 ETRS89 geographic 3D B/L (EPSG:4258)\n" +
+        "4 ETRS89 cartesian 3D geocentric (EPSG:4936)\n" +
+        "5 DB_REF GK5 (EPSG:5685)\n" +
+        "6 DB_REF geographic 3D B/L (EPSG:5681)\n" +
+        "7 DB_REF cartesian 3D geocentric (EPSG:4936)")]
     public int Source { get; set; } = 0;
 
-    [Option('t', "target", Default = (int)0, HelpText = "Number of target system\n" +
+    [Option('t', "target", Default = (int)0, HelpText = "Id of target system\n" +
         "1 ETRS89 EGBT_LDP Dresden-Prag\n" +
         "2 ETRS89 UTM33 (EPSG:25833)\n" +
-        "3 DB_REF GK5 (EPSG:5685)\n" +
-        "4 ETRS89 Kartesisch 3D Geozentrisch (EPSG:4936)\n" +
-        "5 ETRS89 Geographisch 3D B/L/ellip. h (EPSG:4937)" )]
+        "3 ETRS89 geographic 3D B/L (EPSG:4258)\n" +
+        "4 ETRS89 cartesian 3D geocentric (EPSG:4936)\n" +
+        "5 DB_REF GK5 (EPSG:5685)\n" +
+        "6 DB_REF geographic 3D B/L (EPSG:5681)\n" +
+        "7 DB_REF cartesian 3D geocentric (EPSG:4936)")]
     public int Target { get; set; } = 0;
+
+    [Option('h', "height", Default = (int)0, HelpText = "Id of the height system\n" +
+        "1 Normal heights (calculations based on the GCG2016 geoid)\n" +
+        "2 Ellipsoidal heights (ETRS89 or DB_Ref)")]
+    public int Height { get; set; } = 0;
 
     [Option('e', "egbt22", Default = (int)0, 
         HelpText = "Special, Transformation from/to EGBT22\n" +
