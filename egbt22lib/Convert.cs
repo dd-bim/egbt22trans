@@ -1,12 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
-
-using egbt22lib.Transformations;
 using static egbt22lib.Transformations.Defined;
 using static egbt22lib.Conversions.Defined;
-using egbt22lib.Conversions;
-using System.Security.Cryptography;
 
 
 namespace egbt22lib
@@ -43,7 +38,7 @@ namespace egbt22lib
             Ellipsoidal
         }
 
-        public static readonly string[] Defined_CRS = new string[]
+        public static readonly string[] Defined_CRS = new[]
         {
             "ETRS89_EGBT22_LDP",
             "ETRS89_UTM33",
@@ -54,7 +49,7 @@ namespace egbt22lib
             "DB_Ref_Geoc"
         };
 
-        public static readonly string[] Defined_VRS = new string[]
+        public static readonly string[] Defined_VRS = new[]
         {
             "None",
             "Normal",
@@ -81,8 +76,8 @@ namespace egbt22lib
             double[][] xyz = new double[n][];
             for (int i = 0; i < n; i++)
             {
-                var (x, y, z) = calc(points[i][0], points[i][1], points[i][2]);
-                xyz[i] = new double[] { x, y, z };
+                (double x, double y, double z) = calc(points[i][0], points[i][1], points[i][2]);
+                xyz[i] = new[] { x, y, z };
             }
             return xyz;
         }
@@ -103,8 +98,8 @@ namespace egbt22lib
             double[][] xy = new double[n][];
             for (int i = 0; i < n; i++)
             {
-                var (x, y) = calc(points[i][0], points[i][1]);
-                xy[i] = new double[] { x, y };
+                (double x, double y) = calc(points[i][0], points[i][1]);
+                xy[i] = new[] { x, y };
             }
             return xy;
         }
@@ -124,15 +119,23 @@ namespace egbt22lib
 
         private static (double lat, double lon, double ellH) DBRef_Geod_Normal_to_Ellipsoidal(double lat, double lon, double h)
         {
-            double x, y, z, tlat, tlon, th = h, elat, elon, eh, diff = double.MaxValue;
+            double th = h;
+            double diff = double.MaxValue;
             while (diff > TOLRAD)
             {
+                double x;
+                double y;
+                double z;
                 (x, y, z) = GC_Bessel.Forward(lat, lon, th);
                 (x, y, z) = Trans_Datum_DBRef_to_ETRS89.Forward(x, y, z);
+                double elat;
+                double elon;
                 (elat, elon, _) = GC_GRS80.Reverse(x, y, z);
-                eh = h + Geoid.GetBKGBinaryGeoidHeight(elat, elon);
+                double eh = h + Geoid.GetBKGBinaryGeoidHeight(elat, elon);
                 (x, y, z) = GC_GRS80.Forward(elat, elon, eh);
-                (x, y, z) = Trans_Datum_DBRef_to_ETRS89.Reverse(x, y, z); // selbe Transformation reverse um Fehler durch unterschiedliche Parameter zu vermeiden
+                (x, y, z) = Trans_Datum_DBRef_to_ETRS89.Reverse(x, y, z); // same transformation reverse to avoid differences through different parameters
+                double tlat;
+                double tlon;
                 (tlat, tlon, th) = GC_Bessel.Reverse(x, y, z);
                 diff = Math.Max(Math.Abs(tlat - lat), Math.Abs(tlon - lon));
             }
@@ -141,26 +144,29 @@ namespace egbt22lib
 
         private static (double lat, double lon, double h) DBRef_Geod_Ellipsoidal_to_Normal(double lat, double lon, double ellH)
         {
-            var (x, y, z) = GC_Bessel.Forward(lat, lon, ellH);
+            (double x, double y, double z) = GC_Bessel.Forward(lat, lon, ellH);
             (x, y, z) = Trans_Datum_DBRef_to_ETRS89.Forward(x, y, z);
-            var (elat, elon, eh) = GC_GRS80.Reverse(x, y, z);
+            (double elat, double elon, double eh) = GC_GRS80.Reverse(x, y, z);
             double h = eh - Geoid.GetBKGBinaryGeoidHeight(elat, elon);
             return (lat, lon, h);
         }
 
         private static (double lat, double lon) DBRef_Geod_to_ETRS89_Geod_DBRefZero(double lat, double lon)
         {
-            var (x, y, z) = GC_Bessel.Forward(lat, lon, 0);
+            (double x, double y, double z) = GC_Bessel.Forward(lat, lon, 0);
             (x, y, z) = Trans_Datum_DBRef_to_ETRS89.Forward(x, y, z);
-            var (elat, elon, _) = GC_GRS80.Reverse(x, y, z);
+            (double elat, double elon, _) = GC_GRS80.Reverse(x, y, z);
             return (elat, elon);
         }
 
         private static (double lat, double lon) ETRS89_Geod_to_DBRef_Geod_DBRefZero(double lat, double lon)
         {
-            double x, y, z, dlat = double.NaN, dlon = double.NaN, dh = double.MaxValue, th = 0;
+            double dlat = double.NaN, dlon = double.NaN, dh = double.MaxValue, th = 0;
             while (Math.Abs(dh) > TOLM)
             {
+                double x;
+                double y;
+                double z;
                 (x, y, z) = GC_GRS80.Forward(lat, lon, th);
                 (x, y, z) = Trans_Datum_ETRS89_to_DBRef.Forward(x, y, z);
                 (dlat, dlon, dh) = GC_Bessel.Reverse(x, y, z);
@@ -409,7 +415,7 @@ namespace egbt22lib
             return false;
         }
 
-        public static Func<double, double, (double x, double y)> calcSteps(List<Func<double, double, (double x, double y)>> steps)
+        private static Func<double, double, (double x, double y)> calcSteps(List<Func<double, double, (double x, double y)>> steps)
         {
             return (x, y) =>
             {
@@ -438,28 +444,28 @@ namespace egbt22lib
             switch (crs & CRS.Conversion)
             {
                 case CRS.EGBT22_LDP:
-                    calculation = (double e, double n) =>
+                    calculation = (e, n) =>
                     {
                         _ = TM_GRS80_EGBT22.Reverse(e, n, out double gamma, out double k);
                         return (gamma, k);
                     };
                     return true;
                 case CRS.UTM33:
-                    calculation = (double e, double n) =>
+                    calculation = (e, n) =>
                     {
                         _ = TM_GRS80_UTM33.Reverse(e, n, out double gamma, out double k);
                         return (gamma, k);
                     };
                     return true;
                 case CRS.GK5:
-                    calculation = (double e, double n) =>
+                    calculation = (e, n) =>
                     {
                         _ = TM_Bessel_GK5.Reverse(e, n, out double gamma, out double k);
                         return (gamma, k);
                     };
                     return true;
             }
-            calculation = (double e, double n) => (double.NaN, double.NaN);
+            calculation = (e, n) => (double.NaN, double.NaN);
             return false;
         }
     }
