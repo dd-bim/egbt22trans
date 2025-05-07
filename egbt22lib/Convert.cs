@@ -38,6 +38,12 @@ namespace egbt22lib
             Ellipsoidal
         }
 
+        /// <summary>
+        /// Defined_CRS is a static readonly array of strings that represents the predefined supported
+        /// Coordinate Reference Systems (CRS) in the egbt22lib.Convert namespace.
+        /// It includes various combinations of CRS types, such as ETRS89 and DB_Ref,
+        /// mapped to specific projections or transformations like EGBT22_LDP or UTM33.
+        /// </summary>
         public static readonly string[] Defined_CRS = new[]
         {
             "ETRS89_EGBT22_LDP",
@@ -49,6 +55,12 @@ namespace egbt22lib
             "DB_Ref_Geoc"
         };
 
+        /// <summary>
+        /// Defined_VRS is a static readonly array of strings that represents the predefined supported
+        /// Virtual Reference System (VRS) types in the egbt22lib.Convert namespace.
+        /// It enumerates different VRS modes, such as None, Normal, and Ellipsoidal,
+        /// which are used to specify the type of vertical reference in coordinate transformations.
+        /// </summary>
         public static readonly string[] Defined_VRS = new[]
         {
             "None",
@@ -58,6 +70,22 @@ namespace egbt22lib
 
 
         #region arrays
+
+        /// <summary>
+        /// Processes arrays of coordinates (x, y, z) using a provided calculation function
+        /// and returns the resulting arrays.
+        /// </summary>
+        /// <param name="xin">Input array of x-coordinates.</param>
+        /// <param name="yin">Input array of y-coordinates.</param>
+        /// <param name="zin">Input array of z-coordinates.</param>
+        /// <param name="calc">
+        /// A function that takes x, y, and z coordinates as inputs and returns a tuple
+        /// containing the transformed x, y, and z coordinates.
+        /// </param>
+        /// <returns>
+        /// A tuple containing three arrays: the resulting x-coordinates, y-coordinates, and z-coordinates
+        /// after applying the provided calculation function.
+        /// </returns>
         public static (double[] x, double[] y, double[] z) CalcArrays3(double[] xin, double[] yin, double[] zin, Func<double, double, double, (double x, double y, double z)> calc)
         {
             int n = xin.Length;
@@ -70,6 +98,20 @@ namespace egbt22lib
             }
             return (x, y, z);
         }
+
+        /// <summary>
+        /// Processes an array of 3D points using a provided calculation function
+        /// and returns the resulting array of transformed points.
+        /// </summary>
+        /// <param name="points">A jagged array where each inner array represents a 3D point with x, y, and z coordinates.</param>
+        /// <param name="calc">
+        /// A function that takes x, y, and z coordinates as input and returns a tuple
+        /// containing the transformed x, y, and z coordinates.
+        /// </param>
+        /// <returns>
+        /// A jagged array of transformed 3D points, where each inner array contains the x, y, and z coordinates
+        /// resulting from applying the provided calculation function.
+        /// </returns>
         public static double[][] CalcArray3(double[][] points, Func<double, double, double, (double x, double y, double z)> calc)
         {
             int n = points.Length;
@@ -81,6 +123,21 @@ namespace egbt22lib
             }
             return xyz;
         }
+
+        /// <summary>
+        /// Processes arrays of 2D coordinates (x, y) using a provided calculation function
+        /// and returns the resulting arrays.
+        /// </summary>
+        /// <param name="xin">Input array of x-coordinates.</param>
+        /// <param name="yin">Input array of y-coordinates.</param>
+        /// <param name="calc">
+        /// A function that takes x and y coordinates as inputs and returns a tuple
+        /// containing the transformed x and y coordinates.
+        /// </param>
+        /// <returns>
+        /// A tuple containing two arrays: the resulting x-coordinates and y-coordinates
+        /// after applying the provided calculation function.
+        /// </returns>
         public static (double[] x, double[] y) CalcArrays2(double[] xin, double[] yin, Func<double, double, (double x, double y)> calc)
         {
             int n = xin.Length;
@@ -92,6 +149,20 @@ namespace egbt22lib
             }
             return (x, y);
         }
+
+        /// <summary>
+        /// Processes an array of coordinate pairs using a provided calculation function
+        /// and returns the resulting array of transformed coordinate pairs.
+        /// </summary>
+        /// <param name="points">Input array of points, where each point is an array containing two coordinates (x, y).</param>
+        /// <param name="calc">
+        /// A function that takes two inputs, x and y coordinates, and returns a tuple
+        /// with transformed x and y coordinates.
+        /// </param>
+        /// <returns>
+        /// A jagged array where each inner array contains the transformed x and y coordinates
+        /// for the corresponding input point.
+        /// </returns>
         public static double[][] CalcArray2(double[][] points, Func<double, double, (double x, double y)> calc)
         {
             int n = points.Length;
@@ -175,6 +246,26 @@ namespace egbt22lib
             return (dlat, dlon);
         }
 
+        /// <summary>
+        /// Attempts to retrieve a coordinate conversion function between two specified coordinate reference systems (CRS)
+        /// and provides additional information about the conversion process.
+        /// </summary>
+        /// <param name="source">The identifier of the source coordinate reference system.</param>
+        /// <param name="target">The identifier of the target coordinate reference system.</param>
+        /// <param name="conversion">
+        /// An output parameter that, if the method succeeds, contains the function converting coordinates
+        /// from the source CRS to the target CRS. The function takes x and y coordinates as inputs and
+        /// returns a tuple with the transformed x and y coordinates.
+        /// </param>
+        /// <param name="info">An output parameter containing additional information about the conversion process or errors.</param>
+        /// <param name="isDBREFZero">
+        /// Specifies whether the conversion should consider the DBREF ellipsoidal height as zero.
+        /// Defaults to false if not provided.
+        /// </param>
+        /// <returns>
+        /// True if the conversion function was successfully retrieved; otherwise, false.
+        /// If false, the `conversion` function will return NaN for all inputs, and `info` will contain an error message.
+        /// </returns>
         public static bool GetConversion(string source, string target, out Func<double, double, (double x, double y)> conversion, out string info, bool isDBREFZero = false)
         {
             if(!Enum.TryParse(source, out CRS sourceCRS))
@@ -273,6 +364,24 @@ namespace egbt22lib
             return false;
         }
 
+        /// <summary>
+        /// Attempts to retrieve a coordinate conversion function from a source CRS and VRS
+        /// to a target CRS. Provides information on the conversion process.
+        /// </summary>
+        /// <param name="source">The source coordinate reference system (CRS) as a string.</param>
+        /// <param name="sourceVRS">The source vertical reference system (VRS) as a string.</param>
+        /// <param name="target">The target coordinate reference system (CRS) as a string.</param>
+        /// <param name="conversion">
+        /// An output parameter that will be assigned a function. This function takes x, y, and z
+        /// coordinates as inputs and returns the transformed x, y, and z coordinates for the specified conversion.
+        /// </param>
+        /// <param name="info">
+        /// An output parameter that will be assigned a string describing the conversion process or any issues encountered.
+        /// </param>
+        /// <returns>
+        /// A boolean value indicating whether the conversion function was successfully retrieved.
+        /// Returns true if the conversion was successful; otherwise, false.
+        /// </returns>
         public static bool GetConversion(string source, string sourceVRS, string target, out Func<double, double, double, (double x, double y, double z)> conversion, out string info)
         {
             if(!Enum.TryParse(source, out CRS sourceCRS))
@@ -439,6 +548,18 @@ namespace egbt22lib
             };
         }
 
+        /// <summary>
+        /// Obtains the calculation for gamma (convergence of meridians) and k (scale at point) values based on the provided coordinate reference system (CRS).
+        /// </summary>
+        /// <param name="crs">The coordinate reference system (CRS) used to determine the calculation method.</param>
+        /// <param name="calculation">
+        /// An output delegate that takes coordinates (easting and northing) as inputs
+        /// and returns a tuple containing the gamma (convergence of meridians) and k (scale at point) values as results.
+        /// </param>
+        /// <returns>
+        /// A boolean value indicating whether a valid calculation method was determined for the specified CRS.
+        /// Returns true if a valid calculation was found, otherwise false.
+        /// </returns>
         public static bool GetGammaKCalculation(CRS crs, out Func<double, double, (double gamma, double k)> calculation)
         {
             switch (crs & CRS.Conversion)
