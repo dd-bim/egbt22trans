@@ -551,7 +551,7 @@ namespace egbt22lib
         /// <summary>
         /// Obtains the calculation for gamma (convergence of meridians) and k (scale at point) values based on the provided coordinate reference system (CRS).
         /// </summary>
-        /// <param name="crs">The coordinate reference system (CRS) used to determine the calculation method.</param>
+        /// <param name="crs">The coordinate reference system (CRS) used to determine the calculation method as a string..</param>
         /// <param name="calculation">
         /// An output delegate that takes coordinates (easting and northing) as inputs
         /// and returns a tuple containing the gamma (convergence of meridians) and k (scale at point) values as results.
@@ -560,31 +560,34 @@ namespace egbt22lib
         /// A boolean value indicating whether a valid calculation method was determined for the specified CRS.
         /// Returns true if a valid calculation was found, otherwise false.
         /// </returns>
-        public static bool GetGammaKCalculation(CRS crs, out Func<double, double, (double gamma, double k)> calculation)
+        public static bool GetGammaKCalculation(string crs, out Func<double, double, (double gamma, double k)> calculation)
         {
-            switch (crs & CRS.Conversion)
+            if (Enum.TryParse(crs, out CRS crs_))
             {
-                case CRS.EGBT22_LDP:
-                    calculation = (e, n) =>
-                    {
-                        _ = TM_GRS80_EGBT22.Reverse(e, n, out double gamma, out double k);
-                        return (gamma, k);
-                    };
-                    return true;
-                case CRS.UTM33:
-                    calculation = (e, n) =>
-                    {
-                        _ = TM_GRS80_UTM33.Reverse(e, n, out double gamma, out double k);
-                        return (gamma, k);
-                    };
-                    return true;
-                case CRS.GK5:
-                    calculation = (e, n) =>
-                    {
-                        _ = TM_Bessel_GK5.Reverse(e, n, out double gamma, out double k);
-                        return (gamma, k);
-                    };
-                    return true;
+                switch (crs_ & CRS.Conversion)
+                {
+                    case CRS.EGBT22_LDP:
+                        calculation = (e, n) =>
+                        {
+                            _ = TM_GRS80_EGBT22.Reverse(e, n, out double gamma, out double k);
+                            return (gamma, k);
+                        };
+                        return true;
+                    case CRS.UTM33:
+                        calculation = (e, n) =>
+                        {
+                            _ = TM_GRS80_UTM33.Reverse(e, n, out double gamma, out double k);
+                            return (gamma, k);
+                        };
+                        return true;
+                    case CRS.GK5:
+                        calculation = (e, n) =>
+                        {
+                            _ = TM_Bessel_GK5.Reverse(e, n, out double gamma, out double k);
+                            return (gamma, k);
+                        };
+                        return true;
+                }
             }
             calculation = (e, n) => (double.NaN, double.NaN);
             return false;
