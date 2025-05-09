@@ -38,7 +38,7 @@ internal class Program
         Array.Copy(idsL.Select(s => $"L_{s}").ToArray(), indexL0, ids, 0, lenL);
         Array.Copy(idsR.Select(s => $"R_{s}").ToArray(), indexR0, ids, lenL, lenR);
 
-        if (!egbt22lib.ConvertAlt.DBRef_GK5_Gamma_k(trasseR, trasseH, out var gamma, out var k))
+        if (!egbt22lib.Conversions.Defined.TM_Bessel_GK5.Forward(trasseR, trasseH, out var gamma, out var k))
         {
             Console.WriteLine("Fehler bei der Berechnung von Gamma und k.");
             return;

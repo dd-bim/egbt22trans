@@ -104,7 +104,7 @@ internal class Program
                     (double[] xout, double[] yout) = CalcArrays2(xin, yin, conversion);
 
                     // Write output file
-                    IO.WriteFile(opts.OutputFile, xout, yout, coordinateLines, opts.XAxis - 1, opts.YAxis - 1, opts.Precision, opts.Delimiter[0]);
+                    IO.WriteFile(opts.OutputFile, xout, yout, coordinateLines, opts.XAxis - 1, opts.YAxis - 1, target.EndsWith("Geod") ? opts.LatLon : opts.Precision, opts.Delimiter[0]);
                 }
                 else
                 {
@@ -138,7 +138,9 @@ internal class Program
                     }
                     else
                     {
-                        IO.WriteFile(opts.OutputFile, xout, yout, zout, coordinateLines, opts.XAxis - 1, opts.YAxis - 1, opts.ZAxis - 1, opts.Precision, opts.Delimiter[0]);
+                        IO.WriteFile(opts.OutputFile, xout, yout, 
+                            zout, coordinateLines, opts.XAxis - 1, opts.YAxis - 1, opts.ZAxis - 1, 
+                            target.EndsWith("Geod") ? opts.LatLon : opts.Precision, opts.Precision, opts.Delimiter[0]);
                     }
                 }
 
@@ -167,9 +169,17 @@ internal class Program
                 if (isGeod)
                 {
                     (xout, yout, zout) = CalcArrays3(xout, yout, zout, egbt22lib.Conversions.Defined.GC_GRS80.Reverse);
+                    IO.WriteFile(opts.OutputFile, xout, yout, zout, coordinateLines, 
+                        opts.XAxis - 1, opts.YAxis - 1, opts.ZAxis - 1, 
+                        opts.LatLon, opts.Precision, opts.Delimiter[0]);
                 }
-                
-                IO.WriteFile(opts.OutputFile, xout, yout, zout, coordinateLines, opts.XAxis - 1, opts.YAxis - 1, opts.ZAxis - 1, opts.Precision, opts.Delimiter[0]);
+                else
+                {
+                    IO.WriteFile(opts.OutputFile, xout, yout, zout, coordinateLines, 
+                        opts.XAxis - 1, opts.YAxis - 1, opts.ZAxis - 1, 
+                        opts.Precision, opts.Precision, opts.Delimiter[0]);
+                }
+                Console.WriteLine("Conversion completed successfully.");
             }
 
 

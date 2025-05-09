@@ -37,21 +37,21 @@ namespace egbt22lib
                 //_logger?.LogError("Invalid column indices: idIdx={idIdx}, xAxis={xAxis}, yAxis={yAxis}, zAxis={zAxis}", idIdx, xAxis, yAxis, zAxis);
                 throw new ArgumentException("The indices of the columns must be different and greater as 0.");
             }
-            var max = Math.Max(idIdx, Math.Max(xAxis, Math.Max(yAxis, zAxis)));
+            int max = Math.Max(idIdx, Math.Max(xAxis, Math.Max(yAxis, zAxis)));
 
-            var lines = File.ReadAllLines(file);
+            string[] lines = File.ReadAllLines(file);
             var ids = new List<string>(lines.Length);
             var xs = new List<double>(lines.Length);
             var ys = new List<double>(lines.Length);
             var zs = new List<double>(lines.Length);
 
-            foreach (var line in lines)
+            foreach (string line in lines)
             {
-                var parts = line.Split(delimiter, StringSplitOptions.RemoveEmptyEntries);
+                string[]? parts = line.Split(delimiter, StringSplitOptions.RemoveEmptyEntries);
                 if (parts.Length <= max
-                    || !Double.TryParse(parts[xAxis], NumberStyles.Float, CultureInfo.InvariantCulture, out var x)
-                    || !Double.TryParse(parts[yAxis], NumberStyles.Float, CultureInfo.InvariantCulture, out var y)
-                    || !Double.TryParse(parts[zAxis], NumberStyles.Float, CultureInfo.InvariantCulture, out var z))
+                    || !Double.TryParse(parts[xAxis], NumberStyles.Float, CultureInfo.InvariantCulture, out double x)
+                    || !Double.TryParse(parts[yAxis], NumberStyles.Float, CultureInfo.InvariantCulture, out double y)
+                    || !Double.TryParse(parts[zAxis], NumberStyles.Float, CultureInfo.InvariantCulture, out double z))
                 {
                     //_logger?.LogWarning("Skipping invalid line: {line}", line);
                     continue;
@@ -93,21 +93,21 @@ namespace egbt22lib
                 //_logger?.LogError("Invalid column indices: xAxis={xAxis}, yAxis={yAxis}, zAxis={zAxis}", xAxis, yAxis, zAxis);
                 throw new ArgumentException("The indices of the columns must be different and greater as 0.");
             }
-            var max = Math.Max(xAxis, Math.Max(yAxis, zAxis));
+            int max = Math.Max(xAxis, Math.Max(yAxis, zAxis));
 
-            var lines = File.ReadAllLines(file);
+            string[] lines = File.ReadAllLines(file);
             var xs = new List<double>(lines.Length);
             var ys = new List<double>(lines.Length);
             var zs = new List<double>(lines.Length);
             var clines = new List<string[]>(lines.Length);
 
-            foreach (var line in lines)
+            foreach (string line in lines)
             {
-                var parts = line.Split(delimiter, StringSplitOptions.RemoveEmptyEntries);
+                string[]? parts = line.Split(delimiter, StringSplitOptions.RemoveEmptyEntries);
                 if (parts.Length <= max
-                    || !Double.TryParse(parts[xAxis], NumberStyles.Float, CultureInfo.InvariantCulture, out var x)
-                    || !Double.TryParse(parts[yAxis], NumberStyles.Float, CultureInfo.InvariantCulture, out var y)
-                    || !Double.TryParse(parts[zAxis], NumberStyles.Float, CultureInfo.InvariantCulture, out var z))
+                    || !Double.TryParse(parts[xAxis], NumberStyles.Float, CultureInfo.InvariantCulture, out double x)
+                    || !Double.TryParse(parts[yAxis], NumberStyles.Float, CultureInfo.InvariantCulture, out double y)
+                    || !Double.TryParse(parts[zAxis], NumberStyles.Float, CultureInfo.InvariantCulture, out double z))
                 {
                     //_logger?.LogWarning("Skipping invalid line: {line}", line);
                     continue;
@@ -147,19 +147,19 @@ namespace egbt22lib
                 //_logger?.LogError("Invalid column indices: xAxis={xAxis}, yAxis={yAxis}", xAxis, yAxis);
                 throw new ArgumentException("The indices of the columns must be different and greater as 0.");
             }
-            var max = Math.Max(xAxis, yAxis);
+            int max = Math.Max(xAxis, yAxis);
 
-            var lines = File.ReadAllLines(file);
+            string[] lines = File.ReadAllLines(file);
             var xs = new List<double>(lines.Length);
             var ys = new List<double>(lines.Length);
             var clines = new List<string[]>(lines.Length);
 
-            foreach (var line in lines)
+            foreach (string line in lines)
             {
-                var parts = line.Split(delimiter, StringSplitOptions.RemoveEmptyEntries);
+                string[]? parts = line.Split(delimiter, StringSplitOptions.RemoveEmptyEntries);
                 if (parts.Length <= max
-                    || !Double.TryParse(parts[xAxis], NumberStyles.Float, CultureInfo.InvariantCulture, out var x)
-                    || !Double.TryParse(parts[yAxis], NumberStyles.Float, CultureInfo.InvariantCulture, out var y))
+                    || !Double.TryParse(parts[xAxis], NumberStyles.Float, CultureInfo.InvariantCulture, out double x)
+                    || !Double.TryParse(parts[yAxis], NumberStyles.Float, CultureInfo.InvariantCulture, out double y))
                 {
                     //_logger?.LogWarning("Skipping invalid line: {line}", line);
                     continue;
@@ -185,19 +185,22 @@ namespace egbt22lib
         /// <param name="xAxis">0-based index of X-axis</param>
         /// <param name="yAxis">0-based index of Y-axis</param>
         /// <param name="zAxis">0-based index of Z-axis</param>
-        /// <param name="precision">Output precision</param>
+        /// <param name="precisionXY">Output precision of x and y coordinates</param>
+        /// <param name="precisionZ">Output precision of z coordinates</param>
         /// <param name="delimiter">Delimiter (column separator)</param>
-        public static void WriteFile(string file, double[] x, double[] y, double[] z, string[][] coordinateLines, int xAxis, int yAxis, int zAxis, int precision, char delimiter)
+        public static void WriteFile(string file, double[] x, double[] y, double[] z, string[][] coordinateLines, int xAxis, int yAxis, int zAxis, int precisionXY, int precisionZ, char delimiter)
         {
             //_logger?.LogDebug("Writing coordinates to file: {file}", file);
-            var format = $"F{precision}";
+            string formatXY = $"F{precisionXY}";
+            string formatZ = $"F{precisionZ}";
+ 
             try
             {
                 using var writer = new StreamWriter(file);
-                for (var i = 0; i < x.Length; i++)
+                for (int i = 0; i < x.Length; i++)
                 {
-                    var line = coordinateLines[i];
-                    for (var j = 0; j < line.Length; j++)
+                    string[] line = coordinateLines[i];
+                    for (int j = 0; j < line.Length; j++)
                     {
                         if (j > 0)
                         {
@@ -205,15 +208,15 @@ namespace egbt22lib
                         }
                         if (j == xAxis)
                         {
-                            writer.Write(x[i].ToString(format, CultureInfo.InvariantCulture));
+                            writer.Write(x[i].ToString(formatXY, CultureInfo.InvariantCulture));
                         }
                         else if (j == yAxis)
                         {
-                            writer.Write(y[i].ToString(format, CultureInfo.InvariantCulture));
+                            writer.Write(y[i].ToString(formatXY, CultureInfo.InvariantCulture));
                         }
                         else if (j == zAxis)
                         {
-                            writer.Write(z[i].ToString(format, CultureInfo.InvariantCulture));
+                            writer.Write(z[i].ToString(formatZ, CultureInfo.InvariantCulture));
                         }
                         else
                         {
@@ -244,14 +247,14 @@ namespace egbt22lib
         public static void WriteFile(string file, double[] x, double[] y, string[][] coordinateLines, int xAxis, int yAxis, int precision, char delimiter)
         {
             //_logger?.LogDebug("Writing coordinates to file: {file}", file);
-            var format = $"F{precision}";
+            string format = $"F{precision}";
             try
             {
                 using var writer = new StreamWriter(file);
-                for (var i = 0; i < x.Length; i++)
+                for (int i = 0; i < x.Length; i++)
                 {
-                    var line = coordinateLines[i];
-                    for (var j = 0; j < line.Length; j++)
+                    string[] line = coordinateLines[i];
+                    for (int j = 0; j < line.Length; j++)
                     {
                         if (j > 0)
                         {
@@ -282,16 +285,16 @@ namespace egbt22lib
 
         public static void WriteCSV(in string fileName, in string[] header, in char separator, in string[] ids, params double[][] data)
         {
-            var lines = new string[ids.Length + 1];
-            var lineLength = data.Length + 1;
+            string[] lines = new string[ids.Length + 1];
+            int lineLength = data.Length + 1;
             lines[0] = String.Join(separator, header);
-            for (var i = 0; i < ids.Length; i++)
+            for (int i = 0; i < ids.Length; i++)
             {
-                var line = new string[lineLength];
+                string[] line = new string[lineLength];
                 line[0] = ids[i];
-                for (var j = 0; j < data.Length; j++)
+                for (int j = 0; j < data.Length; j++)
                 {
-                    var valStr = FormattableString.Invariant($"{data[j][i]:G}");
+                    string valStr = FormattableString.Invariant($"{data[j][i]:G}");
                     line[j + 1] = valStr;
                 }
                 lines[1 + i] = string.Join(separator, line);
