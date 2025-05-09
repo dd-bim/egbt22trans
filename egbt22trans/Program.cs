@@ -2,8 +2,9 @@
 using CommandLine.Text;
 
 using egbt22lib;
-
+using egbt22lib.Transformations;
 using static egbt22lib.Convert;
+using Convert = egbt22lib.Convert;
 
 
 namespace egbt22trans;
@@ -84,41 +85,90 @@ internal class Program
         {
             if (opts.Egbt22 < 1)
             {
-
-                // Read input file
-                var (xin, yin, zin) = IO.ReadFile(opts.InputFile, opts.XAxis - 1, opts.YAxis - 1, opts.ZAxis - 1, opts.Delimiter[0], out var coordinateLines);
-
-                // Determine conversion function
-                if (!GetConversion((CRS)opts.Source, (CRS)opts.Target, out var conversion, out var info))
+                string source = Defined_CRS[opts.Source - 1], 
+                    target = Defined_CRS[opts.Target - 1];
+                if (opts.ZAxis < 1)
                 {
-                    Console.WriteLine($"Conversion from source {opts.Source} to target {opts.Target} is not supported.");
-                    return;
+                    // Determine conversion function
+                    if (!GetConversion(source, target, out var conversion, out string info))
+                    {
+                        Console.WriteLine($"Conversion from source {source} (ID {opts.Source}) to target {target} (ID {opts.Target}) is not supported.");
+                        return;
+                    }
+                    Console.WriteLine($"Conversion info: \n{info}");
+                    
+                    // Read input file
+                    (double[] xin, double[] yin) = IO.ReadFile(opts.InputFile, opts.XAxis - 1, opts.YAxis - 1, opts.Delimiter[0], out string[][] coordinateLines);
+
+                    // Apply conversion
+                    (double[] xout, double[] yout) = CalcArrays2(xin, yin, conversion);
+
+                    // Write output file
+                    IO.WriteFile(opts.OutputFile, xout, yout, coordinateLines, opts.XAxis - 1, opts.YAxis - 1, opts.Precision, opts.Delimiter[0]);
+                }
+                else
+                {
+                    if (opts.Height < 0 || opts.Height > 3)
+                    {
+                        Console.WriteLine("The index for the height system must have a value in the range 0 to 3.");
+                        return;
+                    }
+                    string sourceVRS = Defined_VRS[opts.Height];
+                    // Determine conversion function
+                    if (!GetConversion(source, sourceVRS, target, out var conversion, out string info))
+                    {
+                        Console.WriteLine($"Conversion from source {source} (ID {opts.Source}) to target {target} (ID {opts.Target}) with {sourceVRS} heights (ID {opts.Height}) is not supported.");
+                        return;
+                    }
+
+                    Console.WriteLine($"Conversion info: \n{info}");
+                   
+                    // Read input file
+                    var (xin, yin, zin) = IO.ReadFile(opts.InputFile, opts.XAxis - 1, opts.YAxis - 1, opts.ZAxis - 1,
+                        opts.Delimiter[0], out var coordinateLines);
+
+                    // Apply conversion
+                    (double[] xout, double[] yout, double[] zout) = CalcArrays3(xin, yin, zin, conversion);
+
+                    // Write output file
+                    if (opts.Height == 1 && !target.EndsWith("Geoc"))
+                    {
+                        // Normal heights keep unchanged
+                        IO.WriteFile(opts.OutputFile, xout, yout, coordinateLines, opts.XAxis - 1, opts.YAxis - 1, opts.Precision, opts.Delimiter[0]);
+                    }
+                    else
+                    {
+                        IO.WriteFile(opts.OutputFile, xout, yout, zout, coordinateLines, opts.XAxis - 1, opts.YAxis - 1, opts.ZAxis - 1, opts.Precision, opts.Delimiter[0]);
+                    }
                 }
 
-                Console.WriteLine($"Conversion info: {info}");
-
-                // Apply conversion
-                var xout = new double[xin.Length];
-                var yout = new double[xin.Length];
-                for (int i = 0; i < xin.Length; i++)
-                {
-                    (xout[i], yout[i]) = conversion(xin[i], yin[i]);
-                }
-
-                // Write output file
-                IO.WriteFile(opts.OutputFile, xout, yout, coordinateLines, opts.XAxis - 1, opts.YAxis - 1, opts.Precision, opts.Delimiter[0]);
                 Console.WriteLine("Conversion completed successfully.");
             }
             else
             {
-                var (xin, yin, zin) = IO.ReadFile(opts.InputFile, opts.XAxis - 1, opts.YAxis - 1, opts.ZAxis - 1, opts.Delimiter[0], out var coordinateLines);
+                (double[] xin, double[] yin, double[] zin) = IO.ReadFile(opts.InputFile, opts.XAxis - 1, opts.YAxis - 1, opts.ZAxis - 1, opts.Delimiter[0], out string[][] coordinateLines);
+                
+                bool isGeod = opts.Egbt22 > 4;
+                if (isGeod)
+                {
+                    (xin, yin, zin) = CalcArrays3(xin, yin, zin, egbt22lib.Conversions.Defined.GC_GRS80.Forward);
+                    opts.Egbt22 -= 4;
+                }
 
-                var (xout, yout, zout) = opts.Egbt22 > 0
-                ?   // EGBT22 transformation
-                    transformEGBT22(opts.Egbt22, xin, yin, zin)
-                :   // Normal transformation/conversion
-                    convert(opts.Source, opts.Target, xin, yin, zin);
+                (double[] xout, double[] yout, double[] zout) = opts.Egbt22 switch
+                {
+                    1 => CalcArrays3(xin, yin, zin, Defined.Trans_Datum_ETRS89_DREF91_to_EGBT22.Forward),
+                    2 => CalcArrays3(xin, yin, zin, Defined.Trans_Datum_ETRS89_DREF91_to_EGBT22.Reverse),
+                    3 => CalcArrays3(xin, yin, zin, Defined.Trans_Datum_ETRS89_CZ_to_EGBT22.Forward),
+                    4 => CalcArrays3(xin, yin, zin, Defined.Trans_Datum_ETRS89_CZ_to_EGBT22.Reverse),
+                    _ => throw new ArgumentException("Invalid operation")
+                };
 
+                if (isGeod)
+                {
+                    (xout, yout, zout) = CalcArrays3(xout, yout, zout, egbt22lib.Conversions.Defined.GC_GRS80.Reverse);
+                }
+                
                 IO.WriteFile(opts.OutputFile, xout, yout, zout, coordinateLines, opts.XAxis - 1, opts.YAxis - 1, opts.ZAxis - 1, opts.Precision, opts.Delimiter[0]);
             }
 
@@ -128,222 +178,7 @@ internal class Program
         {
             Console.WriteLine($"An error occurred during the conversion: {ex.Message}");
         }
-
-
-
-        //if ((opts.Source == 1 && opts.Target == 2) || (opts.Source == 2 && opts.Target == 1))
-        //{
-        //    var (xin, yin) = IO.ReadFile(opts.InputFile, opts.XAxis - 1, opts.YAxis - 1, opts.Delimiter[0], out var coordinateLines);
-        //    // Normal transformation/conversion
-        //    if (!(opts.Source == 1
-        //        ? EGBT22_Local_to_ETRS89_UTM33(xin, yin, out var xout, out var yout)
-        //        : ETRS89_UTM33_to_EGBT22_Local(xin, yin, out xout, out yout)))
-        //    {
-        //        Console.WriteLine("Conversion failed.");
-        //        return;
-        //    }
-        //    IO.WriteFile(opts.OutputFile, xout, yout, coordinateLines, opts.XAxis - 1, opts.YAxis - 1, opts.Precision, opts.Delimiter[0]);
-        //}
-        //else
-        //{
-        //    var (xin, yin, zin) = IO.ReadFile(opts.InputFile, opts.XAxis - 1, opts.YAxis - 1, opts.ZAxis - 1, opts.Delimiter[0], out var coordinateLines);
-
-        //    var (xout, yout, zout) = opts.Egbt22 > 0
-        //    ?   // EGBT22 transformation
-        //        transformEGBT22(opts.Egbt22, xin, yin, zin)
-        //    :   // Normal transformation/conversion
-        //        convert(opts.Source, opts.Target, xin, yin, zin);
-
-        //    IO.WriteFile(opts.OutputFile, xout, yout, zout, coordinateLines, opts.XAxis - 1, opts.YAxis - 1, opts.ZAxis - 1, opts.Precision, opts.Delimiter[0]);
-        //}
+        
     }
 
-    static (double[] x, double[] y, double[] z) transformEGBT22(int operation, double[] x, double[] y, double[] z)
-    {
-        // EGBT22
-        var dx = -0.0028;
-        var dy = -0.0023;
-        var dz = 0.0029;
-        switch (operation)
-        {
-            case 1:
-            case 5:
-                // ETRS89/DREF91 -> EGBT22
-                break;
-            case 2:
-            case 6:
-                // EGBT22 -> ETRS89/DREF91
-                dx = -dx;
-                dy = -dy;
-                dz = -dz;
-                break;
-            case 3:
-            case 7:
-                // ETRS89-CZ -> EGBT22
-                dx = -dx;
-                dy = -dy;
-                dz = -dz;
-                break;
-            case 4:
-            case 8:
-                // EGBT22 -> ETRS89-CZ
-                break;
-            default:
-                throw new ArgumentException("Invalid operation");
-        }
-        double[] xout, yout, zout;
-        if (operation > 4)
-        {
-            //EPSG:4937
-            if (!ETRS89_Geod_3D_to_ETRS89_Geoc(x, y, z, out xout, out yout, out zout))
-            {
-                throw new ArgumentException("Conversion failed.");
-            }
-        }
-        else
-        {
-            xout = new double[x.Length];
-            yout = new double[x.Length];
-            zout = new double[x.Length];
-        }
-        for (var i = 0; i < x.Length; i++)
-        {
-            xout[i] = x[i] + dx;
-            yout[i] = y[i] + dy;
-            xout[i] = z[i] + dz;
-        }
-        if (operation > 4)
-        {
-            //EPSG:4937
-            if (!ETRS89_Geoc_to_ETRS89_Geod_3D(xout, yout, zout, out xout, out yout, out zout))
-            {
-                throw new ArgumentException("Conversion failed.");
-            }
-        }
-        return (xout, yout, zout);
-    }
-
-    static (double[] x, double[] y, double[] z) convert(int source, int target, double[] x, double[] y, double[] z)
-    {
-        double[] xout, yout, zout;
-        switch ((source, target))
-        {
-            case (1, 3):
-                // ETRS89 EGBT_LDP Dresden-Prag -> DB_REF GK5
-                if (!EGBT22_Local_to_DBRef_GK5(x, y, z, out xout, out yout))
-                    throw new ArgumentException("Conversion failed.");
-                zout = z;
-                Console.WriteLine("Conversion ETRS89 EGBT_LDP Dresden-Prag -> DB_REF GK5");
-                break;
-            case (3, 1):
-                // DB_REF GK5 -> ETRS89 EGBT_LDP Dresden-Prag
-                if (!DBRef_GK5_to_EGBT22_Local(x, y, z, out xout, out yout))
-                    throw new ArgumentException("Conversion failed.");
-                zout = z;
-                Console.WriteLine("Conversion DB_REF GK5 -> ETRS89 EGBT_LDP Dresden-Prag");
-                break;
-            case (1, 4):
-                // ETRS89 EGBT_LDP Dresden-Prag -> ETRS89 Cartesian 3D Geocentric
-                if (!EGBT22_Local_to_ETRS89_Geoc(x, y, z, out xout, out yout, out zout))
-                    throw new ArgumentException("Conversion failed.");
-                Console.WriteLine("Conversion ETRS89 EGBT_LDP Dresden-Prag -> ETRS89 Cartesian 3D Geocentric");
-                break;
-            case (4, 1):
-                // ETRS89 Cartesian 3D Geocentric -> ETRS89 EGBT_LDP Dresden-Prag
-                if (!ETRS89_Geoc_to_EGBT22_Local(x, y, z, out xout, out yout, out zout))
-                    throw new ArgumentException("Conversion failed.");
-                Console.WriteLine("Conversion ETRS89 Cartesian 3D Geocentric -> ETRS89 EGBT_LDP Dresden-Prag");
-                break;
-            case (1, 5):
-                // ETRS89 EGBT_LDP Dresden-Prag -> ETRS89 Geodetic 3D
-                if (!EGBT22_Local_to_ETRS89_Geod_3D(x, y, z, out xout, out yout, out zout))
-                    throw new ArgumentException("Conversion failed.");
-                Console.WriteLine("Conversion ETRS89 EGBT_LDP Dresden-Prag -> ETRS89 Geodetic 3D");
-                break;
-            case (5, 1):
-                // ETRS89 Geodetic 3D -> ETRS89 EGBT_LDP Dresden-Prag
-                if (!ETRS89_Geod_3D_to_EGBT22_Local(x, y, z, out xout, out yout, out zout))
-                    throw new ArgumentException("Conversion failed.");
-                Console.WriteLine("Conversion ETRS89 Geodetic 3D -> ETRS89 EGBT_LDP Dresden-Prag");
-                break;
-            case (2, 3):
-                // ETRS89 UTM33 -> DB_REF GK5
-                if (!ETRS89_UTM33_to_DBRef_GK5(x, y, z, out xout, out yout))
-                    throw new ArgumentException("Conversion failed.");
-                zout = z;
-                Console.WriteLine("Conversion ETRS89 UTM33 -> DB_REF GK5");
-                break;
-            case (3, 2):
-                // DB_REF GK5 -> ETRS89 UTM33
-                if (!DBRef_GK5_to_ETRS89_UTM33(x, y, z, out xout, out yout))
-                    throw new ArgumentException("Conversion failed.");
-                zout = z;
-                Console.WriteLine("Conversion DB_REF GK5 -> ETRS89 UTM33");
-                break;
-            case (2, 4):
-                // ETRS89 UTM33 -> ETRS89 Cartesian 3D Geocentric
-                if (!ETRS89_UTM33_to_ETRS89_Geoc(x, y, z, out xout, out yout, out zout))
-                    throw new ArgumentException("Conversion failed.");
-                Console.WriteLine("Conversion ETRS89 UTM33 -> ETRS89 Cartesian 3D Geocentric");
-                break;
-            case (4, 2):
-                // ETRS89 Cartesian 3D Geocentric -> ETRS89 UTM33
-                if (!ETRS89_Geoc_to_ETRS89_UTM33(x, y, z, out xout, out yout, out zout))
-                    throw new ArgumentException("Conversion failed.");
-                Console.WriteLine("Conversion ETRS89 Cartesian 3D Geocentric -> ETRS89 UTM33");
-                break;
-            case (2, 5):
-                // ETRS89 UTM33 -> ETRS89 Geodetic 3D
-                if (!ETRS89_UTM33_to_ETRS89_Geod_3D(x, y, z, out xout, out yout, out zout))
-                    throw new ArgumentException("Conversion failed.");
-                Console.WriteLine("Conversion ETRS89 UTM33 -> ETRS89 Geodetic 3D");
-                break;
-            case (5, 2):
-                // ETRS89 Geodetic 3D -> ETRS89 UTM33
-                if (!ETRS89_Geod_3D_to_ETRS89_UTM33(x, y, z, out xout, out yout, out zout))
-                    throw new ArgumentException("Conversion failed.");
-                Console.WriteLine("Conversion ETRS89 Geodetic 3D -> ETRS89 UTM33");
-                break;
-            case (3, 4):
-                // DB_REF GK5 -> ETRS89 Cartesian 3D Geocentric
-                if (!DBRef_GK5_to_ETRS89_Geoc(x, y, z, out xout, out yout, out zout))
-                    throw new ArgumentException("Conversion failed.");
-                Console.WriteLine("Conversion DB_REF GK5 -> ETRS89 Cartesian 3D Geocentric");
-                break;
-            case (4, 3):
-                // ETRS89 Cartesian 3D Geocentric -> DB_REF GK5
-                if (!ETRS89_Geod_3D_to_DBRef_GK5(x, y, z, out xout, out yout, out zout))
-                    throw new ArgumentException("Conversion failed.");
-                Console.WriteLine("Conversion ETRS89 Cartesian 3D Geocentric -> DB_REF GK5");
-                break;
-            case (3, 5):
-                // DB_REF GK5 -> ETRS89 Geodetic 3D
-                if (!DBRef_GK5_to_ETRS89_Geod_3D(x, y, z, out xout, out yout, out zout))
-                    throw new ArgumentException("Conversion failed.");
-                Console.WriteLine("Conversion DB_REF GK5 -> ETRS89 Geodetic 3D");
-                break;
-            case (5, 3):
-                // ETRS89 Geodetic 3D -> DB_REF GK5
-                if (!ETRS89_Geod_3D_to_DBRef_GK5(x, y, z, out xout, out yout, out zout))
-                    throw new ArgumentException("Conversion failed.");
-                Console.WriteLine("Conversion ETRS89 Geodetic 3D -> DB_REF GK5");
-                break;
-            case (4, 5):
-                // ETRS89 Cartesian 3D Geocentric -> ETRS89 Geodetic 3D
-                if (!ETRS89_Geoc_to_ETRS89_Geod_3D(x, y, z, out xout, out yout, out zout))
-                    throw new ArgumentException("Conversion failed.");
-                Console.WriteLine("Conversion ETRS89 Cartesian 3D Geocentric -> ETRS89 Geodetic 3D");
-                break;
-            case (5, 4):
-                // ETRS89 Geodetic 3D -> ETRS89 Cartesian 3D Geocentric
-                if (!ETRS89_Geod_3D_to_ETRS89_Geoc(x, y, z, out xout, out yout, out zout))
-                    throw new ArgumentException("Conversion failed.");
-                Console.WriteLine("Conversion ETRS89 Geodetic 3D -> ETRS89 Cartesian 3D Geocentric");
-                break;
-            default:
-                throw new ArgumentException($"Invalid source {source} and target {target} combination.");
-
-        }
-        return (xout, yout, zout);
-    }
 }
