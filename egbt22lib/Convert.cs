@@ -57,7 +57,7 @@ namespace egbt22lib
             CRS.EGBT22_Geod.ToString(),
             CRS.EGBT22_Geoc.ToString(),
             CRS.ETRS89_DREF91_UTM33.ToString(),
-            "ETRS89_DREF91_Geod", // Conversion seems not working correctly
+            "ETRS89_DREF91_Geod", // String conversion seems not working correctly
             CRS.ETRS89_DREF91_Geoc.ToString(),
             CRS.ETRS89_CZ_Geod.ToString(),
             CRS.ETRS89_CZ_Geoc.ToString(),
@@ -77,7 +77,7 @@ namespace egbt22lib
             CRS.EGBT22_EGBT_LDP.ToString(),
             CRS.EGBT22_Geod.ToString(),
             CRS.ETRS89_DREF91_UTM33.ToString(),
-            "ETRS89_DREF91_Geod", // Conversion seems not working correctly
+            "ETRS89_DREF91_Geod", // String conversion seems not working correctly
             CRS.DB_Ref_GK5.ToString(),
             CRS.DB_Ref_Geod.ToString(),
         };
@@ -236,30 +236,28 @@ namespace egbt22lib
             return (elat, elon);
         }
 
-
-
         /// <summary>
-        ///     Attempts to retrieve a coordinate conversion function between two specified coordinate reference systems (CRS)
-        ///     and provides additional information about the conversion process.
+        /// Attempts to retrieve a coordinate conversion function between the specified source and target coordinate
+        /// reference systems (CRS).
         /// </summary>
-        /// <param name="source">The identifier of the source coordinate reference system.</param>
-        /// <param name="target">The identifier of the target coordinate reference system.</param>
-        /// <param name="conversion">
-        ///     An output parameter that, if the method succeeds, contains the function converting coordinates
-        ///     from the source CRS to the target CRS. The function takes x and y coordinates as inputs and
-        ///     returns a tuple with the transformed x and y coordinates.
-        /// </param>
-        /// <param name="info">An output parameter containing additional information about the conversion process or errors.</param>
-        /// <param name="isDBREFZero">
-        ///     Specifies whether the conversion should consider the DBREF ellipsoidal height as zero.
-        ///     Defaults to false if not provided.
-        /// </param>
-        /// <returns>
-        ///     True if the conversion function was successfully retrieved; otherwise, false.
-        ///     If false, the `conversion` function will return NaN for all inputs, and `info` will contain an error message.
-        /// </returns>
+        /// <remarks>This method validates the provided source and target CRS identifiers and attempts to
+        /// construct a conversion function between them. If either CRS is invalid or the conversion cannot be
+        /// determined, the method returns <see langword="false"/> and provides error details in the <paramref
+        /// name="info"/> parameter.</remarks>
+        /// <param name="source">The source CRS identifier as a string. Must be a valid CRS name.</param>
+        /// <param name="target">The target CRS identifier as a string. Must be a valid CRS name.</param>
+        /// <param name="conversion">When this method returns, contains a function that performs the coordinate conversion from the source CRS to
+        /// the target CRS. The function takes two double parameters (representing coordinates) and returns a tuple of
+        /// two doubles (the converted coordinates). If the method fails, this will be set to a function that returns
+        /// <see cref="double.NaN"/> for both values.</param>
+        /// <param name="info">When this method returns, contains additional information about the conversion process. If the method fails,
+        /// this will contain an error message describing the reason for failure.</param>
+        /// <param name="useZeroHeights">A boolean value indicating whether to use zero heights during the conversion and transformation process. If <see
+        /// langword="true"/>, ellipsoidal heights will be treated as zero; otherwise, only conversions with the same datum are supported.</param>
+        /// <returns><see langword="true"/> if the conversion function was successfully created; otherwise, <see
+        /// langword="false"/>.</returns>
         public static bool GetConversion(string source, string target,
-            out Func<double, double, (double x, double y)> conversion, out string info)
+            out Func<double, double, (double x, double y)> conversion, out string info, bool useZeroHeights)
         {
             if (!Enum.TryParse(source, out CRS sourceCRS))
             {
@@ -277,7 +275,7 @@ namespace egbt22lib
 
             var steps = new List<Func<double, double, (double x, double y)>>();
             info = "";
-            if (getConversion(sourceCRS, targetCRS, ref steps, ref info))
+            if (getConversion(sourceCRS, targetCRS, ref steps, ref info, useZeroHeights))
             {
                 conversion = calcSteps(steps);
                 return true;
@@ -288,7 +286,7 @@ namespace egbt22lib
         }
 
         private static bool getConversion(CRS source, CRS target,
-            ref List<Func<double, double, (double x, double y)>> steps, ref string info)
+            ref List<Func<double, double, (double x, double y)>> steps, ref string info, bool useZeroHeights)
         {
             if (source == target)
                 return true;
@@ -297,7 +295,7 @@ namespace egbt22lib
                 case CRS.EGBT22_EGBT_LDP:
                     info += $"Conversion from {source} to {CRS.EGBT22_Geod}.\n";
                     steps.Add(TM_GRS80_EGBT_LDP.Reverse);
-                    return getConversion(CRS.EGBT22_Geod, target, ref steps, ref info);
+                    return getConversion(CRS.EGBT22_Geod, target, ref steps, ref info, useZeroHeights);
                 case CRS.EGBT22_Geod:
                     switch (target)
                     {
@@ -309,38 +307,50 @@ namespace egbt22lib
                         case CRS.ETRS89_DREF91_Geod:
                         case CRS.DB_Ref_GK5:
                         case CRS.DB_Ref_Geod:
-                            info += $"Transformation from {source} to {CRS.ETRS89_DREF91_Geod} with ETRS89 ellipsoidal height 0.\n";
-                            steps.Add(EGBT22_Geod_to_ETRS89_DREF91_Geod_ETRS89Zero);
-                            return getConversion(CRS.ETRS89_DREF91_Geod, target, ref steps, ref info);
+                            if (useZeroHeights)
+                            {
+                                info += $"Transformation from {source} to {CRS.ETRS89_DREF91_Geod} with ETRS89 ellipsoidal height 0.\n";
+                                steps.Add(EGBT22_Geod_to_ETRS89_DREF91_Geod_ETRS89Zero);
+                                return getConversion(CRS.ETRS89_DREF91_Geod, target, ref steps, ref info, useZeroHeights);
+                            }
+                            break;
                     }
                     break;
                 case CRS.ETRS89_DREF91_UTM33:
                     info += $"Conversion from {source} to {CRS.ETRS89_DREF91_Geod}.\n";
                     steps.Add(TM_GRS80_UTM33.Reverse);
-                    return getConversion(CRS.ETRS89_DREF91_Geod, target, ref steps, ref info);
+                    return getConversion(CRS.ETRS89_DREF91_Geod, target, ref steps, ref info, useZeroHeights);
                 case CRS.ETRS89_DREF91_Geod:
                     switch (target)
                     {
                         case CRS.EGBT22_EGBT_LDP:
                         case CRS.EGBT22_Geod:
-                            info += $"Transformation from {source} to {CRS.EGBT22_Geod} with ETRS89 ellipsoidal height 0.\n";
-                            steps.Add(ETRS89_DREF91_Geod_to_EGBT22_Geod_ETRS89Zero);
-                            return getConversion(CRS.EGBT22_Geod, target, ref steps, ref info);
+                            if (useZeroHeights)
+                            {
+                                info += $"Transformation from {source} to {CRS.EGBT22_Geod} with ETRS89 ellipsoidal height 0.\n";
+                                steps.Add(ETRS89_DREF91_Geod_to_EGBT22_Geod_ETRS89Zero);
+                                return getConversion(CRS.EGBT22_Geod, target, ref steps, ref info, useZeroHeights);
+                            } 
+                            break;
                         case CRS.ETRS89_DREF91_UTM33:
                             info += $"Conversion from {source} to {CRS.ETRS89_DREF91_UTM33}:\n";
                             steps.Add(TM_GRS80_UTM33.Forward);
                             return true;
                         case CRS.DB_Ref_Geod:
                         case CRS.DB_Ref_GK5:
-                            info += $"Transformation from {source} to {CRS.DB_Ref_Geod} with DB_Ref ellipsoidal height 0.\n";
-                            steps.Add(ETRS89_DREF91_Geod_to_DBRef_Geod_DBRefZero);
-                            return getConversion(CRS.DB_Ref_Geod, target, ref steps, ref info);
+                            if (useZeroHeights)
+                            {
+                                info += $"Transformation from {source} to {CRS.DB_Ref_Geod} with DB_Ref ellipsoidal height 0.\n";
+                                steps.Add(ETRS89_DREF91_Geod_to_DBRef_Geod_DBRefZero);
+                                return getConversion(CRS.DB_Ref_Geod, target, ref steps, ref info, useZeroHeights);
+                            }
+                            break;
                     }
                     break;
                 case CRS.DB_Ref_GK5:
                     info += $"Conversion from {source} to {CRS.DB_Ref_Geod}.\n";
                     steps.Add(TM_Bessel_GK5.Reverse);
-                    return getConversion(CRS.DB_Ref_Geod, target, ref steps, ref info);
+                    return getConversion(CRS.DB_Ref_Geod, target, ref steps, ref info, useZeroHeights);
                 case CRS.DB_Ref_Geod:
                     switch (target)
                     {
@@ -348,9 +358,13 @@ namespace egbt22lib
                         case CRS.EGBT22_Geod:
                         case CRS.ETRS89_DREF91_UTM33:
                         case CRS.ETRS89_DREF91_Geod:
-                            info += $"Transformation from {source} to {CRS.ETRS89_DREF91_Geod} with DB_Ref ellipsoidal height 0.\n";
-                            steps.Add(DBRef_Geod_to_ETRS89_DREF91_Geod_DBRefZero);
-                            return getConversion(CRS.ETRS89_DREF91_Geod, target, ref steps, ref info);
+                            if (useZeroHeights)
+                            {
+                                info += $"Transformation from {source} to {CRS.ETRS89_DREF91_Geod} with DB_Ref ellipsoidal height 0.\n";
+                                steps.Add(DBRef_Geod_to_ETRS89_DREF91_Geod_DBRefZero);
+                                return getConversion(CRS.ETRS89_DREF91_Geod, target, ref steps, ref info, useZeroHeights);
+                            }
+                            break;
                         case CRS.DB_Ref_GK5:
                             info += $"Conversion from {source} to {CRS.DB_Ref_GK5}.\n";
                             steps.Add(TM_Bessel_GK5.Forward);
@@ -365,6 +379,25 @@ namespace egbt22lib
         }
 
 
+        /// <summary>
+        /// Attempts to retrieve a coordinate conversion function between the specified source and target coordinate
+        /// reference systems (CRS).
+        /// </summary>
+        /// <remarks>This method validates the provided source and target CRS and VRS identifiers. If any
+        /// of the identifiers are invalid,  the method will return <see langword="false"/> and provide an appropriate
+        /// error message in the <paramref name="info"/> parameter.</remarks>
+        /// <param name="source">The source coordinate reference system (CRS) as a string. Must be a valid CRS identifier.</param>
+        /// <param name="sourceVRS">The vertical reference system (VRS) associated with the source CRS. Must be a valid VRS identifier.</param>
+        /// <param name="target">The target coordinate reference system (CRS) as a string. Must be a valid CRS identifier.</param>
+        /// <param name="conversion">When this method returns, contains a function that performs the coordinate conversion.  The function takes
+        /// three input parameters (x, y, z) and returns a tuple (x, y, z) representing the converted coordinates. If
+        /// the method fails, this will be set to a function that returns NaN for all outputs.</param>
+        /// <param name="info">When this method returns, contains additional information about the conversion process.  If the method
+        /// fails, this will contain an error message describing the issue.</param>
+        /// <param name="targetVRS">When this method returns, contains the vertical reference system (VRS) associated with the target CRS.  If
+        /// the method fails, this will be an empty string.</param>
+        /// <returns><see langword="true"/> if the conversion function was successfully retrieved; otherwise, <see
+        /// langword="false"/>.</returns>
         public static bool GetConversion(string source, string sourceVRS, string target,
             out Func<double, double, double, (double x, double y, double z)> conversion, out string info, out string targetVRS)
         {
@@ -431,7 +464,7 @@ namespace egbt22lib
         /// reflect the VRS of the target CRS after the conversion.</param>
         /// <returns><see langword="true"/> if the conversion is supported and the required steps are successfully determined; 
         /// otherwise, <see langword="false"/> if the conversion is not supported.</returns>
-        public static bool getConversion(CRS source, VRS sourceVRS, CRS target,
+        private static bool getConversion(CRS source, VRS sourceVRS, CRS target,
             ref List<Func<double, double, double, (double x, double y, double z)>> steps, ref string info, ref VRS targetVRS)
         {
             if (source == target)

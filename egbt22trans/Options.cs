@@ -11,42 +11,37 @@ namespace egbt22trans;
 internal class Options
 {
     [Option('s', "source", Default = (int)0, HelpText = "Id of source system\n" +
-        "1 ETRS89 EGBT_LDP Dresden-Prag\n" +
-        "2 ETRS89 UTM33 (EPSG:25833)\n" +
-        "3 ETRS89 geographic 3D B/L (EPSG:4258)\n" +
-        "4 ETRS89 cartesian 3D geocentric (EPSG:4936)\n" +
-        "5 DB_REF GK5 (EPSG:5685)\n" +
-        "6 DB_REF geographic 3D B/L (EPSG:5681)\n" +
-        "7 DB_REF cartesian 3D geocentric (EPSG:4936)")]
+        "1 EGBT22 EGBT_LDP Dresden-Prague\n" +
+        "2 EGBT22 geographic 3D B/L\n" +
+        "3 EGBT22 cartesian 3D geocentric\n" +
+        "4 ETRS89/DREF91 UTM33\n" +
+        "5 ETRS89/DREF91 geographic 3D B/L\n" +
+        "6 ETRS89/DREF91 cartesian 3D geocentric\n" +
+        "7 ETRS89/CZ geographic 3D B/L\n" +
+        "8 ETRS89/CZ cartesian 3D geocentric\n" +
+        "9 DB_REF GK5\n" +
+        "10 DB_REF geographic 3D B/L\n" +
+        "11 DB_REF cartesian 3D geocentric")]
     public int Source { get; set; } = 0;
 
     [Option('t', "target", Default = (int)0, HelpText = "Id of target system\n" +
-        "1 ETRS89 EGBT_LDP Dresden-Prag\n" +
-        "2 ETRS89 UTM33 (EPSG:25833)\n" +
-        "3 ETRS89 geographic 3D B/L (EPSG:4258)\n" +
-        "4 ETRS89 cartesian 3D geocentric (EPSG:4936)\n" +
-        "5 DB_REF GK5 (EPSG:5685)\n" +
-        "6 DB_REF geographic 3D B/L (EPSG:5681)\n" +
-        "7 DB_REF cartesian 3D geocentric (EPSG:4936)")]
+        "1 EGBT22 EGBT_LDP Dresden-Prague\n" +
+        "2 EGBT22 geographic 3D B/L\n" +
+        "3 EGBT22 cartesian 3D geocentric\n" +
+        "4 ETRS89/DREF91 UTM33\n" +
+        "5 ETRS89/DREF91 geographic 3D B/L\n" +
+        "6 ETRS89/DREF91 cartesian 3D geocentric\n" +
+        "7 ETRS89/CZ geographic 3D B/L\n" +
+        "8 ETRS89/CZ cartesian 3D geocentric\n" +
+        "9 DB_REF GK5\n" +
+        "10 DB_REF geographic 3D B/L\n" +
+        "11 DB_REF cartesian 3D geocentric")]
     public int Target { get; set; } = 0;
 
     [Option('h', "height", Default = (int)0, HelpText = "Id of the height system\n" +
         "1 Normal heights (calculations based on the GCG2016 geoid)\n" +
         "2 Ellipsoidal heights (ETRS89 or DB_Ref)")]
     public int Height { get; set; } = 0;
-
-    [Option('e', "egbt22", Default = (int)0, 
-        HelpText = "Special, Transformation from/to EGBT22\n" +
-        "1=Sapos(ETRS89/DREF91(R2016)) to EGBT22 (EPSG:4936), \n" +
-        "2=EGBT22 to Sapos (EPSG:4936), \n" +
-        "3=Czepos(ETRS89-CZ) to EGBT22 (EPSG:4936), \n" +
-        "4=EGBT22 to Czepos (EPSG:4936), \n" +
-        "5=Sapos(ETRS89/DREF91(R2016)) to EGBT22 (EPSG:4937), \n" +
-        "6=EGBT22 to Sapos (EPSG:4937), \n" +
-        "7=Czepos(ETRS89-CZ) to EGBT22 (EPSG:4937), \n" +
-        "8=EGBT22 to Czepos (EPSG:4937)"
-        )]
-    public int Egbt22 { get; set; } = 0;
 
     [Option('p', "precision", Default = (int)4, HelpText = "Precision (decimal places) of coordinates in target file")]
     public int Precision { get; set; } = 4;
@@ -74,8 +69,7 @@ internal class Options
 
     [Usage(ApplicationAlias = "egbt22trans.exe")]
     public static IEnumerable<Example> Examples => [
-        new("Normal case", new Options { Delimiter = ",", Source = 1, Target = 2, InputFile = "input.txt", OutputFile = "output.txt" }),
-        new("Special case", new Options { Delimiter = ",", Egbt22 = 1, ZAxis = 4, InputFile = "input.txt", OutputFile = "output.txt" })
+        new("Normal case", new Options { Delimiter = ",", Source = 1, Target = 2, InputFile = "input.txt", OutputFile = "output.txt" })
     ];
 
 }
