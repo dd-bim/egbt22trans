@@ -30,24 +30,19 @@ internal class Program
         {
             Console.WriteLine($"Warning, the output file: {opts.OutputFile} will be overwritten.");
         }
-        if (opts.Source == 0 || opts.Target == 0)
+        if (opts.Source < Options.MinSystemId || opts.Source > Options.MaxSystemId)
         {
-            Console.WriteLine("Set source '-s' and target '-t' system value.");
+            Console.WriteLine($"The source system must have a value in the range {Options.MinSystemId} to {Options.MaxSystemId}.");
+            return;
+        }
+        if (opts.Target < Options.MinSystemId || opts.Target > Options.MaxSystemId)
+        {
+            Console.WriteLine($"The target system must have a value in the range {Options.MinSystemId} to {Options.MaxSystemId}.");
             return;
         }
         if (opts.Source == opts.Target)
         {
             Console.WriteLine("Source '-s' and target '-t' system identical, no conversion.");
-            return;
-        }
-        if (opts.Source > 11)
-        {
-            Console.WriteLine("The source system must have a value in the range 1 to 11.");
-            return;
-        }
-        if (opts.Target > 11)
-        {
-            Console.WriteLine("The target system must have a value in the range 1 to 11.");
             return;
         }
         if (opts.Precision < 0)
