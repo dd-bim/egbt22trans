@@ -16,6 +16,6 @@ namespace egbt22lib.Conversions
 
         public static readonly TransMerc TM_GRS80_UTM33 = new TransMerc(GRS80_a, GRS80_f, 0.9996, 500000.0, 0.0, 15.0);
 
-        public static readonly TransMerc TM_GRS80_EGBT22 = new TransMerc(GRS80_a, GRS80_f, 1.0000346, 10000.0, 50000.0, 13.9027, 50.8247);
+        public static readonly TransMerc TM_GRS80_EGBT_LDP = new TransMerc(GRS80_a, GRS80_f, 1.0000346, 10000.0, 50000.0, 13.9027, 50.8247);
     }
 }

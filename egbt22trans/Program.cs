@@ -125,7 +125,7 @@ internal class Program
                    
                     // Read input file
                     var (xin, yin, zin) = IO.ReadFile(opts.InputFile, opts.XAxis - 1, opts.YAxis - 1, opts.ZAxis - 1,
-                        opts.Delimiter[0], out var coordinateLines);
+                        opts.Delimiter[0], out string[][]? coordinateLines);
 
                     // Apply conversion
                     (double[] xout, double[] yout, double[] zout) = CalcArrays3(xin, yin, zin, conversion);

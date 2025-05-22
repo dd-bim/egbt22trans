@@ -77,77 +77,77 @@ namespace egbt22lib.Transformations
             Kind = Kinds.Translation;
         }
 
-        /// <summary>
-        /// Initializes a transformation with a scaling factor based on parts per million.
-        /// </summary>
-        /// <param name="scale_ppm">The value represents a scaling factor that adjusts the transformation's magnitude.</param>
-        public Transformation(double scale_ppm)
-        {
-            s = 1.0 + (scale_ppm * 1.0e-6);
+        ///// <summary>
+        ///// Initializes a transformation with a scaling factor based on parts per million.
+        ///// </summary>
+        ///// <param name="scale_ppm">The value represents a scaling factor that adjusts the transformation's magnitude.</param>
+        //public Transformation(double scale_ppm)
+        //{
+        //    s = 1.0 + (scale_ppm * 1.0e-6);
 
-            Kind = Kinds.Scale;
-        }
+        //    Kind = Kinds.Scale;
+        //}
 
-        /// <summary>
-        /// Constructs a transformation matrix based on rotation angles and a scaling factor.
-        /// </summary>
-        /// <param name="rotx_arcsec">Specifies the rotation angle around the x-axis in arcseconds.</param>
-        /// <param name="roty_arcsec">Specifies the rotation angle around the y-axis in arcseconds.</param>
-        /// <param name="rotz_arcsec">Specifies the rotation angle around the z-axis in arcseconds.</param>
-        /// <param name="scale_ppm">Defines the scaling factor in parts per million.</param>
-        public Transformation(double rotx_arcsec, double roty_arcsec, double rotz_arcsec, double scale_ppm)
-        {
-            double f = rotx_arcsec * Sec2Rad;
-            double t = roty_arcsec * Sec2Rad;
-            double p = rotz_arcsec * Sec2Rad;
-            double cf = Math.Cos(f);
-            double sf = Math.Sin(f);
-            double ct = Math.Cos(t);
-            double st = Math.Sin(t);
-            double cp = Math.Cos(p);
-            double sp = Math.Sin(p);
+        ///// <summary>
+        ///// Constructs a transformation matrix based on rotation angles and a scaling factor.
+        ///// </summary>
+        ///// <param name="rotx_arcsec">Specifies the rotation angle around the x-axis in arcseconds.</param>
+        ///// <param name="roty_arcsec">Specifies the rotation angle around the y-axis in arcseconds.</param>
+        ///// <param name="rotz_arcsec">Specifies the rotation angle around the z-axis in arcseconds.</param>
+        ///// <param name="scale_ppm">Defines the scaling factor in parts per million.</param>
+        //public Transformation(double rotx_arcsec, double roty_arcsec, double rotz_arcsec, double scale_ppm)
+        //{
+        //    double f = rotx_arcsec * Sec2Rad;
+        //    double t = roty_arcsec * Sec2Rad;
+        //    double p = rotz_arcsec * Sec2Rad;
+        //    double cf = Math.Cos(f);
+        //    double sf = Math.Sin(f);
+        //    double ct = Math.Cos(t);
+        //    double st = Math.Sin(t);
+        //    double cp = Math.Cos(p);
+        //    double sp = Math.Sin(p);
 
-            (rxx, rxy, rxz,
-                ryx, ryy, ryz,
-                rzx, rzy, rzz) = (
-                ct * cp, (cf * sp) + (sf * st * cp), (sf * sp) - (cf * st * cp),
-               -ct * sp, (cf * cp) - (sf * st * sp), (sf * cp) + (cf * st * sp),
-                     st, -sf * ct, cf * ct);
+        //    (rxx, rxy, rxz,
+        //        ryx, ryy, ryz,
+        //        rzx, rzy, rzz) = (
+        //        ct * cp, (cf * sp) + (sf * st * cp), (sf * sp) - (cf * st * cp),
+        //       -ct * sp, (cf * cp) - (sf * st * sp), (sf * cp) + (cf * st * sp),
+        //             st, -sf * ct, cf * ct);
 
-            s = 1.0 + (scale_ppm * 1.0e-6);
+        //    s = 1.0 + (scale_ppm * 1.0e-6);
 
-            Kind = Kinds.Rotation | Kinds.Scale;
-        }
+        //    Kind = Kinds.Rotation | Kinds.Scale;
+        //}
 
-        /// <summary>
-        /// Constructs a transformation matrix based on rotation angles in arcseconds and a boolean indicating rotation
-        /// type.
-        /// </summary>
-        /// <param name="rotx_arcsec">Specifies the rotation angle around the x-axis in arcseconds.</param>
-        /// <param name="roty_arcsec">Specifies the rotation angle around the y-axis in arcseconds.</param>
-        /// <param name="rotz_arcsec">Specifies the rotation angle around the z-axis in arcseconds.</param>
-        /// <param name="rotation">Indicates whether the transformation is a rotation. (the value is irrelevant)</param>
-        public Transformation(double rotx_arcsec, double roty_arcsec, double rotz_arcsec, bool rotation)
-        {
-            double f = rotx_arcsec * Sec2Rad;
-            double t = roty_arcsec * Sec2Rad;
-            double p = rotz_arcsec * Sec2Rad;
-            double cf = Math.Cos(f);
-            double sf = Math.Sin(f);
-            double ct = Math.Cos(t);
-            double st = Math.Sin(t);
-            double cp = Math.Cos(p);
-            double sp = Math.Sin(p);
+        ///// <summary>
+        ///// Constructs a transformation matrix based on rotation angles in arcseconds and a boolean indicating rotation
+        ///// type.
+        ///// </summary>
+        ///// <param name="rotx_arcsec">Specifies the rotation angle around the x-axis in arcseconds.</param>
+        ///// <param name="roty_arcsec">Specifies the rotation angle around the y-axis in arcseconds.</param>
+        ///// <param name="rotz_arcsec">Specifies the rotation angle around the z-axis in arcseconds.</param>
+        ///// <param name="rotation">Indicates whether the transformation is a rotation. (the value is irrelevant, just to differentiate the constructor)</param>
+        //public Transformation(double rotx_arcsec, double roty_arcsec, double rotz_arcsec, bool rotation)
+        //{
+        //    double f = rotx_arcsec * Sec2Rad;
+        //    double t = roty_arcsec * Sec2Rad;
+        //    double p = rotz_arcsec * Sec2Rad;
+        //    double cf = Math.Cos(f);
+        //    double sf = Math.Sin(f);
+        //    double ct = Math.Cos(t);
+        //    double st = Math.Sin(t);
+        //    double cp = Math.Cos(p);
+        //    double sp = Math.Sin(p);
 
-            (rxx, rxy, rxz,
-                ryx, ryy, ryz,
-                rzx, rzy, rzz) = (
-                ct * cp, (cf * sp) + (sf * st * cp), (sf * sp) - (cf * st * cp),
-               -ct * sp, (cf * cp) - (sf * st * sp), (sf * cp) + (cf * st * sp),
-                     st, -sf * ct, cf * ct);
+        //    (rxx, rxy, rxz,
+        //        ryx, ryy, ryz,
+        //        rzx, rzy, rzz) = (
+        //        ct * cp, (cf * sp) + (sf * st * cp), (sf * sp) - (cf * st * cp),
+        //       -ct * sp, (cf * cp) - (sf * st * sp), (sf * cp) + (cf * st * sp),
+        //             st, -sf * ct, cf * ct);
 
-            Kind = Kinds.Rotation;
-        }
+        //    Kind = Kinds.Rotation;
+        //}
 
 
         #region private methods
@@ -167,25 +167,13 @@ namespace egbt22lib.Transformations
                 (rxz * x) + (ryz * y) + (rzz * z));
         }
 
-        private (double x, double y, double z) translateForward(double x, double y, double z)
-        {
-            return (x + tx, y + ty, z + tz);
-        }
+        private (double x, double y, double z) translateForward(double x, double y, double z) => (x + tx, y + ty, z + tz);
 
-        private (double x, double y, double z) translateReverse(double x, double y, double z)
-        {
-            return (x - tx, y - ty, z - tz);
-        }
+        private (double x, double y, double z) translateReverse(double x, double y, double z) => (x - tx, y - ty, z - tz);
 
-        private (double x, double y, double z) scaleForward(double x, double y, double z)
-        {
-            return (x * s, y * s, z * s);
-        }
+        private (double x, double y, double z) scaleForward(double x, double y, double z) => (x * s, y * s, z * s);
 
-        private (double x, double y, double z) scaleReverse(double x, double y, double z)
-        {
-            return (x / s, y / s, z / s);
-        }
+        private (double x, double y, double z) scaleReverse(double x, double y, double z) => (x / s, y / s, z / s);
 
         #endregion
 

@@ -1,0 +1,51 @@
+#ETRS89_DREF91_UTM33_Ellipsoidal_original |> ETRS89_DREF91_Geod_Ellipsoidal_proj
+C:\OSGeo4W\bin\cct.exe -t 0 -d 17 -o ETRS89_DREF91_Geod_Ellipsoidal_proj.txt +proj=pipeline +step +inv +proj=utm +zone=33 +ellps=GRS80 +step +proj=axisswap +order=2,1 ETRS89_DREF91_UTM33_Ellipsoidal_original.txt
+
+#ETRS89_DREF91_UTM33_Ellipsoidal_original |> ETRS89_DREF91_Geoc_proj
+C:\OSGeo4W\bin\cct.exe -t 0 -d 17 -o ETRS89_DREF91_Geoc_proj.txt +proj=pipeline +step +inv +proj=utm +zone=33 +ellps=GRS80 +step +proj=cart +ellps=GRS80 ETRS89_DREF91_UTM33_Ellipsoidal_original.txt
+
+#ETRS89_DREF91_UTM33_Ellipsoidal_original |> DB_Ref_Geoc_proj
+C:\OSGeo4W\bin\cct.exe -t 0 -d 17 -o DB_Ref_Geoc_proj.txt +proj=pipeline +step +inv +proj=utm +zone=33 +ellps=GRS80 +step +proj=cart +ellps=GRS80 +step +proj=helmert +x=-584.9567 +y=-107.7277 +z=-413.8036 +rx=1.1155257601 +ry=0.2824170155 +rz=-3.1384505907 +s=-7.992171 +exact +convention=coordinate_frame ETRS89_DREF91_UTM33_Ellipsoidal_original.txt
+
+#ETRS89_DREF91_UTM33_Ellipsoidal_original |> DB_Ref_Geod_Ellipsoidal_proj
+C:\OSGeo4W\bin\cct.exe -t 0 -d 17 -o DB_Ref_Geod_Ellipsoidal_proj.txt +proj=pipeline +step +inv +proj=utm +zone=33 +ellps=GRS80 +step +proj=cart +ellps=GRS80 +step +proj=helmert +x=-584.9567 +y=-107.7277 +z=-413.8036 +rx=1.1155257601 +ry=0.2824170155 +rz=-3.1384505907 +s=-7.992171 +exact +convention=coordinate_frame +step +inv +proj=cart +ellps=bessel +step +proj=axisswap +order=2,1 ETRS89_DREF91_UTM33_Ellipsoidal_original.txt
+
+#ETRS89_DREF91_UTM33_Ellipsoidal_original |> DB_Ref_GK5_Ellipsoidal_proj
+C:\OSGeo4W\bin\cct.exe -t 0 -d 17 -o DB_Ref_GK5_Ellipsoidal_proj.txt +proj=pipeline +step +inv +proj=utm +zone=33 +ellps=GRS80 +step +proj=cart +ellps=GRS80 +step +proj=helmert +x=-584.9567 +y=-107.7277 +z=-413.8036 +rx=1.1155257601 +ry=0.2824170155 +rz=-3.1384505907 +s=-7.992171 +exact +convention=coordinate_frame +step +inv +proj=cart +ellps=bessel +step +proj=tmerc +lat_0=0 +lon_0=15 +k=1 +x_0=5500000 +y_0=0 +ellps=bessel ETRS89_DREF91_UTM33_Ellipsoidal_original.txt
+
+#ETRS89_CZ_Geoc_original |> ETRS89_CZ_Geod_Ellipsoidal_proj
+C:\OSGeo4W\bin\cct.exe -t 0 -d 17 -o ETRS89_CZ_Geod_Ellipsoidal_proj.txt +proj=pipeline +step +inv +proj=cart +ellps=GRS80 +step +proj=axisswap +order=2,1 ETRS89_CZ_Geoc_original.txt
+
+EGBT22_Geoc_original |> EGBT22_Geod_Ellipsoidal_proj
+C:\OSGeo4W\bin\cct.exe -t 0 -d 17 -o EGBT22_Geod_Ellipsoidal_proj.txt +proj=pipeline +step +inv +proj=cart +ellps=GRS80 +step +proj=axisswap +order=2,1 EGBT22_Geoc_original.txt
+
+EGBT22_Geoc_original |> EGBT22_EGBT_LDP_Ellipsoidal_proj
+C:\OSGeo4W\bin\cct.exe -t 0 -d 17 -o EGBT22_EGBT_LDP_Ellipsoidal_proj.txt +proj=pipeline +step +inv +proj=cart +ellps=GRS80 +step +proj=tmerc +lat_0=50.8247 +lon_0=13.9027 +k=1.0000346 +x_0=10000  +y_0=50000 +ellps=GRS80 EGBT22_Geoc_original.txt
+
+
+
+Tausche Geod!!!!
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

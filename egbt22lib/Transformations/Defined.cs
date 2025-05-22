@@ -8,10 +8,10 @@ namespace egbt22lib.Transformations
 {
     public static class Defined
     {
-        public const double TOLRAD = 1e-12;
-        public const double TOLM = 1e-6;
+        public const double TOLRAD = 1e-13;
+        public const double TOLM = 1e-7;
 
-        public static readonly Transformation Trans_Datum_ETRS89_to_DBRef = new Transformation(
+        public static readonly Transformation Trans_Datum_ETRS89_DREF91_to_DBRef = new Transformation(
                 -584.9567,
                 -107.7277,
                 -413.8036,
@@ -21,7 +21,7 @@ namespace egbt22lib.Transformations
                 -7.992171
         );
 
-        public static readonly Transformation Trans_Datum_DBRef_to_ETRS89 = new Transformation(
+        public static readonly Transformation Trans_Datum_DBRef_to_ETRS89_DREF91 = new Transformation(
                 584.9636,
                 107.7175,
                 413.8067,
@@ -30,6 +30,7 @@ namespace egbt22lib.Transformations
                 3.1384490633,
                 7.992235
         );
+
 
         public static readonly Transformation Trans_Datum_ETRS89_DREF91_to_EGBT22 = new Transformation(-0.0028, -0.0023, 0.0029);
 
