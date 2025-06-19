@@ -12,5 +12,6 @@ namespace egbt22lib.Conversions
         public const double GRS80_a = 6378137.0;
         public const double GRS80_f = 1d / 298.257222101;
 
+
     }
 }

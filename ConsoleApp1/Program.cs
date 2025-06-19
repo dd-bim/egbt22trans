@@ -215,7 +215,7 @@ internal class Program
                 string target = Defined_CRS_2D[j];
                 if (source == target)
                     continue;
-                if (GetConversion(source, target, out var conversion, out string forwardInfo))
+                if (GetConversion(source, target, out var conversion, out string forwardInfo, true))
                 {
                     var result = new (double x, double y)[coordinates.Length];
                     for (int k = 0; k < coordinates.Length; k++)
@@ -238,7 +238,7 @@ internal class Program
                             origDiff[k] = (tx - x, ty - y);
                         }
                     }
-                    if (GetConversion(target, source, out conversion, out string reverseInfo))
+                    if (GetConversion(target, source, out conversion, out string reverseInfo, true))
                     {
                         for (int k = 0; k < result.Length; k++)
                         {
@@ -272,7 +272,7 @@ internal class Program
                 }
                 else
                 {
-                    _ = GetConversion(source, target, out _, out string reverseInfo);
+                    _ = GetConversion(source, target, out _, out string reverseInfo, true);
                     csv.AppendLine(FormattableString.Invariant($"\"{source}\",\"{target}\",\"\",,,,,,,\"{formatInfo(forwardInfo)}\",\"{formatInfo(reverseInfo)}\""));
                 }
             }
@@ -353,7 +353,7 @@ internal class Program
                 }
                 else
                 {
-                    _ = GetConversion(source, target, out _, out string reverseInfo);
+                    _ = GetConversion(source, target, out _, out string reverseInfo, true);
                     csv.AppendLine(FormattableString.Invariant($"\"{source}\",\"{vrs}\",\"{target}\",\"\",,,,,,,,,,\"{formatInfo(forwardInfo)}\",\"{formatInfo(reverseInfo)}\""));
                 }
             }
