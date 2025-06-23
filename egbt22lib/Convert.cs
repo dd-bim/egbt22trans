@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using static egbt22lib.Transformations.Defined;
 using static egbt22lib.Conversions.Defined;
+using egbt22lib.Conversions;
 
 
 namespace egbt22lib
@@ -95,41 +96,35 @@ namespace egbt22lib
             VRS.Ellipsoidal.ToString(),
         };
 
-        private static (double lat, double lon, double ellH) ETRS89_Geod_Normal_to_Ellipsoidal(double lat, double lon,
-            double h)
+        private static Coordinate ETRS89_Geod_Normal_to_Ellipsoidal(Coordinate llh)
         {
+            var (lat, lon, h) = llh;
             double ellH = h + Geoid.GetBKGBinaryGeoidHeight(lat, lon);
-            return (lat, lon, ellH);
+            return new Coordinate(lat, lon, ellH);
         }
 
-        private static (double lat, double lon, double h) ETRS89_Geod_Ellipsoidal_to_Normal(double lat, double lon,
-            double ellH)
+        private static Coordinate ETRS89_Geod_Ellipsoidal_to_Normal(Coordinate llh)
         {
+            var (lat, lon, ellH) = llh;
             double h = ellH - Geoid.GetBKGBinaryGeoidHeight(lat, lon);
-            return (lat, lon, h);
+            return new Coordinate(lat, lon, h);
         }
 
-        private static (double lat, double lon, double ellH) EGBT22_Geod_Normal_to_Ellipsoidal(double lat, double lon,
-            double h)
+        private static Coordinate EGBT22_Geod_Normal_to_Ellipsoidal(Coordinate llh)
         {
+            var (lat, lon, h) = llh;
             double th = h;
             double diff = double.MaxValue;
             while (diff > TOLRAD)
             {
-                double x;
-                double y;
-                double z;
-                (x, y, z) = GC_GRS80.Forward(lat, lon, th);
-                (x, y, z) = Trans_Datum_ETRS89_DREF91_to_EGBT22.Reverse(x, y, z);
-                double elat;
-                double elon;
-                (elat, elon, _) = GC_GRS80.Reverse(x, y, z);
+                var xyz = GC_GRS80.Forward(new Coordinate(lat, lon, th));
+                xyz = Trans_Datum_ETRS89_DREF91_to_EGBT22.Reverse(xyz);
+                (double elat, double elon, _) = GC_GRS80.Reverse(xyz);
                 double eh = h + Geoid.GetBKGBinaryGeoidHeight(elat, elon);
-                (x, y, z) = GC_GRS80.Forward(elat, elon, eh);
-                (x, y, z) = Trans_Datum_ETRS89_DREF91_to_EGBT22.Forward(x, y, z);
-                double tlat;
-                double tlon;
-                (tlat, tlon, th) = GC_Bessel.Reverse(x, y, z);
+                xyz = GC_GRS80.Forward(new Coordinate(elat, elon, eh));
+                xyz = Trans_Datum_ETRS89_DREF91_to_EGBT22.Forward(xyz);
+                double tlat, tlon;
+                (tlat, tlon, th) = GC_Bessel.Reverse(xyz);
                 diff = Math.Max(Math.Abs(tlat - lat), Math.Abs(tlon - lon));
             }
 #if DEBUG
@@ -138,103 +133,93 @@ namespace egbt22lib
             Console.WriteLine($"EGBT22_Geod_Normal_to_Ellipsoidal Difference h: {th - hcheck} full:{th} short:{hcheck}");
 #endif
 
-            return (lat, lon, th);
+            return new Coordinate(lat, lon, th);
         }
 
-        private static (double lat, double lon, double h) EGBT22_Geod_Ellipsoidal_to_Normal(double lat, double lon,
-            double ellH)
+        private static Coordinate EGBT22_Geod_Ellipsoidal_to_Normal(Coordinate llh)
         {
-            (double x, double y, double z) = GC_GRS80.Forward(lat, lon, ellH);
-            (x, y, z) = Trans_Datum_ETRS89_DREF91_to_EGBT22.Reverse(x, y, z);
-            (double elat, double elon, double eh) = GC_GRS80.Reverse(x, y, z);
+            var xyz = GC_GRS80.Forward(llh);
+            xyz = Trans_Datum_ETRS89_DREF91_to_EGBT22.Reverse(xyz);
+            (double elat, double elon, double eh) = GC_GRS80.Reverse(xyz);
             double h = eh - Geoid.GetBKGBinaryGeoidHeight(elat, elon);
-#if DEBUG
-            // Comparison of result to calculation without transformation
-            double hcheck = ellH - Geoid.GetBKGBinaryGeoidHeight(lat, lon);
-            Console.WriteLine($"EGBT22_Geod_Ellipsoidal_to_Normal Difference h: {h - hcheck} full:{h} short:{hcheck}");
-#endif
-            return (lat, lon, h);
+//#if DEBUG
+//            // Comparison of result to calculation without transformation
+//            double hcheck = ellH - Geoid.GetBKGBinaryGeoidHeight(lat, lon);
+//            Console.WriteLine($"EGBT22_Geod_Ellipsoidal_to_Normal Difference h: {h - hcheck} full:{h} short:{hcheck}");
+//#endif
+            return new Coordinate(llh.X, llh.Y, h);
         }
 
-        private static (double lat, double lon, double ellH) DBRef_Geod_Normal_to_Ellipsoidal(double lat, double lon,
-            double h)
+        private static Coordinate DBRef_Geod_Normal_to_Ellipsoidal(Coordinate llh)
         {
+            var (lat, lon, h) = llh;
             double th = h;
             double diff = double.MaxValue;
             while (diff > TOLRAD)
             {
-                double x;
-                double y;
-                double z;
-                (x, y, z) = GC_Bessel.Forward(lat, lon, th);
-                (x, y, z) = Trans_Datum_DBRef_to_ETRS89_DREF91.Forward(x, y, z);
-                double elat;
-                double elon;
-                (elat, elon, _) = GC_GRS80.Reverse(x, y, z);
+                var xyz = GC_Bessel.Forward(new Coordinate(lat, lon, th));
+                xyz = Trans_Datum_DBRef_to_ETRS89_DREF91.Forward(xyz);
+                (double elat, double elon, _) = GC_GRS80.Reverse(xyz);
                 double eh = h + Geoid.GetBKGBinaryGeoidHeight(elat, elon);
-                (x, y, z) = GC_GRS80.Forward(elat, elon, eh);
-                (x, y, z) = Trans_Datum_DBRef_to_ETRS89_DREF91
-                    .Reverse(x, y, z); // same transformation reverse to avoid differences through different parameters
-                double tlat;
-                double tlon;
-                (tlat, tlon, th) = GC_Bessel.Reverse(x, y, z);
+                xyz = GC_GRS80.Forward(new Coordinate(elat, elon, eh));
+                xyz = Trans_Datum_DBRef_to_ETRS89_DREF91
+                    .Reverse(xyz); // same transformation reverse to avoid differences through different parameters
+                double tlat, tlon;
+                (tlat, tlon, th) = GC_Bessel.Reverse(xyz);
                 diff = Math.Max(Math.Abs(tlat - lat), Math.Abs(tlon - lon));
             }
 
-            return (lat, lon, th);
+            return new Coordinate(lat, lon, th);
         }
 
-        private static (double lat, double lon, double h) DBRef_Geod_Ellipsoidal_to_Normal(double lat, double lon,
-            double ellH)
+        private static Coordinate DBRef_Geod_Ellipsoidal_to_Normal(Coordinate llh)
         {
-            (double x, double y, double z) = GC_Bessel.Forward(lat, lon, ellH);
-            (x, y, z) = Trans_Datum_DBRef_to_ETRS89_DREF91.Forward(x, y, z);
-            (double elat, double elon, double eh) = GC_GRS80.Reverse(x, y, z);
+            var xyz = GC_Bessel.Forward(llh);
+            xyz = Trans_Datum_DBRef_to_ETRS89_DREF91.Forward(xyz);
+            (double elat, double elon, double eh) = GC_GRS80.Reverse(xyz);
             double h = eh - Geoid.GetBKGBinaryGeoidHeight(elat, elon);
-            return (lat, lon, h);
+            return new Coordinate(llh.X, llh.Y, h);
         }
 
-        private static (double lat, double lon) DBRef_Geod_to_ETRS89_DREF91_Geod_DBRefZero(double lat, double lon)
+        private static Coordinate DBRef_Geod_to_ETRS89_DREF91_Geod_DBRefZero(Coordinate ll)
         {
-            (double x, double y, double z) = GC_Bessel.Forward(lat, lon, 0);
-            (x, y, z) = Trans_Datum_DBRef_to_ETRS89_DREF91.Forward(x, y, z);
-            (double elat, double elon, _) = GC_GRS80.Reverse(x, y, z);
-            return (elat, elon);
+            ll.Z = 0;
+            var xyz = GC_Bessel.Forward(ll);
+            xyz = Trans_Datum_DBRef_to_ETRS89_DREF91.Forward(xyz);
+            return GC_GRS80.Reverse(xyz);
         }
 
-        private static (double lat, double lon) ETRS89_DREF91_Geod_to_DBRef_Geod_DBRefZero(double lat, double lon)
+        private static Coordinate ETRS89_DREF91_Geod_to_DBRef_Geod_DBRefZero(Coordinate ll)
         {
-            double dlat = double.NaN, dlon = double.NaN, dh = double.MaxValue, th = 0;
+            (double lat, double lon, _) = ll;
+            double dh = double.MaxValue, th = 0;
             while (Math.Abs(dh) > TOLM)
             {
-                double x;
-                double y;
-                double z;
-                (x, y, z) = GC_GRS80.Forward(lat, lon, th);
-                (x, y, z) = Trans_Datum_ETRS89_DREF91_to_DBRef.Forward(x, y, z);
-                (dlat, dlon, dh) = GC_Bessel.Reverse(x, y, z);
+                var xyz = GC_GRS80.Forward(new Coordinate(lat, lon, th));
+                xyz = Trans_Datum_ETRS89_DREF91_to_DBRef.Forward(xyz);
+                (_, _, dh) = ll = GC_Bessel.Reverse(xyz);
                 th -= dh;
             }
 
-            return (dlat, dlon);
+            return ll;
         }
 
-        private static (double lat, double lon) ETRS89_DREF91_Geod_to_EGBT22_Geod_ETRS89Zero(double lat, double lon)
-        {
-            (double x, double y, double z) = GC_GRS80.Forward(lat, lon, 0);
-            (x, y, z) = Trans_Datum_ETRS89_DREF91_to_EGBT22.Forward(x, y, z);
-            (double elat, double elon, _) = GC_GRS80.Reverse(x, y, z);
-            return (elat, elon);
-        }
+        //private static (double lat, double lon) ETRS89_DREF91_Geod_to_EGBT22_Geod_ETRS89Zero(double lat, double lon)
+        //{
+        //    (double x, double y, double z) = GC_GRS80.Forward(lat, lon, 0);
+        //    (x, y, z) = Trans_Datum_ETRS89_DREF91_to_EGBT22.Forward(x, y, z);
+        //    (double elat, double elon, _) = GC_GRS80.Reverse(x, y, z);
+        //    return (elat, elon);
+        //}
 
-        private static (double lat, double lon) EGBT22_Geod_to_ETRS89_DREF91_Geod_ETRS89Zero(double lat, double lon)
-        {
-            // No iteration needed, as the difference is near to epsilon
-            (double tx, double ty, double tz) = GC_GRS80.Forward(lat, lon, 0);
-            (tx, ty, tz) = Trans_Datum_ETRS89_DREF91_to_EGBT22.Reverse(tx, ty, tz);
-            (double elat, double elon, _) = GC_GRS80.Reverse(tx, ty, tz);
-            return (elat, elon);
-        }
+        //private static (double lat, double lon) EGBT22_Geod_to_ETRS89_DREF91_Geod_ETRS89Zero(double lat, double lon)
+        //{
+        //    // No iteration needed, as the difference is near to epsilon
+        //    (double tx, double ty, double tz) = GC_GRS80.Forward(lat, lon, 0);
+        //    (tx, ty, tz) = Trans_Datum_ETRS89_DREF91_to_EGBT22.Reverse(tx, ty, tz);
+        //    (double elat, double elon, _) = GC_GRS80.Reverse(tx, ty, tz);
+        //    return (elat, elon);
+        //}
 
         /// <summary>
         /// Attempts to retrieve a coordinate conversion function between the specified source and target coordinate
@@ -257,23 +242,23 @@ namespace egbt22lib
         /// <returns><see langword="true"/> if the conversion function was successfully created; otherwise, <see
         /// langword="false"/>.</returns>
         public static bool GetConversion(string source, string target,
-            out Func<double, double, (double x, double y)> conversion, out string info, bool useZeroHeights)
+            out Func<double, double, (double x, double y, double inScale, double inGamma, double outScale, double outGamma)> conversion, out string info, bool useZeroHeights)
         {
             if (!Enum.TryParse(source, out CRS sourceCRS))
             {
                 info = $"Source CRS {source} is not supported.";
-                conversion = (x, y) => (double.NaN, double.NaN);
+                conversion = (x, y) => (double.NaN, double.NaN, double.NaN, double.NaN, double.NaN, double.NaN);
                 return false;
             }
 
             if (!Enum.TryParse(target, out CRS targetCRS))
             {
                 info = $"Target CRS {target} is not supported.";
-                conversion = (x, y) => (double.NaN, double.NaN);
+                conversion = (x, y) => (double.NaN, double.NaN, double.NaN, double.NaN, double.NaN, double.NaN);
                 return false;
             }
 
-            var steps = new List<Func<double, double, (double x, double y)>>();
+            var steps = new List<Func<Coordinate, Coordinate>>();
             info = "";
             if (getConversion(sourceCRS, targetCRS, ref steps, ref info, useZeroHeights))
             {
@@ -281,12 +266,12 @@ namespace egbt22lib
                 return true;
             }
 
-            conversion = (x, y) => (double.NaN, double.NaN);
+            conversion = (x, y) => (double.NaN, double.NaN, double.NaN, double.NaN, double.NaN, double.NaN);
             return false;
         }
 
         private static bool getConversion(CRS source, CRS target,
-            ref List<Func<double, double, (double x, double y)>> steps, ref string info, bool useZeroHeights)
+            ref List<Func<Coordinate, Coordinate>> steps, ref string info, bool useZeroHeights)
         {
             if (source == target)
                 return true;
@@ -697,8 +682,8 @@ namespace egbt22lib
             return false;
         }
 
-        private static Func<double, double, (double x, double y)> calcSteps(
-            List<Func<double, double, (double x, double y)>> steps)
+        private static Func<double, double, (double x, double y, double inScale, double inGamma, double outScale, double outGamma)> calcSteps(
+            List<Func<Coordinate, Coordinate>> steps)
         {
             return (x, y) =>
             {

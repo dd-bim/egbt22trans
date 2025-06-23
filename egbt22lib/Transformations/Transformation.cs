@@ -1,10 +1,12 @@
-﻿using System;
+﻿using egbt22lib.Conversions;
+
+using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace egbt22lib.Transformations
 {
-    public class Transformation
+    internal class Transformation
     {
         [Flags]
         public enum Kinds
@@ -177,8 +179,9 @@ namespace egbt22lib.Transformations
 
         #endregion
 
-        public (double x, double y, double z) Forward( double x, double y, double z)
+        public Coordinate Forward(Coordinate xyz)
         {
+            var (x,y,z) = xyz;
             if (Kind.HasFlag(Kinds.Rotation))
             {
                 (x, y, z) = rotateForward(x, y, z);
@@ -191,11 +194,12 @@ namespace egbt22lib.Transformations
             {
                 (x, y, z) = translateForward(x, y, z);
             }
-            return (x, y, z);
+            return new Coordinate(x, y, z);
         }
 
-        public (double x, double y, double z) Reverse(double x, double y, double z)
+        public Coordinate Reverse(Coordinate xyz)
         {
+            var (x, y, z) = xyz;
             if (Kind.HasFlag(Kinds.Translation))
             {
                 (x, y, z) = translateReverse(x, y, z);
@@ -208,7 +212,7 @@ namespace egbt22lib.Transformations
             {
                 (x, y, z) = rotateReverse(x, y, z);
             }
-            return (x, y, z);
+            return new Coordinate(x, y, z);
         }
 
 

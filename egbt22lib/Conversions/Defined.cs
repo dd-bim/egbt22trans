@@ -6,7 +6,7 @@ using static egbt22lib.Conversions.Common;
 
 namespace egbt22lib.Conversions
 {
-    public static class Defined
+    internal static class Defined
     {
         public static readonly Geocent GC_GRS80 = new Geocent(GRS80_a, GRS80_f);
 
