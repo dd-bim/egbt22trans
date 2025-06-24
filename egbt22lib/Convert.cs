@@ -204,22 +204,24 @@ namespace egbt22lib
             return ll;
         }
 
-        //private static (double lat, double lon) ETRS89_DREF91_Geod_to_EGBT22_Geod_ETRS89Zero(double lat, double lon)
-        //{
-        //    (double x, double y, double z) = GC_GRS80.Forward(lat, lon, 0);
-        //    (x, y, z) = Trans_Datum_ETRS89_DREF91_to_EGBT22.Forward(x, y, z);
-        //    (double elat, double elon, _) = GC_GRS80.Reverse(x, y, z);
-        //    return (elat, elon);
-        //}
+        private static Coordinate ETRS89_DREF91_Geod_to_EGBT22_Geod_ETRS89DefaultOrZero(Coordinate llh)
+        {
+            if (double.IsNaN(llh.Z))
+                llh.Z = 0;
+            var xyz = GC_GRS80.Forward(llh);
+            xyz = Trans_Datum_ETRS89_DREF91_to_EGBT22.Forward(xyz);
+            return GC_GRS80.Reverse(xyz);
+        }
 
-        //private static (double lat, double lon) EGBT22_Geod_to_ETRS89_DREF91_Geod_ETRS89Zero(double lat, double lon)
-        //{
-        //    // No iteration needed, as the difference is near to epsilon
-        //    (double tx, double ty, double tz) = GC_GRS80.Forward(lat, lon, 0);
-        //    (tx, ty, tz) = Trans_Datum_ETRS89_DREF91_to_EGBT22.Reverse(tx, ty, tz);
-        //    (double elat, double elon, _) = GC_GRS80.Reverse(tx, ty, tz);
-        //    return (elat, elon);
-        //}
+        private static Coordinate EGBT22_Geod_to_ETRS89_DREF91_Geod_ETRS89DefaultOrZero(Coordinate llh)
+        {
+            // No iteration needed, as the difference is near to epsilon
+            if (double.IsNaN(llh.Z))
+                llh.Z = 0;
+            var xyz = GC_GRS80.Forward(llh);
+            xyz = Trans_Datum_ETRS89_DREF91_to_EGBT22.Reverse(xyz);
+            return GC_GRS80.Reverse(xyz);
+        }
 
         /// <summary>
         /// Attempts to retrieve a coordinate conversion function between the specified source and target coordinate
@@ -294,7 +296,7 @@ namespace egbt22lib
                         case CRS.DB_Ref_Geod:
                             if (useZeroHeights)
                             {
-                                info += $"Transformation from {source} to {CRS.ETRS89_DREF91_Geod} with ETRS89 ellipsoidal height 0.\n";
+                                info += $"Transformation from {source} to {CRS.ETRS89_DREF91_Geod} with ETRS89 ellipsoidal height 0 or defa.\n";
                                 steps.Add(EGBT22_Geod_to_ETRS89_DREF91_Geod_ETRS89Zero);
                                 return getConversion(CRS.ETRS89_DREF91_Geod, target, ref steps, ref info, useZeroHeights);
                             }
