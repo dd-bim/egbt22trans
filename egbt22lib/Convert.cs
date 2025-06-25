@@ -1010,6 +1010,59 @@ namespace egbt22lib
             return xyz;
         }
 
+        public static (double[] gamma, double[] k, bool[] isInsideBBox, bool[] isInHeightRange) CalcArrays3(double[] xin, double[] yin, double[] zin,
+            Func<double, double, double, (double gamma, double k, bool isInsideBBox, bool isInHeightRange)> calc)
+        {
+            int n = xin.Length;
+            double[] gamma = new double[n];
+            double[] k = new double[n];
+            bool[] isInsideBBox = new bool[n];
+            bool[] isInHeightRange = new bool[n];
+            for (int i = 0; i < n; i++) (gamma[i], k[i], isInsideBBox[i], isInHeightRange[i]) = calc(xin[i], yin[i], zin[i]);
+            return (gamma, k, isInsideBBox, isInHeightRange);
+        }
+
+
+        public static (double[] gamma, double[] k, bool[] isInsideBBox, bool[] isInHeightRange) CalcArray3(double[][] points,
+            Func<double, double, double, (double gamma, double k, bool isInsideBBox, bool isInHeightRange)> calc)
+        {
+            int n = points.Length;
+            double[] gamma = new double[n];
+            double[] k = new double[n];
+            bool[] isInsideBBox = new bool[n];
+            bool[] isInHeightRange = new bool[n];
+            for (int i = 0; i < n; i++)
+            {
+                (gamma[i], k[i], isInsideBBox[i], isInHeightRange[i]) = calc(points[i][0], points[i][1], points[i][2]);
+            }
+
+            return (gamma, k, isInsideBBox, isInHeightRange);
+        }
+ 
+        public static (bool[] isInsideBBox, bool[] isInHeightRange) CalcArrays3(double[] xin, double[] yin, double[] zin,
+            Func<double, double, double, (bool isInsideBBox, bool isInHeightRange)> calc)
+        {
+            int n = xin.Length;
+            bool[] isInsideBBox = new bool[n];
+            bool[] isInHeightRange = new bool[n];
+            for (int i = 0; i < n; i++) (isInsideBBox[i], isInHeightRange[i]) = calc(xin[i], yin[i], zin[i]);
+            return (isInsideBBox, isInHeightRange);
+        }
+
+        public static (bool[] isInsideBBox, bool[] isInHeightRange) CalcArray3(double[][] points,
+            Func<double, double, double, (bool isInsideBBox, bool isInHeightRange)> calc)
+        {
+            int n = points.Length;
+            bool[] isInsideBBox = new bool[n];
+            bool[] isInHeightRange = new bool[n];
+            for (int i = 0; i < n; i++)
+            {
+                (isInsideBBox[i], isInHeightRange[i]) = calc(points[i][0], points[i][1], points[i][2]);
+            }
+
+            return (isInsideBBox, isInHeightRange);
+        }
+
         /// <summary>
         ///     Processes arrays of 2D coordinates (x, y) using a provided calculation function
         ///     and returns the resulting arrays.
@@ -1058,6 +1111,52 @@ namespace egbt22lib
             }
 
             return xy;
+        }
+
+        public static (double[] gamma, double[] k, bool[] isInsideBBox) CalcArrays2(double[] xin, double[] yin,
+            Func<double, double, (double gamma, double k, bool isInsideBBox)> calc)
+        {
+            int n = xin.Length;
+            double[] gamma = new double[n];
+            double[] k = new double[n];
+            bool[] isInsideBBox = new bool[n];
+            for (int i = 0; i < n; i++) (gamma[i], k[i], isInsideBBox[i]) = calc(xin[i], yin[i]);
+            return (gamma, k, isInsideBBox);
+        }
+
+        public static (double[] gamma, double[] k, bool[] isInsideBBox) CalcArray2(double[][] points, Func<double, double, (double gamma, double k, bool isInsideBBox)> calc)
+        {
+            int n = points.Length;
+            double[] gamma = new double[n];
+            double[] k = new double[n];
+            bool[] isInsideBBox = new bool[n];
+            for (int i = 0; i < n; i++)
+            {
+                (gamma[i], k[i], isInsideBBox[i]) = calc(points[i][0], points[i][1]);
+            }
+
+            return (gamma, k, isInsideBBox);
+        }
+
+        public static bool[] CalcArrays2(double[] xin, double[] yin,
+            Func<double, double, bool> calc)
+        {
+            int n = xin.Length;
+            bool[] isInsideBBox = new bool[n];
+            for (int i = 0; i < n; i++) isInsideBBox[i] = calc(xin[i], yin[i]);
+            return isInsideBBox;
+        }
+
+        public static bool[] CalcArray2(double[][] points, Func<double, double, bool> calc)
+        {
+            int n = points.Length;
+            bool[] isInsideBBox = new bool[n];
+            for (int i = 0; i < n; i++)
+            {
+                isInsideBBox[i] = calc(points[i][0], points[i][1]);
+            }
+
+            return isInsideBBox;
         }
 
         #endregion
