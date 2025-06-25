@@ -24,7 +24,7 @@ namespace egbt22lib.Conversions
 
         public const double Normal_Height_Center = 176;
 
-        public static bool IsInsideHeightRange_Normal(double height) => Max_Height_Difference <= Math.Abs(height - Normal_Height_Center);
+        public static bool IsInsideHeightRange_Normal(double height) => Max_Height_Difference >= Math.Abs(height - Normal_Height_Center);
 
         // DB_Ref Geod BBox
         public const double DB_Ref_Geod_Lat_Min = 50.641;
@@ -39,7 +39,7 @@ namespace egbt22lib.Conversions
                   || lon < DB_Ref_Geod_Lon_Min || lon > DB_Ref_Geod_Lon_Max);
         }
 
-        public static bool IsInsideHeightRange_DB_Ref(double height) => Max_Height_Difference <= Math.Abs(height - DB_Ref_Height_Center);
+        public static bool IsInsideHeightRange_DB_Ref(double height) => Max_Height_Difference >= Math.Abs(height - DB_Ref_Height_Center);
 
         // ETRS89 Geod BBox
         public const double ETRS89_Geod_Lat_Min = 50.640;
@@ -54,7 +54,7 @@ namespace egbt22lib.Conversions
                   || lon < ETRS89_Geod_Lon_Min || lon > ETRS89_Geod_Lon_Max);
         }
 
-        public static bool IsInsideHeightRange_ETRS89(double height) => Max_Height_Difference <= Math.Abs(height - ETRS89_Height_Center);
+        public static bool IsInsideHeightRange_ETRS89(double height) => Max_Height_Difference >= Math.Abs(height - ETRS89_Height_Center);
 
         //// ETRS89/EGBT22 LDP BBox
         //public const double ETRS89_EGBT22_LDP_East_Min = 5000;

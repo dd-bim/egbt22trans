@@ -1,9 +1,9 @@
 ﻿Forward: Conversion from DB_Ref_GK5 to DB_Ref_Geod.|>Transformation from DB_Ref_Geod to EGBT22_Geod with DB_Ref ellipsoidal height 0.|>Conversion from EGBT22_Geod to EGBT22_EGBT_LDP.
 Reverse: Conversion from EGBT22_EGBT_LDP to EGBT22_Geod.|>Iterative Transformation from EGBT22_Geod to DB_Ref_Geod with DB_Ref ellipsoidal height 0.|>Conversion from DB_Ref_Geod to DB_Ref_GK5.
-dxRoundTrip,dyRoundTrip,dx,dy
--7.073E-005,2.258E-005,3.183E-003,3.576E-003
--7.040E-005,2.250E-005,3.323E-003,2.223E-003
--6.996E-005,2.267E-005,3.311E-003,8.345E-004
--7.024E-005,2.275E-005,2.654E-003,-3.133E-004
--6.991E-005,2.288E-005,4.342E-003,4.091E-003
--7.013E-005,2.251E-005,3.475E-003,1.680E-003
+dxRoundTrip,dyRoundTrip,dx,dy,isInsideBBox,srcPPM
+-7.073E-005,2.258E-005,3.183E-003,3.576E-003,False,-290.6
+-7.040E-005,2.250E-005,3.323E-003,2.223E-003,False,-101.2
+-6.996E-005,2.267E-005,3.311E-003,8.345E-004,False,-0.5
+-7.024E-005,2.275E-005,2.654E-003,-3.133E-004,False,-45.4
+-6.991E-005,2.288E-005,4.342E-003,4.091E-003,False,-0.2
+-7.013E-005,2.251E-005,3.475E-003,1.680E-003,False,-18.4

@@ -1,7 +1,7 @@
 ﻿Forward: Conversion from DB_Ref_GK5 to DB_Ref_Geod.
 Reverse: Conversion from DB_Ref_Geod to DB_Ref_GK5.
-dxRoundTrip,dyRoundTrip,dzRoundTrip,dx,dy,dz
-0.000E+000,0.000E+000,0.000E+000,,,
-0.000E+000,2.794E-009,0.000E+000,,,
-0.000E+000,-9.313E-010,0.000E+000,,,
-0.000E+000,-1.863E-009,0.000E+000,,,
+dxRoundTrip,dyRoundTrip,dzRoundTrip,dx,dy,dz,isInsideBBox,isInsideHeightRange,srcPPM
+0.000E+000,0.000E+000,0.000E+000,,,,False,True,-47.8
+0.000E+000,2.794E-009,0.000E+000,,,,False,True,-56.1
+0.000E+000,-9.313E-010,0.000E+000,,,,False,True,-50.6
+0.000E+000,-1.863E-009,0.000E+000,,,,False,True,-55.6

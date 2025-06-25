@@ -1,9 +1,9 @@
 ﻿Forward: Conversion from DB_Ref_Geod to DB_Ref_Geoc.|>Transformation from DB_Ref_Geoc to ETRS89_DREF91_Geoc.|>Transformation from ETRS89_DREF91_Geoc to EGBT22_Geoc.|>Conversion from EGBT22_Geoc to EGBT22_Geod.
 Reverse: Conversion from EGBT22_Geod to EGBT22_Geoc.|>Transformation from EGBT22_Geoc to ETRS89_DREF91_Geoc.|>Transformation from ETRS89_DREF91_Geoc to DB_Ref_Geoc.|>Conversion from DB_Ref_Geoc to DB_Ref_Geod.
-dxRoundTrip,dyRoundTrip,dzRoundTrip,dx,dy,dz
-1.845E-010,-9.998E-010,-3.237E-005,-3.859E-008,2.225E-008,-1.752E-004
-1.915E-010,-9.892E-010,-3.312E-005,-3.866E-008,2.157E-008,-1.519E-004
-2.031E-010,-9.848E-010,-3.393E-005,-3.920E-008,2.067E-008,-1.521E-004
-1.972E-010,-9.946E-010,-3.328E-005,-3.887E-008,2.087E-008,-1.942E-004
-2.062E-010,-9.908E-010,-3.390E-005,-3.898E-008,1.983E-008,-1.468E-004
-1.978E-010,-9.831E-010,-3.369E-005,-3.931E-008,2.078E-008,-1.066E-004
+dxRoundTrip,dyRoundTrip,dzRoundTrip,dx,dy,dz,isInsideBBox,isInsideHeightRange,srcPPM
+1.845E-010,-9.998E-010,-3.237E-005,-3.859E-008,2.225E-008,-1.752E-004,False,False,
+1.915E-010,-9.892E-010,-3.312E-005,-3.866E-008,2.157E-008,-1.519E-004,False,False,
+2.031E-010,-9.848E-010,-3.393E-005,-3.920E-008,2.067E-008,-1.521E-004,False,True,
+1.972E-010,-9.946E-010,-3.328E-005,-3.887E-008,2.087E-008,-1.942E-004,False,True,
+2.062E-010,-9.908E-010,-3.390E-005,-3.898E-008,1.983E-008,-1.468E-004,False,False,
+1.978E-010,-9.831E-010,-3.369E-005,-3.931E-008,2.078E-008,-1.066E-004,False,False,

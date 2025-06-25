@@ -18,7 +18,7 @@ internal class Program
     {
 #if true
         // do tests
-        //static string toPPM(double? scale) => scale.HasValue ? FormattableString.Invariant($"{(1 - scale) * 1_000_000:F1}") : "";
+        static string toPPM(double? scale) => scale.HasValue ? FormattableString.Invariant($"{(1 - scale) * 1_000_000:F1}") : "";
 
         static (double x, double y, double z)[] readCoordinates(string file)
         {
@@ -61,7 +61,7 @@ internal class Program
             }
 
             // Test 2D
-            string header = "dxRoundTrip,dyRoundTrip,dx,dy";
+            string header = "dxRoundTrip,dyRoundTrip,dx,dy,isInsideBBox,srcPPM";
 
             for (int i = 0; i < sources.Count; i++)
             {
@@ -77,12 +77,28 @@ internal class Program
                     var csv = new StringBuilder();
                     if (GetConversion(source, target, out var conversion, out string forwardInfo, true))
                     {
+                        bool hasppm = GetGammaKInsideCalculation(source, out var ppmFun, true);
+                        bool hasbox = GetInsideCalculation(source, out var boxFun);
                         csv.AppendLine($"Forward: {formatInfo(forwardInfo)}");
                         var result = new (double x, double y)[coordinates.Length];
+                        var ppmbox = new (string ppm, string box)[coordinates.Length];
                         for (int k = 0; k < coordinates.Length; k++)
                         {
                             var (sx, sy, _) = coordinates[k];
                             result[k] = conversion(sx, sy);
+                            if (hasppm)
+                            {
+                                var r = ppmFun(sx, sy);
+                                ppmbox[k] = (toPPM(r.k), r.isInsideBBox.ToString());
+                            }
+                            else if (hasbox)
+                            {
+                                ppmbox[k] = ("", boxFun(sx, sy).ToString());
+                            }
+                            else
+                            {
+                                ppmbox[k] = ("", "");
+                            }
                         }
                         int targetIdx = crsMap.TryGetValue(target, out int idx) ? idx : -1;
                         (double dx, double dy)[]? origDiff = null;
@@ -110,12 +126,12 @@ internal class Program
                                 if (origDiff != null)
                                 { // "insideBBox,srcPPM,tgtPPM,dxRoundTrip,dyRoundTrip,dx,dy,stepsForward,stepsReverse"
                                     csv.AppendLine(FormattableString.Invariant
-                                        ($"{ox - x:E3},{oy - y:E3},{origDiff[k].dx:E3},{origDiff[k].dy:E3}"));
+                                        ($"{ox - x:E3},{oy - y:E3},{origDiff[k].dx:E3},{origDiff[k].dy:E3},{ppmbox[k].box},{ppmbox[k].ppm}"));
                                 }
                                 else
                                 {
                                     csv.AppendLine(FormattableString.Invariant
-                                        ($"{ox - x:E3},{oy - y:E3},,"));
+                                        ($"{ox - x:E3},{oy - y:E3},,,{ppmbox[k].box},{ppmbox[k].ppm}"));
                                 }
                             }
                         }
@@ -129,7 +145,7 @@ internal class Program
                                 {
 
                                     csv.AppendLine(FormattableString.Invariant
-                                        ($",,{origDiff[k].dx:E3},{origDiff[k].dy:E3}"));
+                                        ($",,{origDiff[k].dx:E3},{origDiff[k].dy:E3},{ppmbox[k].box},{ppmbox[k].ppm}"));
                                 }
                             }
                         }
@@ -145,7 +161,7 @@ internal class Program
             }
 
             // Test 3D
-            header = "dxRoundTrip,dyRoundTrip,dzRoundTrip,dx,dy,dz";
+            header = "dxRoundTrip,dyRoundTrip,dzRoundTrip,dx,dy,dz,isInsideBBox,isInsideHeightRange,srcPPM";
 
             for (int i = 0; i < sources.Count; i++)
             {
@@ -163,12 +179,29 @@ internal class Program
                     var csv = new StringBuilder();
                     if (GetConversion(source, vrs, target, out var conversion, out string forwardInfo, out _))
                     {
+                        bool hasppm = GetGammaKInsideCalculation(source, vrs, out var ppmFun);
+                        bool hasbox = GetInsideCalculation(source, vrs, out var boxFun);
                         csv.AppendLine($"Forward: {formatInfo(forwardInfo)}");
                         var result = new (double x, double y, double z)[coordinates.Length];
+                        var ppmbox = new (string ppm, string box, string h)[coordinates.Length];
                         for (int k = 0; k < coordinates.Length; k++)
                         {
                             var (sx, sy, sz) = coordinates[k];
                             result[k] = conversion(sx, sy, sz);
+                            if (hasppm)
+                            {
+                                var r = ppmFun(sx, sy, sz);
+                                ppmbox[k] = (toPPM(r.k), r.isInsideBBox.ToString(), r.isInHeightRange.ToString());
+                            }
+                            else if (hasbox)
+                            {
+                                var r = boxFun(sx, sy, sz);
+                                ppmbox[k] = ("",r.isInsideBBox.ToString(), r.isInHeightRange.ToString());
+                            }
+                            else
+                            {
+                                ppmbox[k] = ("", "", "");
+                            }
                         }
                         int targetIdx = crsMap.TryGetValue(target, out int idx) ? idx : -1;
                         (double dx, double dy, double dz)[]? origDiff = null;
@@ -197,12 +230,12 @@ internal class Program
                                 if (origDiff != null)
                                 { // "insideBBox,srcPPM,tgtPPM,dxRoundTrip,dyRoundTrip,dx,dy,stepsForward,stepsReverse"
                                     csv.AppendLine(FormattableString.Invariant
-                                        ($"{ox - x:E3},{oy - y:E3},{oz - z:E3},{origDiff[k].dx:E3},{origDiff[k].dy:E3},{origDiff[k].dz:E3}"));
+                                        ($"{ox - x:E3},{oy - y:E3},{oz - z:E3},{origDiff[k].dx:E3},{origDiff[k].dy:E3},{origDiff[k].dz:E3},{ppmbox[k].box},{ppmbox[k].h},{ppmbox[k].ppm}"));
                                 }
                                 else
                                 {
                                     csv.AppendLine(FormattableString.Invariant
-                                        ($"{ox - x:E3},{oy - y:E3},{oz - z:E3},,,"));
+                                        ($"{ox - x:E3},{oy - y:E3},{oz - z:E3},,,,{ppmbox[k].box},{ppmbox[k].h},{ppmbox[k].ppm}"));
                                 }
                             }
                         }
@@ -216,7 +249,7 @@ internal class Program
                                 {
 
                                     csv.AppendLine(FormattableString.Invariant
-                                        ($",,,{origDiff[k].dx:E3},{origDiff[k].dy:E3},{origDiff[k].dz:E3}"));
+                                        ($",,,{origDiff[k].dx:E3},{origDiff[k].dy:E3},{origDiff[k].dz:E3},{ppmbox[k].box},{ppmbox[k].h},{ppmbox[k].ppm}"));
                                 }
                             }
                         }
@@ -496,92 +529,6 @@ internal class Program
 #endif
 
 #if false
-         // Test 3D
-
-        header = "sourceCRS,sourceVRS,targetCRS,sourceOrigin,dxRoundTrip,dyRoundTrip,dzRoundTrip,dxOriginal,dyOriginal,dzOriginal,dxProj,dyProj,dzProj,stepsForward,stepsReverse";
-        csv = new StringBuilder(header);
-        csv.AppendLine();
-        for (int i = 0; i < sources.Count; i++)
-        {
-            (string source, string vrs, string origin, (double x, double y, double z)[] coordinates) = sources[i];
-            if (!Defined_CRS.Contains(source))
-                continue;
-            if(!Defined_VRS.Contains(vrs))
-                continue;
-            for (int j = 0; j < Defined_CRS.Length; j++)
-            {
-                string target = Defined_CRS[j];
-                if (source == target)
-                    continue;
-                if (GetConversion(source, vrs, target, out var conversion, out string forwardInfo, out string targetVRS))
-                {
-                    var result = new (double x, double y, double z, double inScale, double inGamma, double outScale, double outGamma)[coordinates.Length];
-                    for (int k = 0; k < coordinates.Length; k++)
-                    {
-                        var (sx, sy, sz) = coordinates[k];
-                        result[k] = conversion(sx, sy, sz);
-                    }
-                    int targetIdx = crsMap.TryGetValue(target, out int idx) ? idx : -1;
-                    bool targetProj = false;
-                    (double dx, double dy, double dz)[]? origDiff = null;
-                    if (targetIdx >= 0)
-                    {
-                        var targetOrig = sources[targetIdx].coordinates;
-                        targetProj = sources[targetIdx].origin == "proj";
-                        origDiff = new (double dx, double dy, double dz)[targetOrig.Length];
-                        for (int k = 0; k < targetOrig.Length; k++)
-                        {
-                            var (tx, ty, tz) = targetOrig[k];
-                            var (x, y, z) = result[k];
-                            origDiff[k] = (tx - x, ty - y, tz - z);
-                        }
-                    }
-                    if (GetConversion(target, targetVRS, source, out conversion, out string reverseInfo, out _))
-                    {
-                        for (int k = 0; k < result.Length; k++)
-                        {
-                            var (ox, oy, oz) = coordinates[k];
-                            var (x, y, z) = result[k];
-                            (x, y, z) = conversion(x, y, z);
-                            if (origDiff != null)
-                            {
-                                if (targetProj)
-                                {
-                                    csv.AppendLine(FormattableString.Invariant
-                                        ($"\"{source}\",\"{vrs}\",\"{target}\",\"{origin}\",{ox - x:E3},{oy - y:E3},{oz - z:E3},,,,{origDiff[k].dx:E3},{origDiff[k].dy:E3},{origDiff[k].dz:E3},\"{formatInfo(forwardInfo)}\",\"{formatInfo(reverseInfo)}\""));
-                                }
-                                else
-                                {
-                                    csv.AppendLine(FormattableString.Invariant
-                                        ($"\"{source}\",\"{vrs}\",\"{target}\",\"{origin}\",{ox - x:E3},{oy - y:E3},{oz - z:E3},{origDiff[k].dx:E3},{origDiff[k].dy:E3},{origDiff[k].dz:E3},,,,\"{formatInfo(forwardInfo)}\",\"{formatInfo(reverseInfo)}\""));
-                                }
-                            }
-                            else
-                            {
-                                csv.AppendLine(FormattableString.Invariant
-                                ($"\"{source}\",\"{vrs}\",\"{target}\",\"{origin}\",{ox - x:E3},{oy - y:E3},{oz - z:E3},,,,,,,\"{formatInfo(forwardInfo)}\",\"{formatInfo(reverseInfo)}\""));
-                            }
-                        }
-                    }
-                    else
-                    {
-                        csv.AppendLine(FormattableString.Invariant($"\"{source}\",\"{vrs}\",\"{target}\",\"\",,,,,,,,,,\"{formatInfo(forwardInfo)}\",\"{formatInfo(reverseInfo)}\""));
-                    }
-                }
-                else
-                {
-                    _ = GetConversion(source, target, out _, out string reverseInfo, true);
-                    csv.AppendLine(FormattableString.Invariant($"\"{source}\",\"{vrs}\",\"{target}\",\"\",,,,,,,,,,\"{formatInfo(forwardInfo)}\",\"{formatInfo(reverseInfo)}\""));
-                }
-            }
-        }
-        File.WriteAllText(Path.Combine(dataDirectory, $"results3D_{extension}.csv"), csv.ToString(), Encoding.UTF8);
-
-#endif
-
-
-
-#if false
         var (Station, Rechtswert, Hochwert, Hoehe) = ReadFile(@"E:\source\nbs_dresden_prag\Daten\Trassen\Koordinaten_L_Inkrement_und_Zwangspunkte.CSV", 0, 1, 2, 3, ';');
         double[] zeroEllH = new double[Station.Length];
         bool ok = DBRef_GK5_to_EGBT22_Local_Ell(Rechtswert, Hochwert, zeroEllH, out double[] localR, out double[] localH, out double[] localEllH);
@@ -628,7 +575,6 @@ internal class Program
 
 
 #endif
-
 
 #if false
         double[] etrs89lat = [

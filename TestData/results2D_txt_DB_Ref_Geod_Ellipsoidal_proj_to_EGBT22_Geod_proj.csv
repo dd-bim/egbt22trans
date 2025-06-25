@@ -1,9 +1,9 @@
 ﻿Forward: Transformation from DB_Ref_Geod to EGBT22_Geod with DB_Ref ellipsoidal height 0.
 Reverse: Iterative Transformation from EGBT22_Geod to DB_Ref_Geod with DB_Ref ellipsoidal height 0.
-dxRoundTrip,dyRoundTrip,dx,dy
-1.845E-010,-9.999E-010,3.255E-008,4.388E-008
-1.915E-010,-9.893E-010,2.005E-008,4.637E-008
-2.031E-010,-9.848E-010,7.099E-009,4.673E-008
-1.972E-010,-9.947E-010,-2.892E-009,3.742E-008
-2.062E-010,-9.909E-010,3.616E-008,6.244E-008
-1.978E-010,-9.831E-010,1.487E-008,4.877E-008
+dxRoundTrip,dyRoundTrip,dx,dy,isInsideBBox,srcPPM
+1.845E-010,-9.999E-010,3.255E-008,4.388E-008,False,
+1.915E-010,-9.893E-010,2.005E-008,4.637E-008,False,
+2.031E-010,-9.848E-010,7.099E-009,4.673E-008,False,
+1.972E-010,-9.947E-010,-2.892E-009,3.742E-008,False,
+2.062E-010,-9.909E-010,3.616E-008,6.244E-008,False,
+1.978E-010,-9.831E-010,1.487E-008,4.877E-008,False,

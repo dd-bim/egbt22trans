@@ -1,7 +1,7 @@
 ﻿Forward: Conversion from DB_Ref_GK5 to DB_Ref_Geod.|>Iterative transformation from Normal heights to Ellipsoidal heights.|>Conversion from DB_Ref_Geod to DB_Ref_Geoc.|>Transformation from DB_Ref_Geoc to ETRS89_DREF91_Geoc.|>Conversion from ETRS89_DREF91_Geoc to ETRS89_DREF91.
 Reverse: Transformation from Normal heights to Ellipsoidal heights.|>Conversion from ETRS89_DREF91 to ETRS89_DREF91_Geoc.|>Transformation from ETRS89_DREF91_Geoc to DB_Ref_Geoc.|>Conversion from DB_Ref_Geoc to DB_Ref_Geod.|>Conversion from DB_Ref_Geod to DB_Ref_GK5.
-dxRoundTrip,dyRoundTrip,dzRoundTrip,dx,dy,dz
-1.816E-004,9.525E-004,-4.031E+001,3.612E-009,1.388E-009,-1.000E-004
-1.786E-004,9.539E-004,-4.027E+001,3.286E-009,-2.466E-009,-6.967E-010
-1.821E-004,9.555E-004,-4.036E+001,-1.520E-009,-1.601E-010,-8.193E-010
-1.779E-004,9.519E-004,-4.023E+001,-6.103E-009,2.128E-009,-1.254E-009
+dxRoundTrip,dyRoundTrip,dzRoundTrip,dx,dy,dz,isInsideBBox,isInsideHeightRange,srcPPM
+1.816E-004,9.525E-004,-4.031E+001,3.612E-009,1.388E-009,-1.000E-004,False,True,-47.8
+1.786E-004,9.539E-004,-4.027E+001,3.286E-009,-2.466E-009,-6.967E-010,False,True,-56.1
+1.821E-004,9.555E-004,-4.036E+001,-1.520E-009,-1.601E-010,-8.193E-010,False,True,-50.6
+1.779E-004,9.519E-004,-4.023E+001,-6.103E-009,2.128E-009,-1.254E-009,False,True,-55.6

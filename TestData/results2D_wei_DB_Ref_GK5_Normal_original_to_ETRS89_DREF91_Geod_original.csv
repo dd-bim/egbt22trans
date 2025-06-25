@@ -1,7 +1,7 @@
 ﻿Forward: Conversion from DB_Ref_GK5 to DB_Ref_Geod.|>Transformation from DB_Ref_Geod to ETRS89_DREF91 with DB_Ref ellipsoidal height 0.
 Reverse: Iterative Transformation from ETRS89_DREF91 to DB_Ref_Geod with DB_Ref ellipsoidal height 0.|>Conversion from DB_Ref_Geod to DB_Ref_GK5.
-dxRoundTrip,dyRoundTrip,dx,dy
--7.035E-005,2.309E-005,4.551E-008,1.831E-008
--7.037E-005,2.311E-005,4.311E-008,1.336E-008
--7.034E-005,2.311E-005,3.502E-008,1.460E-008
--7.037E-005,2.309E-005,3.687E-008,1.917E-008
+dxRoundTrip,dyRoundTrip,dx,dy,isInsideBBox,srcPPM
+-7.035E-005,2.309E-005,4.551E-008,1.831E-008,False,-81.5
+-7.037E-005,2.311E-005,4.311E-008,1.336E-008,False,-88.2
+-7.034E-005,2.311E-005,3.502E-008,1.460E-008,False,-79.9
+-7.037E-005,2.309E-005,3.687E-008,1.917E-008,False,-90.2

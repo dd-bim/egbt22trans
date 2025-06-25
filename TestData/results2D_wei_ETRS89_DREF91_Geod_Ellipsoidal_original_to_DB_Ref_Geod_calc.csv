@@ -1,7 +1,7 @@
 ﻿Forward: Iterative Transformation from ETRS89_DREF91 to DB_Ref_Geod with DB_Ref ellipsoidal height 0.
 Reverse: Transformation from DB_Ref_Geod to ETRS89_DREF91 with DB_Ref ellipsoidal height 0.
-dxRoundTrip,dyRoundTrip,dx,dy
-1.975E-010,-1.010E-009,,
-1.972E-010,-1.011E-009,,
-1.978E-010,-1.011E-009,,
-1.970E-010,-1.010E-009,,
+dxRoundTrip,dyRoundTrip,dx,dy,isInsideBBox,srcPPM
+1.975E-010,-1.010E-009,,,False,
+1.972E-010,-1.011E-009,,,False,
+1.978E-010,-1.011E-009,,,False,
+1.970E-010,-1.010E-009,,,False,

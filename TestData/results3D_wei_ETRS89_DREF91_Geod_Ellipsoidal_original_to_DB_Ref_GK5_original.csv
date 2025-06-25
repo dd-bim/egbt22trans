@@ -1,7 +1,7 @@
 ﻿Forward: Conversion from ETRS89_DREF91 to ETRS89_DREF91_Geoc.|>Transformation from ETRS89_DREF91_Geoc to DB_Ref_Geoc.|>Conversion from DB_Ref_Geoc to DB_Ref_Geod.|>Conversion from DB_Ref_Geod to DB_Ref_GK5.
 Reverse: Conversion from DB_Ref_GK5 to DB_Ref_Geod.|>Conversion from DB_Ref_Geod to DB_Ref_Geoc.|>Transformation from DB_Ref_Geoc to ETRS89_DREF91_Geoc.|>Conversion from ETRS89_DREF91_Geoc to ETRS89_DREF91.
-dxRoundTrip,dyRoundTrip,dzRoundTrip,dx,dy,dz
-1.975E-010,-1.010E-009,-3.282E-005,-1.738E-004,-3.772E-004,2.877E+000
-1.972E-010,-1.011E-009,-3.277E-005,9.612E-005,-3.453E-004,2.875E+000
-1.978E-010,-1.011E-009,-3.281E-005,-5.649E-005,1.920E-004,2.802E+000
-1.970E-010,-1.010E-009,-3.277E-005,-2.080E-004,7.045E-004,2.931E+000
+dxRoundTrip,dyRoundTrip,dzRoundTrip,dx,dy,dz,isInsideBBox,isInsideHeightRange,srcPPM
+1.975E-010,-1.010E-009,-3.282E-005,-1.738E-004,-3.772E-004,2.877E+000,False,True,
+1.972E-010,-1.011E-009,-3.277E-005,9.612E-005,-3.453E-004,2.875E+000,False,True,
+1.978E-010,-1.011E-009,-3.281E-005,-5.649E-005,1.920E-004,2.802E+000,False,True,
+1.970E-010,-1.010E-009,-3.277E-005,-2.080E-004,7.045E-004,2.931E+000,False,True,

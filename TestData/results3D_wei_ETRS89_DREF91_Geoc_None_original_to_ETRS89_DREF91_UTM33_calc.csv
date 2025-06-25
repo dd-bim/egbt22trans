@@ -1,7 +1,7 @@
 ﻿Forward: Conversion from ETRS89_DREF91_Geoc to ETRS89_DREF91.|>Conversion from ETRS89_DREF91 to ETRS89_DREF91_UTM33.
 Reverse: Conversion from ETRS89_DREF91_UTM33 to ETRS89_DREF91.|>Conversion from ETRS89_DREF91 to ETRS89_DREF91_Geoc.
-dxRoundTrip,dyRoundTrip,dzRoundTrip,dx,dy,dz
--2.328E-009,-6.985E-010,9.313E-010,,,
-1.397E-009,4.657E-010,-9.313E-010,,,
-9.313E-010,2.328E-010,-9.313E-010,,,
--1.863E-009,-4.657E-010,9.313E-010,,,
+dxRoundTrip,dyRoundTrip,dzRoundTrip,dx,dy,dz,isInsideBBox,isInsideHeightRange,srcPPM
+-2.328E-009,-6.985E-010,9.313E-010,,,,False,True,
+1.397E-009,4.657E-010,-9.313E-010,,,,False,True,
+9.313E-010,2.328E-010,-9.313E-010,,,,False,True,
+-1.863E-009,-4.657E-010,9.313E-010,,,,False,True,

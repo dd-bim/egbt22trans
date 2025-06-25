@@ -1,7 +1,7 @@
 ﻿Forward: Conversion from ETRS89_DREF91 to ETRS89_DREF91_UTM33:
 Reverse: Conversion from ETRS89_DREF91_UTM33 to ETRS89_DREF91.
-dxRoundTrip,dyRoundTrip,dx,dy
-7.105E-015,0.000E+000,,
-1.421E-014,0.000E+000,,
--7.105E-015,0.000E+000,,
--7.105E-015,0.000E+000,,
+dxRoundTrip,dyRoundTrip,dx,dy,isInsideBBox,srcPPM
+7.105E-015,0.000E+000,,,False,
+1.421E-014,0.000E+000,,,False,
+-7.105E-015,0.000E+000,,,False,
+-7.105E-015,0.000E+000,,,False,

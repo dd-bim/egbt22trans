@@ -1,7 +1,7 @@
 ﻿Forward: Transformation from ETRS89_DREF91_Geoc to EGBT22_Geoc.|>Conversion from EGBT22_Geoc to EGBT22_Geod.|>Conversion from EGBT22_Geod to EGBT22_EGBT_LDP.
 Reverse: Conversion from EGBT22_EGBT_LDP to EGBT22_Geod.|>Conversion from EGBT22_Geod to EGBT22_Geoc.|>Transformation from EGBT22_Geoc to ETRS89_DREF91_Geoc.
-dxRoundTrip,dyRoundTrip,dzRoundTrip,dx,dy,dz
--4.657E-010,-1.164E-010,9.313E-010,,,
--1.397E-009,-2.328E-010,1.863E-009,,,
-0.000E+000,0.000E+000,1.863E-009,,,
--4.657E-010,-1.164E-010,9.313E-010,,,
+dxRoundTrip,dyRoundTrip,dzRoundTrip,dx,dy,dz,isInsideBBox,isInsideHeightRange,srcPPM
+-4.657E-010,-1.164E-010,9.313E-010,,,,False,True,
+-1.397E-009,-2.328E-010,1.863E-009,,,,False,True,
+0.000E+000,0.000E+000,1.863E-009,,,,False,True,
+-4.657E-010,-1.164E-010,9.313E-010,,,,False,True,
