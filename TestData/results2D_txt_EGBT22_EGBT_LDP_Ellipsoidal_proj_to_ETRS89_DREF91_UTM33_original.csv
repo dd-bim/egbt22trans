@@ -1,0 +1,9 @@
+﻿Forward: Conversion from EGBT22_EGBT_LDP to EGBT22_Geod.|>Transformation from EGBT22_Geod to ETRS89_DREF91 with ellipsoidal height 0.|>Conversion from ETRS89_DREF91 to ETRS89_DREF91_UTM33:
+Reverse: Conversion from ETRS89_DREF91_UTM33 to ETRS89_DREF91.|>Transformation from ETRS89_DREF91 to EGBT22_Geod with ellipsoidal height 0.|>Conversion from EGBT22_Geod to EGBT22_EGBT_LDP.
+dxRoundTrip,dyRoundTrip,dx,dy
+-7.276E-011,-1.484E-009,-1.533E-003,4.359E-003
+1.037E-010,3.900E-009,-1.540E-003,4.348E-003
+-1.455E-010,3.587E-009,-1.533E-003,4.384E-003
+4.002E-011,-1.051E-009,-1.499E-003,4.362E-003
+4.366E-011,-4.206E-009,-1.472E-003,4.357E-003
+2.910E-011,1.644E-009,-1.523E-003,4.405E-003

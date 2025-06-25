@@ -6,11 +6,11 @@ using System.Text;
 
 namespace egbt22lib.Conversions
 {
-    internal class TransMerc
+    public class TransMerc
     {
         private readonly TransverseMercatorExact _tm;
 
-        private readonly double _lon0, _fe, _fn, _a, _f;  
+        private readonly double _lon0, _fe, _fn;
 
         public TransMerc(double a, double f, double k0, double fe, double fn, double lon0, double? lat0 = null)
         {
@@ -18,23 +18,32 @@ namespace egbt22lib.Conversions
             _fe = fe;
             _fn = lat0.HasValue ? fn - _tm.Forward(0, lat0.Value, 0).y : fn;
             _lon0 = lon0;
-            _a = a;
-            _f = f;
+        }
+        public (double e, double n) Forward(double lat, double lon)
+        {
+            (double east, double north) = _tm.Forward(_lon0, lat, lon, out _, out _);
+            return (east + _fe, north + _fn);
         }
 
-        public TMCoordinate Forward(Coordinate llh)
+        public (double lat, double lon) Reverse(double e, double n)
         {
-            (double east, double north) = _tm.Forward(_lon0, llh.X, llh.Y, out double gamma, out double k);
-            double scale = Common.PointScaleAtHeight(k, llh.X, llh.Z, _a, _f);
-            return new TMCoordinate(east + _fe, north + _fn, llh.Z, scale, gamma);
+            var (lat, lon) = _tm.Reverse(_lon0, e - _fe, n - _fn, out _, out _);
+            return (lat, lon);
         }
 
-        public TMCoordinate Reverse(Coordinate enh)
+        public (double e, double n, double dummy) Forward(double lat, double lon, double dummy)
         {
-            var (lat, lon) = _tm.Reverse(_lon0, enh.X - _fe, enh.Y - _fn, out double gamma, out double k);
-            double scale = Common.PointScaleAtHeight(k, lat, enh.Z, _a, _f);
-            return new TMCoordinate(lat, lon, enh.Z, scale, gamma);
+            (double east, double north) = _tm.Forward(_lon0, lat, lon, out _, out _);
+            return (east + _fe, north + _fn, dummy);
         }
+
+        public (double lat, double lon, double dummy) Reverse(double e, double n, double dummy)
+        {
+            var (lat, lon) = _tm.Reverse(_lon0, e - _fe, n - _fn, out _, out _);
+            return (lat, lon, dummy);
+        }
+
+        public (double lat, double lon) Reverse(double e, double n, out double gamma, out double k) => _tm.Reverse(_lon0, e - _fe, n - _fn, out gamma, out k);
 
     }
 }

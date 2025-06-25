@@ -1,0 +1,9 @@
+﻿Forward: Conversion from EGBT22_EGBT_LDP to EGBT22_Geod.|>Iterative Transformation from EGBT22_Geod to DB_Ref_Geod with DB_Ref ellipsoidal height 0.|>Conversion from DB_Ref_Geod to DB_Ref_GK5.
+Reverse: Conversion from DB_Ref_GK5 to DB_Ref_Geod.|>Transformation from DB_Ref_Geod to EGBT22_Geod with DB_Ref ellipsoidal height 0.|>Conversion from EGBT22_Geod to EGBT22_EGBT_LDP.
+dxRoundTrip,dyRoundTrip,dx,dy
+-7.104E-005,2.154E-005,-3.306E-003,-3.507E-003
+-7.072E-005,2.146E-005,-3.426E-003,-2.151E-003
+-7.030E-005,2.164E-005,-3.392E-003,-7.628E-004
+-7.057E-005,2.171E-005,-2.719E-003,3.752E-004
+-7.025E-005,2.184E-005,-4.471E-003,-4.003E-003
+-7.046E-005,2.148E-005,-3.569E-003,-1.607E-003

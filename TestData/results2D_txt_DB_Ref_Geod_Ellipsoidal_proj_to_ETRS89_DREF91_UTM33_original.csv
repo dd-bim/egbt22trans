@@ -1,0 +1,9 @@
+﻿Forward: Transformation from DB_Ref_Geod to ETRS89_DREF91 with DB_Ref ellipsoidal height 0.|>Conversion from ETRS89_DREF91 to ETRS89_DREF91_UTM33:
+Reverse: Conversion from ETRS89_DREF91_UTM33 to ETRS89_DREF91.|>Iterative Transformation from ETRS89_DREF91 to DB_Ref_Geod with DB_Ref ellipsoidal height 0.
+dxRoundTrip,dyRoundTrip,dx,dy
+1.845E-010,-9.999E-010,1.701E-003,7.887E-003
+1.915E-010,-9.893E-010,1.814E-003,6.521E-003
+2.031E-010,-9.848E-010,1.788E-003,5.169E-003
+1.972E-010,-9.946E-010,1.149E-003,4.009E-003
+2.062E-010,-9.909E-010,2.928E-003,8.381E-003
+1.978E-010,-9.831E-010,1.974E-003,6.033E-003

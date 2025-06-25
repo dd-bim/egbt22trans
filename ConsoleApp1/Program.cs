@@ -1,15 +1,14 @@
-﻿using egbt22lib;
-using egbt22lib.Conversions;
+﻿using egbt22lib.Conversions;
 
-using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 
-using static egbt22lib.Conversions.Defined;
 using static egbt22lib.Convert;
-using static egbt22lib.IO;
+
+using static egbt22lib.Conversions.Common;
+using static egbt22lib.Conversions.Defined;
 using static egbt22lib.Transformations.Defined;
-using static System.Collections.Specialized.BitVector32;
+using egbt22lib;
 
 namespace ConsoleApp1;
 
@@ -17,6 +16,344 @@ internal class Program
 {
     static void Main(string[] args)
     {
+#if true
+        // do tests
+        //static string toPPM(double? scale) => scale.HasValue ? FormattableString.Invariant($"{(1 - scale) * 1_000_000:F1}") : "";
+
+        static (double x, double y, double z)[] readCoordinates(string file)
+        {
+            string[] lines = File.ReadAllLines(file, Encoding.UTF8);
+            var data = new (double x, double y, double z)[lines.Length];
+            for (int i = 0; i < lines.Length; i++)
+            {
+                string[] parts = lines[i].Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                data[i] = (
+                    double.Parse(parts[0], CultureInfo.InvariantCulture),
+                    double.Parse(parts[1], CultureInfo.InvariantCulture),
+                    double.Parse(parts[2], CultureInfo.InvariantCulture));
+            }
+            return data;
+        }
+
+        static string formatInfo(string info)
+        {
+            string[] parts = info.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries);
+            return string.Join("|>", parts);
+        }
+
+        string dataDirectory = @"E:\source\egbt22trans\TestData";
+
+        string[] extensions = ["txt", "grd", "wei", "nrm"];
+        foreach (string extension in extensions)
+        {
+            string[] dataFiles = [.. Directory.GetFiles(dataDirectory, $"*.{extension}", SearchOption.TopDirectoryOnly)];
+            var sources = new List<(string crs, string vrs, string origin, (double x, double y, double z)[] coordinates)>();
+            var crsMap = new Dictionary<string, int>();
+            foreach (string file in dataFiles)
+            {
+                string crs = Defined_CRS.FirstOrDefault(file.Contains, "");
+                crsMap.Add(crs, sources.Count);
+                string vrs = Defined_VRS.FirstOrDefault(file.Contains, "None");
+                int idx = file.LastIndexOf("_", StringComparison.OrdinalIgnoreCase);
+                string origin = file.Substring(idx + 1, file.Length - idx - 5);
+                var coordinates = readCoordinates(file);
+                sources.Add((crs, vrs, origin, coordinates));
+            }
+
+            // Test 2D
+            string header = "dxRoundTrip,dyRoundTrip,dx,dy";
+
+            for (int i = 0; i < sources.Count; i++)
+            {
+                (string source, string vrs, string origin, var coordinates) = sources[i];
+                if (!Defined_CRS_2D.Contains(source))
+                    continue;
+                for (int j = 0; j < Defined_CRS_2D.Length; j++)
+                {
+                    string target = Defined_CRS_2D[j];
+                    string targetOrigin = "calc";
+                    if (source == target)
+                        continue;
+                    var csv = new StringBuilder();
+                    if (GetConversion(source, target, out var conversion, out string forwardInfo, true))
+                    {
+                        csv.AppendLine($"Forward: {formatInfo(forwardInfo)}");
+                        var result = new (double x, double y)[coordinates.Length];
+                        for (int k = 0; k < coordinates.Length; k++)
+                        {
+                            var (sx, sy, _) = coordinates[k];
+                            result[k] = conversion(sx, sy);
+                        }
+                        int targetIdx = crsMap.TryGetValue(target, out int idx) ? idx : -1;
+                        (double dx, double dy)[]? origDiff = null;
+                        if (targetIdx >= 0)
+                        {
+                            var targetOrig = sources[targetIdx].coordinates;
+                            targetOrigin = sources[targetIdx].origin;
+                            origDiff = new (double dx, double dy)[targetOrig.Length];
+                            for (int k = 0; k < targetOrig.Length; k++)
+                            {
+                                var (tx, ty, _) = targetOrig[k];
+                                var (x, y) = result[k];
+                                origDiff[k] = (tx - x, ty - y);
+                            }
+                        }
+                        if (GetConversion(target, source, out conversion, out string reverseInfo, true))
+                        {
+                            csv.AppendLine($"Reverse: {formatInfo(reverseInfo)}");
+                            csv.AppendLine(header);
+                            for (int k = 0; k < result.Length; k++)
+                            {
+                                var (ox, oy, _) = coordinates[k];
+                                var (x, y) = result[k];
+                                (x, y) = conversion(x, y);
+                                if (origDiff != null)
+                                { // "insideBBox,srcPPM,tgtPPM,dxRoundTrip,dyRoundTrip,dx,dy,stepsForward,stepsReverse"
+                                    csv.AppendLine(FormattableString.Invariant
+                                        ($"{ox - x:E3},{oy - y:E3},{origDiff[k].dx:E3},{origDiff[k].dy:E3}"));
+                                }
+                                else
+                                {
+                                    csv.AppendLine(FormattableString.Invariant
+                                        ($"{ox - x:E3},{oy - y:E3},,"));
+                                }
+                            }
+                        }
+                        else
+                        {
+                            csv.AppendLine($"Reverse: {formatInfo(reverseInfo)}");
+                            if (origDiff != null)
+                            {
+                                csv.AppendLine(header);
+                                for (int k = 0; k < result.Length; k++)
+                                {
+
+                                    csv.AppendLine(FormattableString.Invariant
+                                        ($",,{origDiff[k].dx:E3},{origDiff[k].dy:E3}"));
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        csv.AppendLine($"Forward: {formatInfo(forwardInfo)}");
+                        _ = GetConversion(target, source, out _, out string reverseInfo, true);
+                        csv.AppendLine($"Reverse: {formatInfo(reverseInfo)}");
+                    }
+                    File.WriteAllText(Path.Combine(dataDirectory, $"results2D_{extension}_{source}_{vrs}_{origin}_to_{target}_{targetOrigin}.csv"), csv.ToString(), Encoding.UTF8);
+                }
+            }
+
+            // Test 3D
+            header = "dxRoundTrip,dyRoundTrip,dzRoundTrip,dx,dy,dz";
+
+            for (int i = 0; i < sources.Count; i++)
+            {
+                (string source, string vrs, string origin, var coordinates) = sources[i];
+                if (!Defined_CRS.Contains(source))
+                    continue;
+                if (!Defined_VRS.Contains(vrs))
+                    continue;
+                for (int j = 0; j < Defined_CRS.Length; j++)
+                {
+                    string target = Defined_CRS[j];
+                    string targetOrigin = "calc";
+                    if (source == target)
+                        continue;
+                    var csv = new StringBuilder();
+                    if (GetConversion(source, vrs, target, out var conversion, out string forwardInfo, out _))
+                    {
+                        csv.AppendLine($"Forward: {formatInfo(forwardInfo)}");
+                        var result = new (double x, double y, double z)[coordinates.Length];
+                        for (int k = 0; k < coordinates.Length; k++)
+                        {
+                            var (sx, sy, sz) = coordinates[k];
+                            result[k] = conversion(sx, sy, sz);
+                        }
+                        int targetIdx = crsMap.TryGetValue(target, out int idx) ? idx : -1;
+                        (double dx, double dy, double dz)[]? origDiff = null;
+                        if (targetIdx >= 0)
+                        {
+                            var targetOrig = sources[targetIdx].coordinates;
+                            targetOrigin = sources[targetIdx].origin;
+                            origDiff = new (double dx, double dy, double dz)[targetOrig.Length];
+                            for (int k = 0; k < targetOrig.Length; k++)
+                            {
+                                var (tx, ty, tz) = targetOrig[k];
+                                var (x, y, z) = result[k];
+                                origDiff[k] = (tx - x, ty - y, tz - z);
+                            }
+                        }
+                        var tvrs = vrs == "None" ? "Ellipsoidal" : vrs;
+                        if (GetConversion(target, tvrs, source, out conversion, out string reverseInfo, out _))
+                        {
+                            csv.AppendLine($"Reverse: {formatInfo(reverseInfo)}");
+                            csv.AppendLine(header);
+                            for (int k = 0; k < result.Length; k++)
+                            {
+                                var (ox, oy, oz) = coordinates[k];
+                                var (x, y, z) = result[k];
+                                (x, y, z) = conversion(x, y, z);
+                                if (origDiff != null)
+                                { // "insideBBox,srcPPM,tgtPPM,dxRoundTrip,dyRoundTrip,dx,dy,stepsForward,stepsReverse"
+                                    csv.AppendLine(FormattableString.Invariant
+                                        ($"{ox - x:E3},{oy - y:E3},{oz - z:E3},{origDiff[k].dx:E3},{origDiff[k].dy:E3},{origDiff[k].dz:E3}"));
+                                }
+                                else
+                                {
+                                    csv.AppendLine(FormattableString.Invariant
+                                        ($"{ox - x:E3},{oy - y:E3},{oz - z:E3},,,"));
+                                }
+                            }
+                        }
+                        else
+                        {
+                            csv.AppendLine($"Reverse: {formatInfo(reverseInfo)}");
+                            if (origDiff != null)
+                            {
+                                csv.AppendLine(header);
+                                for (int k = 0; k < result.Length; k++)
+                                {
+
+                                    csv.AppendLine(FormattableString.Invariant
+                                        ($",,,{origDiff[k].dx:E3},{origDiff[k].dy:E3},{origDiff[k].dz:E3}"));
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        csv.AppendLine($"Forward: {formatInfo(forwardInfo)}");
+                        _ = GetConversion(target, source, out _, out string reverseInfo, true);
+                        csv.AppendLine($"Reverse: {formatInfo(reverseInfo)}");
+                    }
+                    File.WriteAllText(Path.Combine(dataDirectory, $"results3D_{extension}_{source}_{vrs}_{origin}_to_{target}_{targetOrigin}.csv"), csv.ToString(), Encoding.UTF8);
+                }
+            }
+
+
+        }
+
+#endif
+
+#if false
+        // Write Test Data
+        int lat = 5062, lon = 1380, eh = 100;
+
+        double[] lats = new double[6];
+        for (int i = 0; i < lats.Length; i++)
+        {
+            lats[i] = lat / 100d;
+            lat+=10;
+        }
+        double[] lons = new double[5];
+        for (int i = 0; i < lons.Length; i++)
+        {
+            lons[i] = lon / 100d;
+            lon += 5;
+        }
+        using var ewriter = new StreamWriter("ETRS89_DREF91_Geod_Ellipsoidal_original.grd", false, Encoding.UTF8);
+        using var nwriter = new StreamWriter("ETRS89_DREF91_Geod_Normal_original.grd", false, Encoding.UTF8);
+
+        for (int i = 0; i < 5; i++)
+        {
+            foreach (double tlat in lats)
+            {
+                foreach (double tlon in lons)
+                {
+                    double nh = eh - Geoid.GetBKGBinaryGeoidHeight(tlat, tlon);
+                    ewriter.WriteLine(FormattableString.Invariant($"{tlat,5:F2} {tlon,5:F2} {eh,3:F0}"));
+                    nwriter.WriteLine(FormattableString.Invariant($"{tlat,5:F2} {tlon,5:F2} {nh,7:F3}"));
+                }
+            }
+            eh += 60;
+        }
+
+
+
+
+#endif
+
+
+#if false
+        // Bestimmung Boundingbox
+        // Grenzen Trasse LDP
+        double
+            minE = 5000, 
+            maxE = 15000, 
+            minN = 29500, 
+            maxN = 71500;
+
+        Console.WriteLine(FormattableString.Invariant($"EGBT22 LDP BoundingBox:  {minE,12:F3} {maxE,12:F3} {minN,12:F3} {maxN,12:F3}"));
+
+        var (maxElat, minElon, _) = TM_GRS80_EGBT_LDP.Reverse(new Coordinate(minE, maxN, 0));
+        var (minElat, maxElon, _) = TM_GRS80_EGBT_LDP.Reverse(new Coordinate(maxE, minN, 0));
+        maxElat = Math.Ceiling(maxElat * 1000) / 1000; // auf 0.001 runden (ca. 111m)
+        maxElon = Math.Ceiling(maxElon * 1000) / 1000; // auf 0.001 runden (ca. 111m)
+        minElat = Math.Floor(minElat * 1000) / 1000; // auf 0.001 runden (ca. 111m)
+        minElon = Math.Floor(minElon * 1000) / 1000; // auf 0.001 runden (ca. 111m)
+
+        Console.WriteLine(FormattableString.Invariant($"ETRS89 Geod BoundingBox: {minElat,12:F3} {maxElat,12:F3} {minElon,12:F3} {maxElon,12:F3}"));
+
+        var (minEUTM, maxNUTM, _) = TM_GRS80_UTM33.Forward(new Coordinate(maxElat, minElon, 0));
+        var (maxEUTM, minNUTM, _) = TM_GRS80_UTM33.Forward(new Coordinate(minElat, maxElon, 0));
+        minEUTM = Math.Round(minEUTM);
+        maxEUTM = Math.Round(maxEUTM);
+        minNUTM = Math.Round(minNUTM);
+        maxNUTM = Math.Round(maxNUTM);
+
+        Console.WriteLine(FormattableString.Invariant($"ETRS89 UTM33 BoundingBox:{minEUTM,12:F3} {maxEUTM,12:F3} {minNUTM,12:F3} {maxNUTM,12:F3}"));
+
+        var (maxDlat, minDlon, _) = GC_Bessel.Reverse(Trans_Datum_ETRS89_DREF91_to_DBRef.Forward(GC_GRS80.Forward(new Coordinate(maxElat, minElon, 220))));
+        var (minDlat, maxDlon, _) = GC_Bessel.Reverse(Trans_Datum_ETRS89_DREF91_to_DBRef.Forward(GC_GRS80.Forward(new Coordinate(minElat, maxElon, 220))));
+        maxDlat = Math.Round(maxDlat, 3);
+        maxDlon = Math.Round(maxDlon, 3);
+        minDlat = Math.Round(minDlat, 3);
+        minDlon = Math.Round(minDlon, 3);
+
+        Console.WriteLine(FormattableString.Invariant($"DB_Ref Geod BoundingBox: {minDlat,12:F3} {maxDlat,12:F3} {minDlon,12:F3} {maxDlon,12:F3}"));
+
+        var (minR, maxH, _) = TM_Bessel_GK5.Forward(new Coordinate(maxDlat, minDlon, 0));
+        var (maxR, minH, _) = TM_Bessel_GK5.Forward(new Coordinate(minDlat, maxDlon, 0));
+        minR = Math.Round(minR);
+        maxR = Math.Round(maxR);
+        minH = Math.Round(minH);
+        maxH = Math.Round(maxH);
+
+        Console.WriteLine(FormattableString.Invariant($"DB_Ref GK5  BoundingBox: {minR,12:F3} {maxR,12:F3} {minH,12:F3} {maxH,12:F3}"));
+
+
+#endif
+
+#if false
+        // Berechnung des Einflusses der Höhe bei EGBT22 nach ETRS89 Transformation, Ergebnis maximal  -2.3143E-007 6.8080E-007 bei 990m
+        // damit kann die Höhe bei dieser Transformation weitestgehend vernachlässigt werden
+        const int count = 100;
+        double lon = 13.9027, lat = 50.8247;
+        var (e, n, _) = TM_GRS80_EGBT_LDP.Forward(new Coordinate(lat, lon, 0));
+        (lat, lon, _) = TM_GRS80_EGBT_LDP.Reverse(new Coordinate(e + 10000, n, 0));
+        var egbt22 = new Coordinate[count];
+        int h = 0;
+        for (int i = 0; i < count; i++)
+        {
+            egbt22[i] = new Coordinate(lat, lon, h);
+            h += 10;
+        }
+        var etrs89 = new Coordinate[count];
+        for (int i = 0; i < count; i++)
+        {
+            var xyz = GC_GRS80.Forward(egbt22[i]);
+            xyz = Trans_Datum_ETRS89_DREF91_to_EGBT22.Reverse(xyz);
+            var llh = GC_GRS80.Reverse(xyz);
+            etrs89[i] = TM_GRS80_UTM33.Forward(llh);
+        }
+        var (e0, n0, _) = etrs89[0];
+        for (int i = 1; i < count; i++)
+        {
+            (e, n, _) = etrs89[i];
+            Console.WriteLine(FormattableString.Invariant($"{egbt22[i].Z,4} {e - e0,8:E4} {n - n0,8:E4}"));
+        }
+#endif
 
 #if false
         double[][] dbrefgk5normal =
@@ -158,128 +495,8 @@ internal class Program
 
 #endif
 
-#if true
-        static (double x, double y, double z)[] readCoordinates(string file)
-        {
-            string[] lines = File.ReadAllLines(file, Encoding.UTF8);
-            var data = new (double x, double y, double z)[lines.Length];
-            for (int i = 0; i < lines.Length; i++)
-            {
-                string[] parts = lines[i].Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-                data[i] = (
-                    double.Parse(parts[0], CultureInfo.InvariantCulture),
-                    double.Parse(parts[1], CultureInfo.InvariantCulture),
-                    double.Parse(parts[2], CultureInfo.InvariantCulture));
-            }
-            return data;
-        }
-
-        static string formatInfo(string info)
-        {
-            string[] parts = info.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries);
-            return string.Join("|>", parts);
-        }
-
-        string dataDirectory = @"E:\source\egbt22trans\TestData";
-
-        //string extension = "wei";
-        string extension = "txt";
-
-        string[] dataFiles = [.. Directory.GetFiles(dataDirectory, $"*.{extension}", SearchOption.TopDirectoryOnly)];
-
-        var sources = new List<(string crs, string vrs, string origin, (double x, double y, double z)[] coordinates)>();
-        var crsMap = new Dictionary<string, int>();
-        foreach (string file in dataFiles)
-        {
-            string crs = Defined_CRS.FirstOrDefault(file.Contains, "");
-            crsMap.Add(crs, sources.Count);
-            string vrs = Defined_VRS.FirstOrDefault(file.Contains, "None");
-            int idx = file.LastIndexOf("_", StringComparison.OrdinalIgnoreCase);
-            string origin = file.Substring(idx + 1, file.Length - idx - 5);
-            var coordinates = readCoordinates(file);
-            sources.Add((crs, vrs, origin, coordinates));
-        }
-
-        // Test 2D
-        string header = "sourceCRS,targetCRS,sourceOrigin,dxRoundTrip,dyRoundTrip,dxOriginal,dyOriginal,dxProj,dyProj,stepsForward,stepsReverse";
-
-        var csv = new StringBuilder(header);
-        csv.AppendLine();
-        for (int i = 0; i < sources.Count; i++)
-        {
-            (string source, string vrs, string origin, (double x, double y, double z)[] coordinates) = sources[i];
-            if (!Defined_CRS_2D.Contains(source))
-                continue;
-            for (int j = 0; j < Defined_CRS_2D.Length; j++)
-            {
-                string target = Defined_CRS_2D[j];
-                if (source == target)
-                    continue;
-                if (GetConversion(source, target, out var conversion, out string forwardInfo, true))
-                {
-                    var result = new (double x, double y)[coordinates.Length];
-                    for (int k = 0; k < coordinates.Length; k++)
-                    {
-                        var (sx, sy, _) = coordinates[k];
-                        result[k] = conversion(sx, sy);
-                    }
-                    int targetIdx = crsMap.TryGetValue(target, out int idx) ? idx : -1;
-                    bool targetProj = false;
-                    (double dx, double dy)[]? origDiff = null;
-                    if (targetIdx >= 0)
-                    {
-                        var targetOrig = sources[targetIdx].coordinates;
-                        targetProj = sources[targetIdx].origin == "proj";
-                        origDiff = new (double dx, double dy)[targetOrig.Length];
-                        for (int k = 0; k < targetOrig.Length; k++)
-                        {
-                            var (tx, ty, _) = targetOrig[k];
-                            var (x, y) = result[k];
-                            origDiff[k] = (tx - x, ty - y);
-                        }
-                    }
-                    if (GetConversion(target, source, out conversion, out string reverseInfo, true))
-                    {
-                        for (int k = 0; k < result.Length; k++)
-                        {
-                            var (ox, oy, _) = coordinates[k];
-                            var (x, y) = result[k];
-                            (x, y) = conversion(x, y);
-                            if (origDiff != null)
-                            {
-                                if (targetProj)
-                                {
-                                    csv.AppendLine(FormattableString.Invariant
-                                        ($"\"{source}\",\"{target}\",\"{origin}\",{ox - x:E3},{oy - y:E3},,,{origDiff[k].dx:E3},{origDiff[k].dy:E3},\"{formatInfo(forwardInfo)}\",\"{formatInfo(reverseInfo)}\""));
-                                }
-                                else
-                                {
-                                    csv.AppendLine(FormattableString.Invariant
-                                        ($"\"{source}\",\"{target}\",\"{origin}\",{ox - x:E3},{oy - y:E3},{origDiff[k].dx:E3},{origDiff[k].dy:E3},,,\"{formatInfo(forwardInfo)}\",\"{formatInfo(reverseInfo)}\""));
-                                }
-                            }
-                            else
-                            {
-                                csv.AppendLine(FormattableString.Invariant
-                                ($"\"{source}\",\"{target}\",\"{origin}\",{ox - x:E3},{oy - y:E3},,,,,\"{formatInfo(forwardInfo)}\",\"{formatInfo(reverseInfo)}\""));
-                            }
-                        }
-                    }
-                    else
-                    {
-                        csv.AppendLine(FormattableString.Invariant($"\"{source}\",\"{target}\",\"\",,,,,,,\"{formatInfo(forwardInfo)}\",\"{formatInfo(reverseInfo)}\""));
-                    }
-                }
-                else
-                {
-                    _ = GetConversion(source, target, out _, out string reverseInfo, true);
-                    csv.AppendLine(FormattableString.Invariant($"\"{source}\",\"{target}\",\"\",,,,,,,\"{formatInfo(forwardInfo)}\",\"{formatInfo(reverseInfo)}\""));
-                }
-            }
-        }
-        File.WriteAllText(Path.Combine(dataDirectory, $"results2D_{extension}.csv"), csv.ToString(), Encoding.UTF8);
-
-        // Test 3D
+#if false
+         // Test 3D
 
         header = "sourceCRS,sourceVRS,targetCRS,sourceOrigin,dxRoundTrip,dyRoundTrip,dzRoundTrip,dxOriginal,dyOriginal,dzOriginal,dxProj,dyProj,dzProj,stepsForward,stepsReverse";
         csv = new StringBuilder(header);
@@ -298,7 +515,7 @@ internal class Program
                     continue;
                 if (GetConversion(source, vrs, target, out var conversion, out string forwardInfo, out string targetVRS))
                 {
-                    var result = new (double x, double y, double z)[coordinates.Length];
+                    var result = new (double x, double y, double z, double inScale, double inGamma, double outScale, double outGamma)[coordinates.Length];
                     for (int k = 0; k < coordinates.Length; k++)
                     {
                         var (sx, sy, sz) = coordinates[k];

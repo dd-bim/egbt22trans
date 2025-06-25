@@ -1,0 +1,9 @@
+﻿Forward: Conversion from EGBT22_EGBT_LDP to EGBT22_Geod.|>Conversion from EGBT22_Geod to EGBT22_Geoc.|>Transformation from EGBT22_Geoc to ETRS89_CZ_Geoc.|>Conversion from ETRS89_CZ_Geoc to ETRS89_CZ_Geod.
+Reverse: Conversion from ETRS89_CZ_Geod to ETRS89_CZ_Geoc.|>Transformation from ETRS89_CZ_Geoc to EGBT22_Geoc.|>Conversion from EGBT22_Geoc to EGBT22_Geod.|>Conversion from EGBT22_Geod to EGBT22_EGBT_LDP.
+dxRoundTrip,dyRoundTrip,dzRoundTrip,dx,dy,dz
+2.910E-011,-1.484E-009,2.280E-009,2.505E-008,-6.620E-009,-1.149E-003
+-2.728E-011,2.037E-009,2.447E-009,2.154E-008,2.045E-008,-1.873E-003
+-2.037E-010,-1.382E-010,-1.677E-010,4.464E-009,2.710E-008,2.055E-003
+-9.823E-011,8.113E-010,2.444E-009,2.952E-008,3.815E-008,-6.459E-003
+-1.455E-011,4.511E-010,-1.334E-009,1.173E-009,7.244E-008,-1.268E-003
+-1.965E-010,7.130E-010,9.682E-010,-1.467E-008,2.125E-008,1.009E-002

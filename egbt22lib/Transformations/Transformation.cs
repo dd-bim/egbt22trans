@@ -6,7 +6,7 @@ using System.Text;
 
 namespace egbt22lib.Transformations
 {
-    internal class Transformation
+    public class Transformation
     {
         [Flags]
         public enum Kinds
@@ -179,9 +179,8 @@ namespace egbt22lib.Transformations
 
         #endregion
 
-        public Coordinate Forward(Coordinate xyz)
+        public (double x, double y, double z) Forward(double x, double y, double z)
         {
-            var (x,y,z) = xyz;
             if (Kind.HasFlag(Kinds.Rotation))
             {
                 (x, y, z) = rotateForward(x, y, z);
@@ -194,12 +193,11 @@ namespace egbt22lib.Transformations
             {
                 (x, y, z) = translateForward(x, y, z);
             }
-            return new Coordinate(x, y, z);
+            return (x, y, z);
         }
 
-        public Coordinate Reverse(Coordinate xyz)
+        public (double x, double y, double z) Reverse(double x, double y, double z)
         {
-            var (x, y, z) = xyz;
             if (Kind.HasFlag(Kinds.Translation))
             {
                 (x, y, z) = translateReverse(x, y, z);
@@ -212,7 +210,7 @@ namespace egbt22lib.Transformations
             {
                 (x, y, z) = rotateReverse(x, y, z);
             }
-            return new Coordinate(x, y, z);
+            return (x, y, z);
         }
 
 

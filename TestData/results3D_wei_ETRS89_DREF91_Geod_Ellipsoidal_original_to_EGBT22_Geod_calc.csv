@@ -1,0 +1,7 @@
+﻿Forward: Conversion from ETRS89_DREF91 to ETRS89_DREF91_Geoc.|>Transformation from ETRS89_DREF91_Geoc to EGBT22_Geoc.|>Conversion from EGBT22_Geoc to EGBT22_Geod.
+Reverse: Conversion from EGBT22_Geod to EGBT22_Geoc.|>Transformation from EGBT22_Geoc to ETRS89_DREF91_Geoc.|>Conversion from ETRS89_DREF91_Geoc to ETRS89_DREF91.
+dxRoundTrip,dyRoundTrip,dzRoundTrip,dx,dy,dz
+0.000E+000,-1.776E-015,1.992E-009,,,
+7.105E-015,-3.553E-015,-3.899E-011,,,
+-7.105E-015,0.000E+000,-9.408E-011,,,
+0.000E+000,0.000E+000,-1.160E-009,,,

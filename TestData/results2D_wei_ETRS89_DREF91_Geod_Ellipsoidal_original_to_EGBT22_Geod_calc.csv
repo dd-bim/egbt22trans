@@ -1,0 +1,7 @@
+﻿Forward: Transformation from ETRS89_DREF91 to EGBT22_Geod with ellipsoidal height 0.
+Reverse: Transformation from EGBT22_Geod to ETRS89_DREF91 with ellipsoidal height 0.
+dxRoundTrip,dyRoundTrip,dx,dy
+0.000E+000,0.000E+000,,
+7.105E-015,-3.553E-015,,
+0.000E+000,1.776E-015,,
+7.105E-015,-1.776E-015,,

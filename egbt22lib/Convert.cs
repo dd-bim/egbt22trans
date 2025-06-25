@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using static egbt22lib.Transformations.Defined;
 using static egbt22lib.Conversions.Defined;
+using static egbt22lib.Conversions.Common;
 using egbt22lib.Conversions;
 
 
@@ -9,41 +10,7 @@ namespace egbt22lib
 {
     public static class Convert
     {
-        [Flags]
-        public enum CRS
-        {
-            Geod = 0,
-            Geoc = 1,
-            EGBT_LDP = 2,
-            UTM33 = 4,
-            GK5 = 8,
-            Conversion = Geod | Geoc | EGBT_LDP | UTM33 | GK5,
-            ETRS89 = 16,
-            DB_Ref = 32,
-            EGBT22 = 64,
-            ETRS89_DREF91 = 128,
-            ETRS89_CZ = 256,
-            Datum = ETRS89 | DB_Ref | EGBT22 | ETRS89_DREF91 | ETRS89_CZ,
 
-            EGBT22_EGBT_LDP = EGBT22 | EGBT_LDP,
-            EGBT22_Geod = EGBT22 | Geod,
-            EGBT22_Geoc = EGBT22 | Geoc,
-            ETRS89_DREF91_UTM33 = ETRS89_DREF91 | UTM33,
-            ETRS89_DREF91_Geod = ETRS89_DREF91 | Geod,
-            ETRS89_DREF91_Geoc = ETRS89_DREF91 | Geoc,
-            ETRS89_CZ_Geod = ETRS89_CZ | Geod,
-            ETRS89_CZ_Geoc = ETRS89_CZ | Geoc,
-            DB_Ref_GK5 = DB_Ref | GK5,
-            DB_Ref_Geod = DB_Ref | Geod,
-            DB_Ref_Geoc = DB_Ref | Geoc
-        }
-
-        public enum VRS
-        {
-            None,
-            Normal,
-            Ellipsoidal
-        }
 
         /// <summary>
         /// Represents a collection of predefined Coordinate Reference System (CRS) identifiers as string values.
@@ -96,131 +63,83 @@ namespace egbt22lib
             VRS.Ellipsoidal.ToString(),
         };
 
-        private static Coordinate ETRS89_Geod_Normal_to_Ellipsoidal(Coordinate llh)
+
+        private static (double lat, double lon) DBRef_Geod_to_ETRS89_DREF91_Geod_DBRefZero(double lat, double lon)
         {
-            var (lat, lon, h) = llh;
-            double ellH = h + Geoid.GetBKGBinaryGeoidHeight(lat, lon);
-            return new Coordinate(lat, lon, ellH);
+            double ellH = 0;
+            var (x, y, z) = GC_Bessel.Forward(lat, lon, ellH);
+            (x, y, z) = Trans_Datum_DBRef_to_ETRS89_DREF91.Forward(x, y, z);
+            (lat, lon, _) = GC_GRS80.Reverse(x, y, z);
+            return (lat, lon);
         }
 
-        private static Coordinate ETRS89_Geod_Ellipsoidal_to_Normal(Coordinate llh)
+        private static (double lat, double lon) DBRef_Geod_to_EGBT22_Geod_DBRefZero(double lat, double lon)
         {
-            var (lat, lon, ellH) = llh;
-            double h = ellH - Geoid.GetBKGBinaryGeoidHeight(lat, lon);
-            return new Coordinate(lat, lon, h);
+            double ellH = 0;
+            var (x, y, z) = GC_Bessel.Forward(lat, lon, ellH);
+            (x, y, z) = Trans_Datum_DBRef_to_ETRS89_DREF91.Forward(x, y, z);
+            (x, y, z) = Trans_Datum_ETRS89_DREF91_to_EGBT22.Forward(x, y, z);
+            (lat, lon, _) = GC_GRS80.Reverse(x, y, z);
+            return (lat, lon);
         }
 
-        private static Coordinate EGBT22_Geod_Normal_to_Ellipsoidal(Coordinate llh)
+        private static (double lat, double lon) ETRS89_DREF91_Geod_to_DBRef_Geod_DBRefZero(double lat, double lon, out double ellH)
         {
-            var (lat, lon, h) = llh;
-            double th = h;
-            double diff = double.MaxValue;
-            while (diff > TOLRAD)
-            {
-                var xyz = GC_GRS80.Forward(new Coordinate(lat, lon, th));
-                xyz = Trans_Datum_ETRS89_DREF91_to_EGBT22.Reverse(xyz);
-                (double elat, double elon, _) = GC_GRS80.Reverse(xyz);
-                double eh = h + Geoid.GetBKGBinaryGeoidHeight(elat, elon);
-                xyz = GC_GRS80.Forward(new Coordinate(elat, elon, eh));
-                xyz = Trans_Datum_ETRS89_DREF91_to_EGBT22.Forward(xyz);
-                double tlat, tlon;
-                (tlat, tlon, th) = GC_Bessel.Reverse(xyz);
-                diff = Math.Max(Math.Abs(tlat - lat), Math.Abs(tlon - lon));
-            }
-#if DEBUG
-            // Comparison of result to calculation without transformation
-            double hcheck = h + Geoid.GetBKGBinaryGeoidHeight(lat, lon);
-            Console.WriteLine($"EGBT22_Geod_Normal_to_Ellipsoidal Difference h: {th - hcheck} full:{th} short:{hcheck}");
-#endif
-
-            return new Coordinate(lat, lon, th);
-        }
-
-        private static Coordinate EGBT22_Geod_Ellipsoidal_to_Normal(Coordinate llh)
-        {
-            var xyz = GC_GRS80.Forward(llh);
-            xyz = Trans_Datum_ETRS89_DREF91_to_EGBT22.Reverse(xyz);
-            (double elat, double elon, double eh) = GC_GRS80.Reverse(xyz);
-            double h = eh - Geoid.GetBKGBinaryGeoidHeight(elat, elon);
-//#if DEBUG
-//            // Comparison of result to calculation without transformation
-//            double hcheck = ellH - Geoid.GetBKGBinaryGeoidHeight(lat, lon);
-//            Console.WriteLine($"EGBT22_Geod_Ellipsoidal_to_Normal Difference h: {h - hcheck} full:{h} short:{hcheck}");
-//#endif
-            return new Coordinate(llh.X, llh.Y, h);
-        }
-
-        private static Coordinate DBRef_Geod_Normal_to_Ellipsoidal(Coordinate llh)
-        {
-            var (lat, lon, h) = llh;
-            double th = h;
-            double diff = double.MaxValue;
-            while (diff > TOLRAD)
-            {
-                var xyz = GC_Bessel.Forward(new Coordinate(lat, lon, th));
-                xyz = Trans_Datum_DBRef_to_ETRS89_DREF91.Forward(xyz);
-                (double elat, double elon, _) = GC_GRS80.Reverse(xyz);
-                double eh = h + Geoid.GetBKGBinaryGeoidHeight(elat, elon);
-                xyz = GC_GRS80.Forward(new Coordinate(elat, elon, eh));
-                xyz = Trans_Datum_DBRef_to_ETRS89_DREF91
-                    .Reverse(xyz); // same transformation reverse to avoid differences through different parameters
-                double tlat, tlon;
-                (tlat, tlon, th) = GC_Bessel.Reverse(xyz);
-                diff = Math.Max(Math.Abs(tlat - lat), Math.Abs(tlon - lon));
-            }
-
-            return new Coordinate(lat, lon, th);
-        }
-
-        private static Coordinate DBRef_Geod_Ellipsoidal_to_Normal(Coordinate llh)
-        {
-            var xyz = GC_Bessel.Forward(llh);
-            xyz = Trans_Datum_DBRef_to_ETRS89_DREF91.Forward(xyz);
-            (double elat, double elon, double eh) = GC_GRS80.Reverse(xyz);
-            double h = eh - Geoid.GetBKGBinaryGeoidHeight(elat, elon);
-            return new Coordinate(llh.X, llh.Y, h);
-        }
-
-        private static Coordinate DBRef_Geod_to_ETRS89_DREF91_Geod_DBRefZero(Coordinate ll)
-        {
-            ll.Z = 0;
-            var xyz = GC_Bessel.Forward(ll);
-            xyz = Trans_Datum_DBRef_to_ETRS89_DREF91.Forward(xyz);
-            return GC_GRS80.Reverse(xyz);
-        }
-
-        private static Coordinate ETRS89_DREF91_Geod_to_DBRef_Geod_DBRefZero(Coordinate ll)
-        {
-            (double lat, double lon, _) = ll;
-            double dh = double.MaxValue, th = 0;
+            ellH = 0;
+            double dh = double.PositiveInfinity,
+                dlat = double.NaN, dlon = double.NaN;
             while (Math.Abs(dh) > TOLM)
             {
-                var xyz = GC_GRS80.Forward(new Coordinate(lat, lon, th));
-                xyz = Trans_Datum_ETRS89_DREF91_to_DBRef.Forward(xyz);
-                (_, _, dh) = ll = GC_Bessel.Reverse(xyz);
-                th -= dh;
+                var (x, y, z) = GC_GRS80.Forward(lat, lon, ellH);
+                (x, y, z) = Trans_Datum_ETRS89_DREF91_to_DBRef.Forward(x, y, z);
+                (dlat, dlon, dh) = GC_Bessel.Reverse(x, y, z);
+                ellH -= dh;
             }
-
-            return ll;
+            return (dlat, dlon);
         }
 
-        private static Coordinate ETRS89_DREF91_Geod_to_EGBT22_Geod_ETRS89DefaultOrZero(Coordinate llh)
+        private static (double lat, double lon) ETRS89_DREF91_Geod_to_DBRef_Geod_DBRefZero(double lat, double lon)
         {
-            if (double.IsNaN(llh.Z))
-                llh.Z = 0;
-            var xyz = GC_GRS80.Forward(llh);
-            xyz = Trans_Datum_ETRS89_DREF91_to_EGBT22.Forward(xyz);
-            return GC_GRS80.Reverse(xyz);
+            return ETRS89_DREF91_Geod_to_DBRef_Geod_DBRefZero(lat, lon, out _);
         }
 
-        private static Coordinate EGBT22_Geod_to_ETRS89_DREF91_Geod_ETRS89DefaultOrZero(Coordinate llh)
+        private static (double lat, double lon) EGBT22_Geod_to_DBRef_Geod_DBRefZero(double lat, double lon, out double ellH)
         {
-            // No iteration needed, as the difference is near to epsilon
-            if (double.IsNaN(llh.Z))
-                llh.Z = 0;
-            var xyz = GC_GRS80.Forward(llh);
-            xyz = Trans_Datum_ETRS89_DREF91_to_EGBT22.Reverse(xyz);
-            return GC_GRS80.Reverse(xyz);
+            ellH = 0;
+            double dh = double.PositiveInfinity,
+                dlat = double.NaN, dlon = double.NaN;
+            while (Math.Abs(dh) > TOLM)
+            {
+                var (x, y, z) = GC_GRS80.Forward(lat, lon, ellH);
+                (x, y, z) = Trans_Datum_ETRS89_DREF91_to_EGBT22.Reverse(x, y, z);
+                (x, y, z) = Trans_Datum_ETRS89_DREF91_to_DBRef.Forward(x, y, z);
+                (dlat, dlon, dh) = GC_Bessel.Reverse(x, y, z);
+                ellH -= dh;
+            }
+            return (dlat, dlon);
+        }
+
+        private static (double lat, double lon) EGBT22_Geod_to_DBRef_Geod_DBRefZero(double lat, double lon)
+        {
+            return EGBT22_Geod_to_DBRef_Geod_DBRefZero(lat, lon, out _);
+        }
+
+        private static (double lat, double lon) ETRS89_DREF91_Geod_to_EGBT22_Geod_Zero(double lat, double lon)
+        {
+            // no height scale change
+            var (x, y, z) = GC_GRS80.Forward(lat, lon, 0);
+            (x, y, z) = Trans_Datum_ETRS89_DREF91_to_EGBT22.Forward(x, y, z);
+            (lat, lon, _) = GC_GRS80.Reverse(x, y, z);
+            return (lat, lon);
+        }
+
+        private static (double lat, double lon) EGBT22_Geod_to_ETRS89_DREF91_Geod_Zero(double lat, double lon)
+        {
+            // No iteration needed, as the difference is near to epsilon, // no height scale change
+            var (x, y, z) = GC_GRS80.Forward(lat, lon, 0);
+            (x, y, z) = Trans_Datum_ETRS89_DREF91_to_EGBT22.Reverse(x, y, z);
+            (lat, lon, _) = GC_GRS80.Reverse(x, y, z);
+            return (lat, lon);
         }
 
         /// <summary>
@@ -244,36 +163,37 @@ namespace egbt22lib
         /// <returns><see langword="true"/> if the conversion function was successfully created; otherwise, <see
         /// langword="false"/>.</returns>
         public static bool GetConversion(string source, string target,
-            out Func<double, double, (double x, double y, double inScale, double inGamma, double outScale, double outGamma)> conversion, out string info, bool useZeroHeights)
+            out Func<double, double, (double x, double y)> conversion, out string info, bool useZeroHeights)
         {
             if (!Enum.TryParse(source, out CRS sourceCRS))
             {
                 info = $"Source CRS {source} is not supported.";
-                conversion = (x, y) => (double.NaN, double.NaN, double.NaN, double.NaN, double.NaN, double.NaN);
+                conversion = (x, y) => (double.NaN, double.NaN);
                 return false;
             }
 
             if (!Enum.TryParse(target, out CRS targetCRS))
             {
                 info = $"Target CRS {target} is not supported.";
-                conversion = (x, y) => (double.NaN, double.NaN, double.NaN, double.NaN, double.NaN, double.NaN);
+                conversion = (x, y) => (double.NaN, double.NaN);
                 return false;
             }
 
-            var steps = new List<Func<Coordinate, Coordinate>>();
+            var steps = new List<Func<double, double, (double x, double y)>>();
             info = "";
             if (getConversion(sourceCRS, targetCRS, ref steps, ref info, useZeroHeights))
             {
-                conversion = calcSteps(steps);
+                conversion = calcSteps2D(steps);
                 return true;
             }
 
-            conversion = (x, y) => (double.NaN, double.NaN, double.NaN, double.NaN, double.NaN, double.NaN);
+            conversion = (x, y) => (double.NaN, double.NaN);
             return false;
         }
 
         private static bool getConversion(CRS source, CRS target,
-            ref List<Func<Coordinate, Coordinate>> steps, ref string info, bool useZeroHeights)
+            ref List<Func<double, double, (double x, double y)>> steps, ref string info, bool useZeroHeights)
+
         {
             if (source == target)
                 return true;
@@ -292,13 +212,20 @@ namespace egbt22lib
                             return true;
                         case CRS.ETRS89_DREF91_UTM33:
                         case CRS.ETRS89_DREF91_Geod:
+                            if (useZeroHeights)
+                            {
+                                info += $"Transformation from {source} to {CRS.ETRS89_DREF91_Geod} with ellipsoidal height 0.\n";
+                                steps.Add(EGBT22_Geod_to_ETRS89_DREF91_Geod_Zero);
+                                return getConversion(CRS.ETRS89_DREF91_Geod, target, ref steps, ref info, useZeroHeights);
+                            }
+                            break;
                         case CRS.DB_Ref_GK5:
                         case CRS.DB_Ref_Geod:
                             if (useZeroHeights)
                             {
-                                info += $"Transformation from {source} to {CRS.ETRS89_DREF91_Geod} with ETRS89 ellipsoidal height 0 or defa.\n";
-                                steps.Add(EGBT22_Geod_to_ETRS89_DREF91_Geod_ETRS89Zero);
-                                return getConversion(CRS.ETRS89_DREF91_Geod, target, ref steps, ref info, useZeroHeights);
+                                info += $"Iterative Transformation from {source} to {CRS.DB_Ref_Geod} with DB_Ref ellipsoidal height 0.\n";
+                                steps.Add(EGBT22_Geod_to_DBRef_Geod_DBRefZero);
+                                return getConversion(CRS.DB_Ref_Geod, target, ref steps, ref info, useZeroHeights);
                             }
                             break;
                     }
@@ -314,10 +241,10 @@ namespace egbt22lib
                         case CRS.EGBT22_Geod:
                             if (useZeroHeights)
                             {
-                                info += $"Transformation from {source} to {CRS.EGBT22_Geod} with ETRS89 ellipsoidal height 0.\n";
-                                steps.Add(ETRS89_DREF91_Geod_to_EGBT22_Geod_ETRS89Zero);
+                                info += $"Transformation from {source} to {CRS.EGBT22_Geod} with ellipsoidal height 0.\n";
+                                steps.Add(ETRS89_DREF91_Geod_to_EGBT22_Geod_Zero);
                                 return getConversion(CRS.EGBT22_Geod, target, ref steps, ref info, useZeroHeights);
-                            } 
+                            }
                             break;
                         case CRS.ETRS89_DREF91_UTM33:
                             info += $"Conversion from {source} to {CRS.ETRS89_DREF91_UTM33}:\n";
@@ -327,7 +254,7 @@ namespace egbt22lib
                         case CRS.DB_Ref_GK5:
                             if (useZeroHeights)
                             {
-                                info += $"Transformation from {source} to {CRS.DB_Ref_Geod} with DB_Ref ellipsoidal height 0.\n";
+                                info += $"Iterative Transformation from {source} to {CRS.DB_Ref_Geod} with DB_Ref ellipsoidal height 0.\n";
                                 steps.Add(ETRS89_DREF91_Geod_to_DBRef_Geod_DBRefZero);
                                 return getConversion(CRS.DB_Ref_Geod, target, ref steps, ref info, useZeroHeights);
                             }
@@ -343,6 +270,13 @@ namespace egbt22lib
                     {
                         case CRS.EGBT22_EGBT_LDP:
                         case CRS.EGBT22_Geod:
+                            if (useZeroHeights)
+                            {
+                                info += $"Transformation from {source} to {CRS.EGBT22_Geod} with DB_Ref ellipsoidal height 0.\n";
+                                steps.Add(DBRef_Geod_to_EGBT22_Geod_DBRefZero);
+                                return getConversion(CRS.EGBT22_Geod, target, ref steps, ref info, useZeroHeights);
+                            }
+                            break;
                         case CRS.ETRS89_DREF91_UTM33:
                         case CRS.ETRS89_DREF91_Geod:
                             if (useZeroHeights)
@@ -362,6 +296,126 @@ namespace egbt22lib
 
             info += $"Conversion from {source} to {target} is not supported.\n";
             steps.Clear();
+            return false;
+        }
+
+        private static Func<double, double, (double x, double y)> calcSteps2D(
+            List<Func<double, double, (double x, double y)>> steps)
+        {
+            return (x, y) =>
+            {
+                foreach (var step in steps)
+                {
+                    (x, y) = step(x, y);
+                }
+                return (x, y);
+            };
+        }
+
+        /// <summary>
+        ///     Obtains the calculation for gamma (convergence of meridians in degrees), k (scale at point) and check if point inside bounding box based on the provided
+        ///     coordinate reference system (CRS).
+        /// </summary>
+        /// <param name="crs">The coordinate reference system (CRS) used to determine the calculation method as a string..</param>
+        /// <param name="calculation">
+        ///     An output delegate that takes coordinates (easting and northing) as inputs
+        ///     and returns a tuple containing the gamma (convergence of meridians), k (scale at point) and check if point inside bounding box as results.
+        /// </param>
+        /// <param name="useDBRefZero">
+        ///     Use DB_Ref ellipsoidal height 0 for calculations. If true, the method will use DB_Ref ellipsoidal height 0 for calculations,
+        ///     otherwise it will use the default ellipsoidal height 0 for the specified CRS.
+        /// </param>
+        /// <returns>
+        ///     A boolean value indicating whether a valid calculation method was determined for the specified CRS.
+        ///     Returns true if a valid calculation was found, otherwise false.
+        /// </returns>
+        public static bool GetGammaKInsideCalculation(string crs,
+            out Func<double, double, (double gamma, double k, bool isInsideBBox)> calculation, bool useDBRefZero)
+        {
+            if (Enum.TryParse(crs, out CRS crs_))
+            {
+                switch (crs_)
+                {
+                    case CRS.EGBT22_EGBT_LDP:
+                        calculation = (e, n) =>
+                        {
+                            var (lat, lon) = TM_GRS80_EGBT_LDP.Reverse(e, n, out double gamma, out double k);
+                            bool isInside = IsInsideBBox_ETRS89(lat, lon);
+                            if (useDBRefZero)
+                            {
+                                _ = EGBT22_Geod_to_DBRef_Geod_DBRefZero(lat, lon, out double ellH);
+                                k = PointScaleAtHeight(k, lat, ellH, GRS80_a, GRS80_f);
+                            }
+                            return (gamma, k, isInside);
+                        };
+                        return true;
+                    case CRS.ETRS89_DREF91_UTM33:
+                        calculation = (e, n) =>
+                        {
+                            var (lat, lon) = TM_GRS80_UTM33.Reverse(e, n, out double gamma, out double k);
+                            bool isInside = IsInsideBBox_ETRS89(lat, lon);
+                            if (useDBRefZero)
+                            {
+                                _ = ETRS89_DREF91_Geod_to_DBRef_Geod_DBRefZero(lat, lon, out double ellH);
+                                k = PointScaleAtHeight(k, lat, ellH, GRS80_a, GRS80_f);
+                            }
+                            return (gamma, k, isInside);
+                        };
+                        return true;
+                    case CRS.DB_Ref_GK5:
+                        calculation = (e, n) =>
+                        {
+                            var (lat, lon) = TM_Bessel_GK5.Reverse(e, n, out double gamma, out double k);
+                            bool isInside = IsInsideBBox_DB_Ref(lat, lon);
+                            return (gamma, k, isInside);
+                        };
+                        return true;
+                }
+            }
+
+            calculation = (e, n) => (double.NaN, double.NaN, false);
+            return false;
+        }
+        public static bool GetInsideCalculation(string crs,
+            out Func<double, double, bool> calculation)
+        {
+            if (Enum.TryParse(crs, out CRS crs_))
+            {
+                switch (crs_)
+                {
+                    case CRS.EGBT22_EGBT_LDP:
+                        calculation = (e, n) =>
+                        {
+                            var (lat, lon) = TM_GRS80_EGBT_LDP.Reverse(e, n, out _, out _);
+                            return IsInsideBBox_ETRS89(lat, lon);
+                        };
+                        return true;
+                    case CRS.EGBT22_Geod:
+                    case CRS.ETRS89_DREF91_Geod:
+                    case CRS.ETRS89_CZ_Geod:
+                        calculation = IsInsideBBox_ETRS89;
+                        return true;
+                    case CRS.ETRS89_DREF91_UTM33:
+                        calculation = (e, n) =>
+                        {
+                            var (lat, lon) = TM_GRS80_UTM33.Reverse(e, n, out _, out _);
+                            return IsInsideBBox_ETRS89(lat, lon);
+                        };
+                        return true;
+                    case CRS.DB_Ref_GK5:
+                        calculation = (e, n) =>
+                        {
+                            var (lat, lon) = TM_Bessel_GK5.Reverse(e, n, out _, out _);
+                            return IsInsideBBox_DB_Ref(lat, lon);
+                        };
+                        return true;
+                    case CRS.DB_Ref_Geod:
+                        calculation = IsInsideBBox_DB_Ref;
+                        return true;
+                }
+            }
+
+            calculation = (e, n) => false;
             return false;
         }
 
@@ -535,8 +589,6 @@ namespace egbt22lib
                         case CRS.DB_Ref_GK5:
                         case CRS.DB_Ref_Geod:
                         case CRS.DB_Ref_Geoc:
-                        //case CRS.ETRS89_CZ_Geod:
-                        //case CRS.ETRS89_CZ_Geoc:
                             if (sourceVRS == VRS.Normal)
                             {
                                 info += $"Transformation from {sourceVRS} heights to {VRS.Ellipsoidal} heights.\n";
@@ -555,8 +607,6 @@ namespace egbt22lib
                         case CRS.EGBT22_EGBT_LDP:
                         case CRS.EGBT22_Geod:
                         case CRS.EGBT22_Geoc:
-                        //case CRS.ETRS89_CZ_Geod:
-                        //case CRS.ETRS89_CZ_Geoc:
                             info += $"Transformation from {source} to {CRS.EGBT22_Geoc}.\n";
                             steps.Add(Trans_Datum_ETRS89_DREF91_to_EGBT22.Forward);
                             return getConversion(CRS.EGBT22_Geoc, VRS.None, target, ref steps, ref info, ref targetVRS);
@@ -589,13 +639,10 @@ namespace egbt22lib
                         case CRS.ETRS89_DREF91_Geod:
                         case CRS.ETRS89_DREF91_Geoc:
                         case CRS.DB_Ref_Geoc:
-                        //case CRS.ETRS89_CZ_Geod:
-                        //case CRS.ETRS89_CZ_Geoc:
                             if (sourceVRS == VRS.Normal)
                             {
-                                info +=
-                                    $"Iterative transformation from {sourceVRS} heights to {VRS.Ellipsoidal} heights.\n";
-                                steps.Add(DBRef_Geod_Normal_to_Ellipsoidal);
+                                info += $"Iterative transformation from {sourceVRS} heights to {VRS.Ellipsoidal} heights.\n";
+                                steps.Add(DB_Ref_Geod_Normal_to_Ellipsoidal);
                             }
                             info += $"Conversion from {source} to {CRS.DB_Ref_Geoc}.\n";
                             steps.Add(GC_Bessel.Forward);
@@ -616,8 +663,8 @@ namespace egbt22lib
                         case CRS.ETRS89_DREF91_UTM33:
                         case CRS.ETRS89_DREF91_Geod:
                         case CRS.ETRS89_DREF91_Geoc:
-                        //case CRS.ETRS89_CZ_Geod:
-                        //case CRS.ETRS89_CZ_Geoc:
+                            //case CRS.ETRS89_CZ_Geod:
+                            //case CRS.ETRS89_CZ_Geoc:
                             info += $"Transformation from {source} to {CRS.ETRS89_DREF91_Geoc}.\n";
                             steps.Add(Trans_Datum_DBRef_to_ETRS89_DREF91.Forward);
                             return getConversion(CRS.ETRS89_DREF91_Geoc, VRS.None, target, ref steps, ref info, ref targetVRS);
@@ -636,12 +683,6 @@ namespace egbt22lib
                         case CRS.EGBT22_EGBT_LDP:
                         case CRS.EGBT22_Geod:
                         case CRS.EGBT22_Geoc:
-                        //case CRS.ETRS89_DREF91_UTM33:
-                        //case CRS.ETRS89_DREF91_Geod:
-                        //case CRS.ETRS89_DREF91_Geoc:
-                        //case CRS.DB_Ref_GK5:
-                        //case CRS.DB_Ref_Geod:
-                        //case CRS.DB_Ref_Geoc:
                         case CRS.ETRS89_CZ_Geoc:
                             if (sourceVRS == VRS.Ellipsoidal)
                             {
@@ -659,12 +700,6 @@ namespace egbt22lib
                         case CRS.EGBT22_EGBT_LDP:
                         case CRS.EGBT22_Geod:
                         case CRS.EGBT22_Geoc:
-                        //case CRS.ETRS89_DREF91_UTM33:
-                        //case CRS.ETRS89_DREF91_Geod:
-                        //case CRS.ETRS89_DREF91_Geoc:
-                        //case CRS.DB_Ref_GK5:
-                        //case CRS.DB_Ref_Geod:
-                        //case CRS.DB_Ref_Geoc:
                             info += $"Transformation from {source} to {CRS.EGBT22_Geoc}.\n";
                             steps.Add(Trans_Datum_ETRS89_CZ_to_EGBT22.Forward);
                             return getConversion(CRS.EGBT22_Geoc, VRS.None, target, ref steps, ref info, ref targetVRS);
@@ -684,16 +719,6 @@ namespace egbt22lib
             return false;
         }
 
-        private static Func<double, double, (double x, double y, double inScale, double inGamma, double outScale, double outGamma)> calcSteps(
-            List<Func<Coordinate, Coordinate>> steps)
-        {
-            return (x, y) =>
-            {
-                foreach (var step in steps) (x, y) = step(x, y);
-                return (x, y);
-            };
-        }
-
         private static Func<double, double, double, (double x, double y, double z)> calcSteps(
             List<Func<double, double, double, (double x, double y, double z)>> steps)
         {
@@ -705,52 +730,229 @@ namespace egbt22lib
         }
 
         /// <summary>
-        ///     Obtains the calculation for gamma (convergence of meridians) and k (scale at point) values based on the provided
-        ///     coordinate reference system (CRS).
+        /// Determines whether a calculation function for gamma, k, and bounding box checks can be provided  based on
+        /// the specified coordinate reference system (CRS) and vertical reference system (VRS).
         /// </summary>
-        /// <param name="crs">The coordinate reference system (CRS) used to determine the calculation method as a string..</param>
-        /// <param name="calculation">
-        ///     An output delegate that takes coordinates (easting and northing) as inputs
-        ///     and returns a tuple containing the gamma (convergence of meridians) and k (scale at point) values as results.
-        /// </param>
-        /// <returns>
-        ///     A boolean value indicating whether a valid calculation method was determined for the specified CRS.
-        ///     Returns true if a valid calculation was found, otherwise false.
-        /// </returns>
-        public static bool GetGammaKCalculation(string crs,
-            out Func<double, double, (double gamma, double k)> calculation)
+        /// <remarks>The returned calculation function performs coordinate transformations and checks
+        /// based on the specified CRS and VRS. If the CRS or VRS values are invalid, the method returns <see
+        /// langword="false"/> and the <paramref name="calculation"/>  parameter is set to a default function that
+        /// returns NaN values and <see langword="false"/> for all checks.</remarks>
+        /// <param name="crs">The coordinate reference system identifier as a string. Must match a valid <see cref="CRS"/> enumeration
+        /// value.</param>
+        /// <param name="vrs">The vertical reference system identifier as a string. Must match a valid <see cref="VRS"/> enumeration
+        /// value.</param>
+        /// <param name="calculation">When this method returns <see langword="true"/>, contains a function that computes gamma, k,  bounding box
+        /// inclusion, and height range inclusion based on the provided coordinates. The function signature is
+        /// <c>Func&lt;double, double, double, (double gamma, double k, bool isInsideBBox, bool
+        /// isInHeightRange)&gt;</c>.</param>
+        /// <returns><see langword="true"/> if a calculation function is successfully provided for the specified CRS and VRS; 
+        /// otherwise, <see langword="false"/>.</returns>
+        public static bool GetGammaKInsideCalculation(string crs, string vrs,
+            out Func<double, double, double, (double gamma, double k, bool isInsideBBox, bool isInHeightRange)> calculation)
         {
-            if (Enum.TryParse(crs, out CRS crs_))
+            if (Enum.TryParse(crs, out CRS crs_) && Enum.TryParse(vrs, out VRS vrs_) && vrs_ != VRS.None)
             {
-                switch (crs_ & CRS.Conversion)
+                switch (crs_)
                 {
-                    case CRS.EGBT_LDP:
-                        calculation = (e, n) =>
+                    case CRS.EGBT22_EGBT_LDP:
+                        calculation = (e, n, h) =>
                         {
-                            _ = TM_GRS80_EGBT_LDP.Reverse(e, n, out double gamma, out double k);
-                            return (gamma, k);
+                            var (lat, lon) = TM_GRS80_EGBT_LDP.Reverse(e, n, out double gamma, out double k);
+                            bool isInside = IsInsideBBox_ETRS89(lat, lon);
+                            double ellH = vrs_ == VRS.Normal ? EGBT22_Geod_Normal_to_Ellipsoidal(lat, lon, h).ellH : h;
+                            k = PointScaleAtHeight(k, lat, ellH, GRS80_a, GRS80_f);
+                            return (gamma, k, isInside, IsInsideHeightRange_ETRS89(ellH));
                         };
                         return true;
-                    case CRS.UTM33:
-                        calculation = (e, n) =>
+                    case CRS.ETRS89_DREF91_UTM33:
+                        calculation = (e, n, h) =>
                         {
-                            _ = TM_GRS80_UTM33.Reverse(e, n, out double gamma, out double k);
-                            return (gamma, k);
+                            var (lat, lon) = TM_GRS80_UTM33.Reverse(e, n, out double gamma, out double k);
+                            bool isInside = IsInsideBBox_ETRS89(lat, lon);
+                            double ellH = vrs_ == VRS.Normal ? ETRS89_Geod_Normal_to_Ellipsoidal(lat, lon, h).ellH : h;
+                            k = PointScaleAtHeight(k, lat, ellH, GRS80_a, GRS80_f);
+                            return (gamma, k, isInside, IsInsideHeightRange_ETRS89(ellH));
                         };
                         return true;
-                    case CRS.GK5:
-                        calculation = (e, n) =>
+                    case CRS.DB_Ref_GK5:
+                        calculation = (e, n, h) =>
                         {
-                            _ = TM_Bessel_GK5.Reverse(e, n, out double gamma, out double k);
-                            return (gamma, k);
+                            var (lat, lon) = TM_Bessel_GK5.Reverse(e, n, out double gamma, out double k);
+                            bool isInside = IsInsideBBox_DB_Ref(lat, lon);
+                            double ellH = vrs_ == VRS.Normal ? DB_Ref_Geod_Normal_to_Ellipsoidal(lat, lon, h).ellH : h;
+                            k = PointScaleAtHeight(k, lat, ellH, Bessel_a, Bessel_f);
+                            return (gamma, k, isInside, IsInsideHeightRange_DB_Ref(ellH));
                         };
                         return true;
                 }
             }
-
-            calculation = (e, n) => (double.NaN, double.NaN);
+            calculation = (e, n, h) => (double.NaN, double.NaN, false, false);
             return false;
         }
+
+        /// <summary>
+        /// Determines whether a given coordinate reference system (CRS) and vertical reference system (VRS) can be used
+        /// to calculate whether a point is inside a bounding box and within a height range.
+        /// </summary>
+        /// <remarks>This method supports multiple CRS and VRS combinations. If the CRS or VRS is invalid,
+        /// the method returns <see langword="false"/> and the <paramref name="calculation"/> output parameter is set to
+        /// a default function that always returns <see langword="false"/> for both values in the tuple.</remarks>
+        /// <param name="crs">The coordinate reference system identifier as a string. Must correspond to a valid CRS enumeration value.</param>
+        /// <param name="vrs">The vertical reference system identifier as a string. Must correspond to a valid VRS enumeration value.</param>
+        /// <param name="calculation">An output parameter that, if the method returns <see langword="true"/>, contains a function to perform the
+        /// calculation. The function takes three double parameters representing coordinates or height values and
+        /// returns a tuple indicating: <list type="bullet"> <item><description><see langword="true"/> if the point is
+        /// inside the bounding box; otherwise, <see langword="false"/>.</description></item> <item><description><see
+        /// langword="true"/> if the point is within the height range; otherwise, <see
+        /// langword="false"/>.</description></item> </list></param>
+        /// <returns><see langword="true"/> if the CRS and VRS are valid and a calculation function is successfully created;
+        /// otherwise, <see langword="false"/>.</returns>
+        public static bool GetInsideCalculation(string crs, string vrs,
+            out Func<double, double, double, (bool isInsideBBox, bool isInHeightRange)> calculation)
+        {
+            if (Enum.TryParse(crs, out CRS crs_))
+            {
+                switch (crs_)
+                {
+                    // EGBT22
+                    case CRS.EGBT22_EGBT_LDP:
+                        if (Enum.TryParse(vrs, out VRS vrs_))
+                        {
+                            if(vrs_ == VRS.Normal)
+                            {
+                                calculation = (e, n, h) =>
+                                {
+                                    var (lat, lon) = TM_GRS80_EGBT_LDP.Reverse(e, n, out _, out _);
+                                    double ellH = EGBT22_Geod_Normal_to_Ellipsoidal(lat, lon, h).ellH;
+                                    return (IsInsideBBox_ETRS89(lat, lon), IsInsideHeightRange_ETRS89(ellH));
+                                };
+                                return true;
+                            }
+                            else if(vrs_ == VRS.Ellipsoidal)
+                            {
+                                calculation = (e, n, h) =>
+                                {
+                                    var (lat, lon) = TM_GRS80_EGBT_LDP.Reverse(e, n, out _, out _);
+                                    return (IsInsideBBox_ETRS89(lat, lon), IsInsideHeightRange_ETRS89(h));
+                                };
+                                return true;
+                            }
+                        }
+                        break;
+                    case CRS.EGBT22_Geod:
+                        if (Enum.TryParse(vrs, out vrs_) && vrs_ != VRS.None)
+                        {
+                            calculation = (lat, lon, h) =>
+                            {
+                                bool isInside = IsInsideBBox_ETRS89(lat, lon);
+                                double ellH = vrs_ == VRS.Normal ? EGBT22_Geod_Normal_to_Ellipsoidal(lat, lon, h).ellH : h;
+                                return (isInside, IsInsideHeightRange_ETRS89(ellH));
+                            };
+                            return true;
+                        }
+                        break;
+                    case CRS.EGBT22_Geoc:
+                        calculation = (x, y, z) =>
+                        {
+                            var (lat, lon, ellH) = GC_GRS80.Reverse(x, y, z);
+                            bool isInside = IsInsideBBox_ETRS89(lat, lon);
+                            return (isInside, IsInsideHeightRange_ETRS89(ellH));
+                        };
+                        return true;
+                    // ETRS89_DREF91
+                    case CRS.ETRS89_DREF91_UTM33:
+                        if (Enum.TryParse(vrs, out vrs_) && vrs_ != VRS.None)
+                        {
+                            calculation = (e, n, h) =>
+                            {
+                                var (lat, lon) = TM_GRS80_UTM33.Reverse(e, n, out _, out _);
+                                bool isInside = IsInsideBBox_ETRS89(lat, lon);
+                                double ellH = vrs_ == VRS.Normal ? EGBT22_Geod_Normal_to_Ellipsoidal(lat, lon, h).ellH : h;
+                                return (isInside, IsInsideHeightRange_ETRS89(ellH));
+                            };
+                            return true;
+                        }
+                        break;
+                    case CRS.ETRS89_DREF91_Geod:
+                        if (Enum.TryParse(vrs, out vrs_) && vrs_ != VRS.None)
+                        {
+                            calculation = (lat, lon, h) =>
+                            {
+                                bool isInside = IsInsideBBox_ETRS89(lat, lon);
+                                double ellH = vrs_ == VRS.Normal ? ETRS89_Geod_Normal_to_Ellipsoidal(lat, lon, h).ellH : h;
+                                return (isInside, IsInsideHeightRange_ETRS89(ellH));
+                            };
+                            return true;
+                        }
+                        break;
+                    case CRS.ETRS89_DREF91_Geoc:
+                        calculation = (x, y, z) =>
+                        {
+                            var (lat, lon, ellH) = GC_GRS80.Reverse(x, y, z);
+                            bool isInside = IsInsideBBox_ETRS89(lat, lon);
+                            return (isInside, IsInsideHeightRange_ETRS89(ellH));
+                        };
+                        return true;
+                    // DB_Ref
+                    case CRS.DB_Ref_GK5:
+                        if (Enum.TryParse(vrs, out vrs_) && vrs_ != VRS.None)
+                        {
+                            calculation = (e, n, h) =>
+                            {
+                                var (lat, lon) = TM_Bessel_GK5.Reverse(e, n, out _, out _);
+                                bool isInside = IsInsideBBox_DB_Ref(lat, lon);
+                                double ellH = vrs_ == VRS.Normal ? DB_Ref_Geod_Normal_to_Ellipsoidal(lat, lon, h).ellH : h;
+                                return (isInside, IsInsideHeightRange_DB_Ref(ellH));
+                            };
+                            return true;
+                        }
+                        break;
+                    case CRS.DB_Ref_Geod:
+                        if (Enum.TryParse(vrs, out vrs_) && vrs_ != VRS.None)
+                        {
+                            calculation = (lat, lon, h) =>
+                            {
+                                bool isInside = IsInsideBBox_DB_Ref(lat, lon);
+                                double ellH = vrs_ == VRS.Normal ? DB_Ref_Geod_Normal_to_Ellipsoidal(lat, lon, h).ellH : h;
+                                return (isInside, IsInsideHeightRange_DB_Ref(ellH));
+                            };
+                            return true;
+                        }
+                        break;
+                    case CRS.DB_Ref_Geoc:
+                        calculation = (x, y, z) =>
+                        {
+                            var (lat, lon, ellH) = GC_Bessel.Reverse(x, y, z);
+                            bool isInside = IsInsideBBox_DB_Ref(lat, lon);
+                            return (isInside, IsInsideHeightRange_DB_Ref(ellH));
+                        };
+                        return true;
+                    // ETRS89_CZ
+                    case CRS.ETRS89_CZ_Geod:
+                        if (Enum.TryParse(vrs, out vrs_) && vrs_ == VRS.Ellipsoidal)
+                        {
+                            calculation = (lat, lon, h) =>
+                            {
+                                bool isInside = IsInsideBBox_ETRS89(lat, lon);
+                                return (isInside, IsInsideHeightRange_ETRS89(h));
+                            };
+                            return true;
+                        }
+                        break;
+                    case CRS.ETRS89_CZ_Geoc:
+                        calculation = (x, y, z) =>
+                        {
+                            var (lat, lon, ellH) = GC_GRS80.Reverse(x, y, z);
+                            bool isInside = IsInsideBBox_ETRS89(lat, lon);
+                            return (isInside, IsInsideHeightRange_ETRS89(ellH));
+                        };
+                        return true;
+                }
+            }
+            calculation = (e, n, h) => (false, false);
+            return false;
+        }
+
 
 
         #region arrays

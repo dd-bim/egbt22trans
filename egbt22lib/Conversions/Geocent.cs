@@ -6,7 +6,7 @@ using System.Text;
 
 namespace egbt22lib.Conversions
 {
-    internal class Geocent
+    public class Geocent
     {
         private readonly Geocentric _gc;
 
@@ -15,7 +15,7 @@ namespace egbt22lib.Conversions
             _gc = new Geocentric(a, f);
         }
 
-        public Coordinate Forward(Coordinate llh) => new Coordinate(_gc.Forward(llh.X, llh.Y, llh.Z));
-        public Coordinate Reverse(Coordinate xyz) => new Coordinate(_gc.Reverse(xyz.X, xyz.Y, xyz.Z));
+        public (double x, double y, double z) Forward(double lat, double lon, double ellH) => _gc.Forward(lat, lon, ellH);
+        public (double lat, double lon, double ellH) Reverse(double x, double y, double z) => _gc.Reverse(x, y, z);
     }
 }

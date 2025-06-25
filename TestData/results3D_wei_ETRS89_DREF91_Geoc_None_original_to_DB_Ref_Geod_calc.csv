@@ -1,0 +1,7 @@
+﻿Forward: Transformation from ETRS89_DREF91_Geoc to DB_Ref_Geoc.|>Conversion from DB_Ref_Geoc to DB_Ref_Geod.
+Reverse: Conversion from DB_Ref_Geod to DB_Ref_Geoc.|>Transformation from DB_Ref_Geoc to ETRS89_DREF91_Geoc.
+dxRoundTrip,dyRoundTrip,dzRoundTrip,dx,dy,dz
+-1.970E-005,-7.766E-005,-1.176E-005,,,
+-1.970E-005,-7.766E-005,-1.176E-005,,,
+-1.970E-005,-7.766E-005,-1.176E-005,,,
+-1.970E-005,-7.766E-005,-1.176E-005,,,
