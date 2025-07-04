@@ -42,11 +42,11 @@ C:\OSGeo4W\bin\cct.exe -t 0 -d 17 -o EGBT22_Geod_Ellipsoidal_proj.grd +proj=pipe
 ETRS89_DREF91_Geod_Ellipsoidal_original |> EGBT22_EGBT_LDP_Ellipsoidal_proj
 C:\OSGeo4W\bin\cct.exe -t 0 -d 17 -o EGBT22_EGBT_LDP_Ellipsoidal_proj.grd +proj=pipeline +step +proj=axisswap +order=2,1 +step +proj=cart +ellps=GRS80 +step +proj=helmert +x=-0.0028 +y=-0.0023 +z=0.0029 +step +inv +proj=cart +ellps=GRS80 +step +proj=tmerc +lat_0=50.8247 +lon_0=13.9027 +k=1.0000346 +x_0=10000 +y_0=50000 +ellps=GRS80 ETRS89_DREF91_Geod_Ellipsoidal_original.grd
 
-ETRS89_DREF91_Geod_Ellipsoidal_original |> ETRS89_CZ_Geoc_proj
-C:\OSGeo4W\bin\cct.exe -t 0 -d 17 -o ETRS89_CZ_Geoc_proj.grd +proj=pipeline +step +proj=axisswap +order=2,1 +step +proj=cart +ellps=GRS80 +step +proj=helmert +x=-0.0028 +y=-0.0023 +z=0.0029 +step +proj=helmert +x=-0.0028 +y=-0.0023 +z=0.0029 ETRS89_DREF91_Geod_Ellipsoidal_original.grd
+ETRS89_DREF91_Geod_Ellipsoidal_original |> ETRS89_CZ_Geoc_proj (kombiniert!)
+C:\OSGeo4W\bin\cct.exe -t 0 -d 17 -o ETRS89_CZ_Geoc_proj.grd +proj=pipeline +step +proj=axisswap +order=2,1 +step +proj=cart +ellps=GRS80 +step +proj=helmert +x=-0.0056 +y=-0.0046 +z=0.0058 ETRS89_DREF91_Geod_Ellipsoidal_original.grd
 
-ETRS89_DREF91_Geod_Ellipsoidal_original |> ETRS89_CZ_Geod_Ellipsoidal_proj
-C:\OSGeo4W\bin\cct.exe -t 0 -d 17 -o ETRS89_CZ_Geod_Ellipsoidal_proj.grd +proj=pipeline +step +proj=axisswap +order=2,1 +step +proj=cart +ellps=GRS80 +step +proj=helmert +x=-0.0028 +y=-0.0023 +z=0.0029 +step +proj=helmert +x=-0.0028 +y=-0.0023 +z=0.0029 +step +inv +proj=cart +ellps=GRS80 +step +proj=axisswap +order=2,1 ETRS89_DREF91_Geod_Ellipsoidal_original.grd
+ETRS89_DREF91_Geod_Ellipsoidal_original |> ETRS89_CZ_Geod_Ellipsoidal_proj (kombiniert!)
+C:\OSGeo4W\bin\cct.exe -t 0 -d 17 -o ETRS89_CZ_Geod_Ellipsoidal_proj.grd +proj=pipeline +step +proj=axisswap +order=2,1 +step +proj=cart +ellps=GRS80 +step +proj=helmert +x=-0.0056 +y=-0.0046 +z=0.0058 +step +inv +proj=cart +ellps=GRS80 +step +proj=axisswap +order=2,1 ETRS89_DREF91_Geod_Ellipsoidal_original.grd
 
 ETRS89_DREF91_Geod_Ellipsoidal_original |> DB_Ref_Geoc_proj
 C:\OSGeo4W\bin\cct.exe -t 0 -d 17 -o DB_Ref_Geoc_proj.grd +proj=pipeline +step +proj=axisswap +order=2,1 +step +proj=cart +ellps=GRS80 +step +proj=helmert +x=-584.9567 +y=-107.7277 +z=-413.8036 +rx=1.1155257601 +ry=0.2824170155 +rz=-3.1384505907 +s=-7.992171 +exact +convention=coordinate_frame ETRS89_DREF91_Geod_Ellipsoidal_original.grd

@@ -1,56 +1,71 @@
 ﻿# egbt22trans
 
-`egbt22trans.exe` is a program for converting coordinates between different coordinate systems. Conversions are possible between the coordinate systems defined below. The coordinates to be converted must be provided in column-based text files, using a period as the decimal separator. All columns remain as read; only the coordinate axes x and y [or z] (i.e., latitude, longitude, [height] or easting, northing, [height]) are converted. The unit of the coordinates is meters, and for geodetic coordinates, decimal degrees.
+`egbt22trans.exe` is a program for converting coordinates between different coordinate systems. Conversions are possible between the coordinate systems defined below. The coordinates to be converted must be provided in column-based text files, using a period as the decimal separator. All columns remain as read, only the coordinate axes x, y, z or latitude, longitude, height or easting, northing, height are converted. The unit of the coordinates is meters and decimal degrees for geodetic coordinates.
+
+The coordinates are checked to see if they are within the limits defined for the EGBT22 system (see table). If this is not the case, a message is displayed on the console for each affected coordinate.
+
+| ETRS89/EGBT22          | Minimum | Maximum |
+|:-----------------------|:--------|:--------|
+| Latitude [°]           | 50.640  | 51.018  |
+| Longitude [°]          | 13.831  | 13.974  |
+| Ellipsoidal height [m] | 120     | 320     |
 
 The program is open source and can be found at [https://github.com/dd-bim/egbt22trans.git](https://github.com/dd-bim/egbt22trans.git).
 
 ## Supported Coordinate Systems (CRS)
 
-1. **EGBT22 EGBT_LDP Dresden-Prague**  
-2. **EGBT22 geographic 3D lat/lon**  
-3. **EGBT22 cartesian 3D geocentric**  
-4. **ETRS89/DREF91 UTM33**  
-5. **ETRS89/DREF91 geographic 3D lat/lon**  
-6. **ETRS89/DREF91 cartesian 3D geocentric**  
-7. **ETRS89/CZ geographic 3D lat/lon**  
-8. **ETRS89/CZ cartesian 3D geocentric**  
-9. **DB_Ref GK5**  
-10. **DB_Ref geographic 3D lat/lon**  
-11. **DB_Ref cartesian 3D geocentric**  
+|ID | Coordinate System (CRS)          | Coordinate Axes             |
+|:--|:---------------------------------|:----------------------------|
+|1. |**EGBT22 EGBT_LDP Dresden-Prague**| easting, northing, height   |
+|2. |**EGBT22 geographic**             | latitude, longitude, height |
+|3. |**EGBT22 geocentric**             | X, Y. Z                     |
+|4. |**ETRS89/DREF91 UTM33**           | easting, northing, height   |
+|5. |**ETRS89/DREF91 geographic**      | latitude, longitude, height |
+|6. |**ETRS89/DREF91 geocentric**      | X, Y. Z                     |
+|7. |**ETRS89/CZ geographic**          | latitude, longitude, height |
+|8. |**ETRS89/CZ geocentric**          | X, Y. Z                     |
+|9. |**DB_Ref GK5**                    | easting, northing, height   |
+|10.|**DB_Ref geographic**             | latitude, longitude, height |
+|11.|**DB_Ref geocentric**             | X, Y. Z                     |
 
 ## Supported Conversions / Transformations
 
-|   | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 |
-|---|---|---|---|---|---|---|---|---|---|---|---|
-| **1** |   | x | h | h | h | h | h | h | h | h | h |
-| **2** | x |   | h | h | h | h | h | h | h | h | h |
-| **3** | x | x |   | x | x | x | x | x | x | x | x |
-| **4** | h | h | h |   | x | h |   |   | h | h | h |
-| **5** | h | h | h | x |   | h |   |   | x | x | x |
-| **6** | x | x | x | x | x |   |   |   | x | x | x |
-| **7** | h | h | h |   |   |   |   | h |   |   |   |
-| **8** | x | x | x |   |   |   | x |   |   |   |   |
-| **9** | h | h | h | h | h | h |   |   |   | x | h |
-| **10** | h | h | h | h | h | h |   |   | x |   | h |
-| **11** | x | x | x | x | x | x |   |   | x | x |   |
+|                                   |    | 1  | 2  | 3  | 4  | 5  | 6  | 7  | 8  | 9  | 10 | 11 |
+| :---------------------------------|---:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
+| **EGBT22 EGBT_LDP Dresden-Prague**| 1  |    | 2D | 3D | 3D | 3D | 3D | 3D | 3D | 3D | 3D | 3D |
+| **EGBT22 geographic**             | 2  | 2D |    | 3D | 3D | 3D | 3D | 3D | 3D | 3D | 3D | 3D |
+| **EGBT22 geocentric**             | 3  | 3D | 3D |    | 3D | 3D | 3D | 3D | 3D | 3D | 3D | 3D |
+| **ETRS89/DREF91 UTM33**           | 4  | 3D | 3D | 3D |    | 2D | 3D |    |    | 3D | 3D | 3D |
+| **ETRS89/DREF91 geographic**      | 5  | 3D | 3D | 3D | 2D |    | 3D |    |    | 3D | 3D | 3D |
+| **ETRS89/DREF91 geocentric**      | 6  | 3D | 3D | 3D | 3D | 3D |    |    |    | 3D | 3D | 3D |
+| **ETRS89/CZ geographic**          | 7  | 3D | 3D | 3D |    |    |    |    | 3D |    |    |    |
+| **ETRS89/CZ geocentric**          | 8  | 3D | 3D | 3D |    |    |    | 3D |    |    |    |    |
+| **DB_Ref GK5**                    | 9  | 3D | 3D | 3D | 3D | 3D | 3D |    |    |    | 2D | 3D |
+| **DB_Ref geographic**             | 10 | 3D | 3D | 3D | 3D | 3D | 3D |    |    | 2D |    | 3D |
+| **DB_Ref geocentric**             | 11 | 3D | 3D | 3D | 3D | 3D | 3D |    |    | 3D | 3D |    |
 
-- **x**: Simple conversion without heights is possible or geocentric coordinates with three axes.  
-- **h**: Conversion/transformation requires an ellipsoidal height (ETRS89 or DB_Ref) or a normal height (DHHN2016, GCG2016). (Option `-h 1` or `-h 2` is required)
+- **2D**: Simple conversion without heights.  
+- **3D**: Conversion/transformation requires a normal height (DHHN2016, GCG2016) (Option `-h 1` is required), an ellipsoidal height (EGBT22, ETRS89 or DB_Ref) (Option `-h 2` is required) or geocentric coordinates with three axes.
 
 ## Supported Height Systems
 
 1. **Normal heights** (internal calculations are based on the quasigeoid GCG2016)  
 2. **Ellipsoidal heights** (ETRS89 or DB_Ref)  
 
-Heights are used for the transformation from **ETRS89** to **DB_REF** and vice versa. Normal heights are internally transformed into ellipsoidal heights for this purpose. The **German Combined Quasigeoid (GCG2016)** is used for this ([BKG](https://www.bkg.bund.de/), [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)). Ellipsoidal heights are converted to the respective target datum during datum transformations. For transformations from **DB_Ref** to **ETRS89** with normal heights, ellipsoidal heights for **DB_Ref** are iteratively approximated, as the GCG2016 model is based on the ETRS89 datum.
+Heights are used for the transformation from **ETRS89** to **DB_REF** and vice versa. Normal heights are internally transformed into ellipsoidal heights for this purpose. The **German Combined Quasigeoid (GCG2016)** is used for this ([BKG](https://www.bkg.bund.de/), [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)). For the **DB_Ref** datum, the ellipsoidal heights are calculated iteratively from the GCG2016 model. The ellipsoidal heights are converted to the respective target datum during datum transformations.
+
+If the input heights are normal heights, the output will be unchanged (except for geocentric output coordinates).
 
 ## Transformations
 
-The transformation into and out of the EGBT22 datum is performed with the following transformation parameters (ETRS89/DREF91, ETRS89/CZEPOS).
-```
-ETRS89/DREF91(R2016) -> EGBT22: tx=-0.0028 ty=-0.0023 tz=0.0029
-ETRS89/CZ            -> EGBT22: tx=-0.0028 ty=-0.0023 tz=0.0029
-```
+The transformation into and out of the **EGBT22** datum is performed with the following transformation parameters (**ETRS89/DREF91**, **ETRS89/CZEPOS**).
+
+|                    |         | EGBT22 |      |
+|  Source system     | tx      | ty     | tz   |
+|:-------------------|:--------|:-------|:-----|
+|ETRS89/DREF91(R2016)| -0.0028 |-0.0023 |0.0029|
+|ETRS89/CZ           | -0.0028 |-0.0023 |0.0029|
+
 The transformation from **ETRS89** to **DB_REF** and vice versa uses the official transformation parameters from DB Guideline 883.9010 (different for both directions).  
 
 ## Conversions
@@ -73,9 +88,9 @@ The console program `egbt22trans.exe` can be configured with the following optio
 
 **Examples:**
 
-- Simple conversion from **ETRS89 EGBT_LDP Dresden-Prague** to **UTM33**:    
+- Simple conversion from **ETRS89 EGBT_LDP Dresden-Prague** to **EGBT22 geographisch 3D B/L**:    
 ```
--s 1 -t 4
+-s 1 -t 2
 ```
 - Conversion and transformation from **EGBT_LDP Dresden-Prague** to **DB_REF GK5** with normal heights: 
 ```

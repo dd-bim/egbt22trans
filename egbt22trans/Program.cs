@@ -91,12 +91,30 @@ internal class Program
 
                 // Write output file
                 IO.WriteFile(opts.OutputFile, xout, yout, coordinateLines, opts.XAxis - 1, opts.YAxis - 1, target.EndsWith("Geod") ? opts.LatLon : opts.Precision, opts.Delimiter[0]);
+
+                // Get bounding box check
+                if(!GetInsideCalculation(source, out var calcInside))
+                {
+                    Console.WriteLine($"Bounding box calculation for source {source} (ID {opts.Source}) is not supported.");
+                    return;
+                }
+
+                bool[] isInside = CalcArrays2(xin, yin, calcInside);
+
+                for (int i = 0; i < isInside.Length; i++)
+                {
+                    if (!isInside[i])
+                    {
+                        Console.WriteLine($"Warning: Point {i + 1} ({xin[i]}, {yin[i]}) is outside the bounding box of the EGBT22 system.");
+                    }
+                }
+
             }
             else
             {
-                if (opts.Height < 0 || opts.Height > 3)
+                if (opts.Height < 0 || opts.Height > 2)
                 {
-                    Console.WriteLine("The index for the height system must have a value in the range 0 to 3.");
+                    Console.WriteLine("The index for the height system must have a value in the range 0 to 2.");
                     return;
                 }
                 string sourceVRS = Defined_VRS[opts.Height];
@@ -127,6 +145,31 @@ internal class Program
                     IO.WriteFile(opts.OutputFile, xout, yout,
                         zout, coordinateLines, opts.XAxis - 1, opts.YAxis - 1, opts.ZAxis - 1,
                         target.EndsWith("Geod") ? opts.LatLon : opts.Precision, opts.Precision, opts.Delimiter[0]);
+                }
+
+                // Get bounding box check
+                if (!GetInsideCalculation(source, sourceVRS, out var calcInside))
+                {
+                    Console.WriteLine($"Bounding box calculation for source {source} (ID {opts.Source}) with {sourceVRS} Heights (ID {opts.Height}) is not supported.");
+                    return;
+                }
+
+                (bool[] isInsideBBox, bool[] isInsideHeight) = CalcArrays3(xin, yin, zin, calcInside);
+
+                for (int i = 0; i < isInsideBBox.Length; i++)
+                {
+                    switch (isInsideBBox[i], isInsideHeight[i])
+                    {
+                        case (false, true):
+                            Console.WriteLine($"Warning: Point {i + 1} ({xin[i]}, {yin[i]}, {zin[i]}) is outside the bounding box of the EGBT22 system.");
+                            break;
+                        case (true, false):
+                            Console.WriteLine($"Warning: Point {i + 1} ({xin[i]}, {yin[i]}, {zin[i]}) is outside the height range of the EGBT22 system.");
+                            break;
+                        case (false, false):
+                            Console.WriteLine($"Warning: Point {i + 1} ({xin[i]}, {yin[i]}, {zin[i]}) is outside both the bounding box and height range of the EGBT22 system.");
+                            break;
+                    }
                 }
             }
 
